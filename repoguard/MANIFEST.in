@@ -1,0 +1,9 @@
+exclude .*
+
+recursive-include cfg *.conf
+
+recursive-exclude src/repoguard/testutil/* *.py
+recursive-exclude src/repoguard/*/tests *.py
+
+prune doc
+graft docs/html

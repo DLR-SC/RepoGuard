@@ -1,0 +1,7 @@
+RepoGuard is a framework for Subversion pre-commit hooks in order to
+implement checks of the to be commited files before they are commited.
+For example, you can check for the code style or unit tests. The output
+of the checks can be send by mail or be written into a file or simply
+print to the console.
+
+See http://repoguard.tigris.org
