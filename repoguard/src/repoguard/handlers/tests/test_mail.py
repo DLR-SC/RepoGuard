@@ -34,11 +34,11 @@ addresses=dummy@localhost,
 
 remote_config = """
 level=1
-addresses=malte.legenhausen@dlr.de,
-sender=repoguard-admin@dlr.de
-smtp.server=smtp.dlr.de
-smtp.user=f_svnche
-smtp.password=n504Sdj5
+addresses=x,
+sender=x
+smtp.server=x
+smtp.user=x
+smtp.password=x
 """.splitlines()
 
 class TestMail:
