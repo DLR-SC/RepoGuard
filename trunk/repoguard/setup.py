@@ -29,7 +29,7 @@ CONFIG_HOME = WIN32_CONFIG_HOME if sys.platform == 'win32' else LINUX_CONFIG_HOM
 
 setup(
     name='repoguard', 
-    version='0.4',
+    version='0.1',
     description='RepoGuard is a framework for Subversion hook scripts.',
     long_description='RepoGuard is a framework for Subversion pre-commit hooks in order to implement checks of the to be commited files before they are commited. For example, you can check for the code style or unit tests. The output of the checks can be send by mail or be written into a file or simply print to the console..',
     author='Deutsches Zentrum fuer Luft- und Raumfahrt e.V. (DLR)',
