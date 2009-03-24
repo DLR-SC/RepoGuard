@@ -35,7 +35,7 @@ setup(
     author='Deutsches Zentrum fuer Luft- und Raumfahrt e.V. (DLR)',
     author_email='Malte.Legenhausen@dlr.de',
     maintainer='Deutsches Zentrum fuer Luft- und Raumfahrt e.V. (DLR)',
-    maintainer_email='Andreas.Schreiber@dlr.de',
+    maintainer_email='malte.legenhausen@dlr.de',
     url='http://repoguard.tigris.org',
     classifiers=[
         'Development Status :: 3 - Pre-Alpha',
