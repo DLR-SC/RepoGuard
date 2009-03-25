@@ -20,8 +20,8 @@ from __future__ import with_statement
 
 import os.path
 
-from svnchecker.core import process
-from svnchecker.core.module import Handler, HandlerConfig, String
+from repoguard.core import process
+from repoguard.core.module import Handler, HandlerConfig, String
 
 
 
