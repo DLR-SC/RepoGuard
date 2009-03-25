@@ -43,7 +43,7 @@ class Viewvc(Handler):
         """
         repo_path = self.transaction.repos_path
         svndbadmin_bin = config.svndbadmin_bin
-        command = svndbadmin_bin+" update "+"repo_path
+        command = svndbadmin_bin+" update "+repo_path
         try:
             process.execute(command)
         except:
