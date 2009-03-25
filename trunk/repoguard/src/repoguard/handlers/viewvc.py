@@ -27,7 +27,7 @@ from svnchecker.core.module import Handler, HandlerConfig, String
 
 class Config(HandlerConfig):
     class types(HandlerConfig.types):
-        path = String
+        svndbadmin_bin = String
 
 class Viewvc(Handler):
     """ this handler only works with subversion    
@@ -44,7 +44,6 @@ class Viewvc(Handler):
         repo_path = self.transaction.repos_path
         svndbadmin_bin = config.svndbadmin_bin
         command = svndbadmin_bin+" update "+repo_path
-        try:
-            process.execute(command)
-        except:
-            pass
+
+        process.execute(command)
+
