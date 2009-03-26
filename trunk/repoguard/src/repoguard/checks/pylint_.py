@@ -77,6 +77,10 @@ class PyLint(Check):
                 if attr in ["A", "U", "UU"]
         ]
         
+        if not files:
+            self.logger.debug("No files to validate. PyLint check skipped.")
+            return self.success()
+        
         output = StringIO.StringIO()
         reporter = TextReporter(output)
 
