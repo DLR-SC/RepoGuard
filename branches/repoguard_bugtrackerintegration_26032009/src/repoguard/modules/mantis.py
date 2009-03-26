@@ -31,23 +31,25 @@ class Config(ConfigSerializer):
         
 
 class Mantis(object):
-    
-    namespace = 'http://schemas.xmlsoap.org/soap/encoding/'
-    pattern = re.compile('MANTIS[:#]|[\s\-_]ID ([0-9]+)', re.IGNORECASE)
+    """
+    Module for mantis handling.
+    """
     
     def __init__(self, config):
         """ 
         Initialize the MantisModule object. 
         """
         
-        Import.bind(self.namespace)
+        Import.bind('http://schemas.xmlsoap.org/soap/encoding/')
         
         self.client = Client(config.url)
         self.service = self.client.service
         self.user = config.user
         self.password = config.password
+        self.custom_field = config.custom_field
+        self.pattern = re.compile(config.pattern, re.IGNORECASE)
         
-    def extract_issues(self, msg):
+    def parse_msg(self, msg):
         """
         Extract all issue ids from the given msg.
         """
@@ -62,7 +64,7 @@ class Mantis(object):
         exists = self.service.mc_issue_exists(self.user, self.password, bug_id)
         return bool(exists)
             
-    def issue_get_status(self, bug_id):
+    def get_status(self, bug_id):
         """ 
         Return the status of a bug.
         """
@@ -70,7 +72,7 @@ class Mantis(object):
         result = self.service.mc_issue_get(self.user, self.password, bug_id)
         return result.status[1]
     
-    def issue_get_handler(self, bug_id):
+    def get_handler(self, bug_id):
         """
         Return the handler of a bug. 
         """
@@ -78,7 +80,7 @@ class Mantis(object):
         result = self.service.mc_issue_get(self.user, self.password, bug_id)
         return result.handler.name
     
-    def issue_add_note(self, bug_id, text):
+    def add_comment(self, bug_id, text):
         """
         Adds a note to a bug. 
         """
@@ -87,22 +89,24 @@ class Mantis(object):
         note.text = text
         self.service.mc_issue_note_add(self.user, self.password, bug_id, note)
         
-    def issue_set_custom_field(self, bug_id, name, value):
+    def set_revision(self, bug_id, value):
         """ 
         Sets the value of a field. 
         """
         
-        result = self.service.mc_issue_get(self.user, self.password, bug_id)
-        if hasattr(result, 'custom_fields') and result.custom_fields:
-            #If the notes are not set to None a web services error occurs.
-            result.notes = None
-            for custom_field in result.custom_fields:
-                if result.custom_fields[custom_field].field.name == name:
-                    result.custom_fields[custom_field].value = value
-                    self.service.mc_issue_update(
-                        self.user, self.password, bug_id, result
-                    )
-                    return
+        if self.custom_field is not None:
+            result = self.service.mc_issue_get(self.user, self.password, bug_id)
+            if hasattr(result, 'custom_fields') and result.custom_fields:
+                #If the notes are not set to None a web services error occurs.
+                result.notes = None
+                for custom_field in result.custom_fields:
+                    name = result.custom_fields[custom_field].field.name
+                    if name == self.custom_field:
+                        result.custom_fields[custom_field].value = value
+                        self.service.mc_issue_update(
+                            self.user, self.password, bug_id, result
+                        )
+                        return
                 
-        raise ValueError("Unable to set custom field '%s'", name)
+        raise ValueError("Unable to set custom field '%s'", self.custom_field)
             

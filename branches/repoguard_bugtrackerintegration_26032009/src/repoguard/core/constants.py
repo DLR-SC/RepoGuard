@@ -22,6 +22,7 @@ NAME = "repoguard"
 
 CHECKS = "checks"
 HANDLERS = "handlers"
+MODULES = "modules"
 
 PRECOMMIT = "precommit"
 POSTCOMMIT = "postcommit"

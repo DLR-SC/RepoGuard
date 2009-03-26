@@ -41,7 +41,7 @@ check and handler handling.
     Integer
 """
 
-import datetime
+import new
 import inspect
 import re
 import functools
@@ -453,6 +453,7 @@ class Module(object):
     
     __config__ = ConfigSerializer
     
+    load_info = None
     transaction = None
     logger = None
     
@@ -752,21 +753,18 @@ class Handler(Module):
         
         pass
 
-    
-class CheckManager(object):
+class ModuleManager(object):
     """
-    Manager class that initialize and keeps all intialized checks.
+    Manager class that is responsible for loading modules from a specific group.
     """
     
-    def __init__(self, module_type=constants.CHECKS):
+    def __init__(self, module_type=constants.MODULES):
         """
         Constructor.
         """
         
-        self._module_type = module_type
-        self._group = 'repoguard.' + module_type
-        self.cache = {}
-        
+        self._group = '.'.join((constants.NAME, module_type))
+    
     def _get_available_modules(self):
         """
         Returns all available modules.
@@ -775,7 +773,7 @@ class CheckManager(object):
         :rtype: C{list<string>}
         """
         
-        return pkg_resources.get_entry_map('repoguard', self._group).keys()
+        return pkg_resources.get_entry_map(constants.NAME, self._group).keys()
     
     def load(self, name):
         """
@@ -788,8 +786,31 @@ class CheckManager(object):
         :rtype: C{Check}, C{Handler}
         """
         
-        return pkg_resources.load_entry_point('repoguard', self._group, name)
+        module = pkg_resources.load_entry_point(
+            constants.NAME, self._group, name
+        )
+        module.load_info = new.classobj('LoadInfo', (object), {
+            'dist' : constants.NAME,
+            'group' : self._group,
+            'name' : name
+        })
+        return module
     
+    available_modules = property(_get_available_modules)
+    
+class CheckManager(ModuleManager):
+    """
+    Manager class that initialize and keeps all intialized checks.
+    """
+    
+    def __init__(self, module_type=constants.CHECKS):
+        """
+        Constructor.
+        """
+        
+        ModuleManager.__init__(self, module_type)
+        self.cache = {}
+        
     def fetch(self, module, transaction=None):
         """
         Returns a cached module or creates a new one.
@@ -808,8 +829,6 @@ class CheckManager(object):
         instance = self.cache.get(module, self.load(module)(transaction))
         self.cache[module] = instance
         return instance
-    
-    available_modules = property(_get_available_modules)
     
 class HandlerManager(CheckManager):
     """
