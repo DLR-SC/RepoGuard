@@ -9,97 +9,151 @@
   <link rel="stylesheet" type="text/css" href="http://www.tigris.org/branding/css/print.css" media="print" />
 <script src="http://www.tigris.org/branding/scripts/tigris.js" type="text/javascript">
 </script>
- <title>Project Overview</title>
+ <title>Project Home</title>
 </head>
 <body>
 
-<p>This is the initial web content for your project.  Please customize
-this to fit your project.  You don't need to answer all these questions
-or follow this exact format, but we do like to see this kind of
-information in any project.
-</p>
+<div class="h2" id="ownermessage"> 
+	<h2>RepoGuard is now avialable on Tigris (2009/03/23)</h2>
+	<p>Thanks for everybody who votes for a new name for the successor of the <a href="svnchecker.tigris.org">SVNChecker</a>. The new name is now "<b>RepoGuard</b>".</p>
+	<p>We are currently working on a first release of RepoGuard, but there is a lot to do. Some key features that are available in the first release are:</p>
+	<ul>
+		<li>Support for various version control systems: Subversion, Perforce* and git*.</li>
+		<li>Support for various bug tracking systems: Bugzilla*, GForge*, Mantis and Trac*.</li>
+		<li>New configuration format, with features like validation, inheritance and better redablity by using the <a href="http://www.voidspace.org.uk/python/configobj.html">ConfigObj</a> configuration format.</li>
+		<li>Improved check and handler workflow. Allow a more flexible use of the checks inside a profile execution process.</li>
+		<li>Extensible command line tool, that allows an easier use and administration of the new SVNChecker.</li>
+		<li>Integration of the Mako Template Engine to allow an easy adjustment of the handler output format.*</li>
+		<li>More comfortable integration of new checks, handlers, command line tools and of course modules for accessing other version control systems.</li>
+	</ul>
+	<p>All features marked with a asterisk are current not integrated in the current repository version. Read the issue tracker for more informations.</p>
+	<p>There is currently a lag of documentation, we will add as soon as possible documentation in our wiki so you can start using RepoGuard.</p>
+	<p align="right">Posted by Malte Legenhausen</p>
+</div>
 
-<p>Your project is visible to all users now, so &quot;putting on a good face&quot; by fixing up this page might be your first priority.
-</p>
+<h2>Description</h2>
+<p align="justify">RepoGuard is an advanced validation framework with built-in integrations for several common version control systems. It is the successor of the <a href="http://svnchecker.tigris.org/">SVNChecker</a> framework. The integration is carried out by utilizing the hook mechanisms each version control system provides. You may provide configurations which are processed through inversion of control mechanisms. RepoGuard is completely written in the Python programming language which allows for easy integration of other tools. An extensible command line tool for advanced usage is provided which allows for comfortable administration.</p>
+<p align="justify">RepoGuard is based on two types of constituent parts: <a href="#checks">Checks</a> and <a href="#handlers">Handlers</a>. These parts are configured by you to specify what to do when processing a transaction of changes to the version control system. Checks are responsible for validating the content of a transaction. Handlers are responsible for handling the results and/or the output of Checks. The complete architecture of RepoGuard is shown in the picture below.</p>
+<p align="justify">Extensibility is supported via an easy to use plug-in engine and a flexible configuration mechanism for <a href="#checks">Check</a> and <a href="#handlers">Handler</a> execution. The plug-in engine offers the possibility to integrate self written <a href="#checks">Checks</a> and <a href="#handlers">Handlers</a>, to integrate modules that provide the access to other version control systems or <a href="#bugtracker">bug tracker</a>, and to extend the administration command line tool. The following version control systems are currently supported: <a href="http://subversion.tigris.org/">Subversion</a>, <a href="http://git-scm.com/">git</a>, and <a href="http://www.perforce.com/">Perforce</a>.</p>
+<div align="center" style="padding: 20px 0px">
+	<img src="images/repoguardarchitecture.png"/>
+</div>
+<div align="center" style="margin-bottom: 30px"><b>Architecture of RepoGuard</b></div>
 
+<h2>Available Checks, Handlers and Bug Trackers</h2>
+<p>RepoGuard includes out-of-the-box many several Checks and Handlers that allows the instandly use without writing Checks and Handlers by your own.</p>
+<p>Following <a href="#checks">Checks</a>, <a href="#handlers">Handlers</a> and especially <a href="#bugtracker">Bug Trackers</a> are avialable:</p>
+<h3><a name="checks">Checks</a></h3>
+<table width="100%">
+	<thead>
+		<tr>
+			<th width="200">Name</th>
+			<th>Summary</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>AccessRights</td>
+			<td>Check access rights on files.</td>
+		</tr>
+		<tr>
+			<td>ASCIIEncoded</td>
+			<td>Check whether the files only contain ASCII Characters. Single chars can be allowed or denied.</td>
+		</tr>
+		<tr>
+			<td>CaseInsensitiveFilenameClash</td>
+			<td>Tests, if a file with the same filename (ignoring the case) already exists in the repository.</td>
+		</tr>
+		<tr>
+			<td>Checkout</td>
+			<td>Checkout files from the repository to file system locations.</td>
+		</tr>
+		<tr>
+			<td>Checkstyle</td>
+			<td>Checks java files for coding style errors using Checkstyle.</td>
+		</tr>
+		<tr>
+			<td>Keywords</td>
+			<td>Checks for svn:keywords on all added files in this commit. Currently only Subversion keywords are supported.</td>
+		</tr>
+		<tr>
+			<td>Log</td>
+			<td>Creation of transaction report that can be published by the handlers.</td>
+		</tr>
+		<tr>
+			<td>PyLint</td>
+			<td>Checks Python files for coding style using <a href="http://www.logilab.org/857">PyLint</a>.</td>
+		</tr>
+		<tr>
+			<td>RejectTabs</td>
+			<td>Reject files with given extensions that include leading tabs.<br><i>Contributed by Adam Byrtek.</i></td>
+		</tr>
+		<tr>
+			<td>UnitTests</td>
+			<td>Tests, if a unit test exists for a given Java class.</td>
+		</tr>
+		<tr>
+			<td>XMLValidator</td>
+			<td>Checks XML files for correctness.</td>
+		</tr>
+	</tbody>
+</table>
+<h3><a name="handlers">Handlers</a></h3>
+<table width="100%">
+	<thead>
+		<tr>
+			<th width="200">Name</th>
+			<th>Summary</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>Buildbot</td>
+			<td>Build triggering of <a href="http://buildbot.net/trac">Buildbot</a> jobs, after successful check execution.</td>
+		</tr>
+		<tr>
+			<td>Console</td>
+			<td>Simple console output handler.</td>
+		</tr>
+		<tr>
+			<td>File</td>
+			<td>Write the results of the check execution in a log file.</td>
+		</tr>
+		<tr>
+			<td>Hudson</td>
+			<td>Build triggering for <a href="https://hudson.dev.java.net/">Hudson</a> jobs, after successful check execution.</td>
+		</tr>
+		<tr>
+			<td>Mail</td>
+			<td>Send the check results as mail to all developers.</td>
+		</tr>
+		<tr>
+			<td>Viewvc</td>
+			<td>Executes the update process for the <a href="http://www.viewvc.org/">ViewVC</a> database.</td>
+		</tr>
+	</tbody>
+</table>
+<h3><a name="bugtracker">Bug Tracker</a></h3>
+<p align="justify">Several bug tracking systems are supported by RepoGuard. For each bug tracker there exists a Check and a corresponding Handler. The Check validates, if a commit message contains one or more valid IDs for an issue. By default, the commit message must contain a line with <i>'MANTIS ID <#>'</i> (will change when more bug tracker are available), where <i>'<#>'</i> is number of an issue ID that is set to status 'in_progress' and handled by the correct user. On success the corresponding handler append a note to the given issue IDs and can update a custom field with the current revision.</p>
+<p>Following bug tracking systems are supported out-of-the-box:</p>
 <ul>
-<li>This index.html will be used if and only if you have the "Use
-Project Home Page" option checked on the "Administer Project" page
-(click the "Admin" tab).</li>
-
-<li>To edit this file, check out your project via Subversion and edit trunk/www/index.html.
-
-<li>You can 'svn add' and commit other files under the project's "www"
-directory and they will published to your project web site.</li>
-
-<li>Also, consider starting a thread in the "dev" mailing list to get
-these discussion started.  A good one is an "introduction" thread where
-people post messages about themselves and their interest in the
-project.</li>
-
-<li>You can add a "Highlights:" line to the top of all web pages by adding a file www/project_highlights.html </Li>
+	<li><a href="http://www.bugzilla.org/">Bugzilla</a></li>
+	<li><a href="http://gforge.org/gf/">GForge</a></li>
+	<li><a href="http://www.mantisbt.org/">Mantis</a></li>
+	<li><a href="http://trac.edgewall.org/">Trac</a></li>
 </ul>
 
+<h2>Download</h2>
+<p align="justify">There is currently no release available for download, but you can check out the <a href="http://repoguard.tigris.org/source/browse/repoguard/">repository</a> for the current developer version. This version is completely functioning and used by several project in the <a href="http://www.dlr.de/en/">German Aerospace Center (DLR)</a>. A release will be available when all features descripted above are integrated and tested.</p>
 
-<h3>Mission</h3>
+<h2>Development</h2>
+<a href="http://www.dlr.de/en/"><img src="images/DLR_Logo_250.png" align="right" hspace="15"/></a>
+<p align="justify">RepoGuard is developed mainly by the <a href="http://www.dlr.de/sc/en/desktopdefault.aspx">Simulation and Software Technology divison</a> of the <a href="http://www.dlr.de/en/">German Aerospace Center (DLR)</a>. 
+We are happy about any support for this project. For example, you might participate as a developer, bug reporter or simply by telling us your needs. 
+Especially, if you have written additional checks, handlers, modules to access other version control systems, bug trackers or command line tools, we would be happy to include them into the RepoGuard distribution.</p>
+<p>Just visit our forums or join our mailing lists on Tigris.</p>
 
-<p>What is the goal of this project?
-</p>
-
-<p>What is the scope of this project?
-</p>
-
-<p>For example:</p>
-
-<ul>
-<li>Develop just enough functionality to scratch a particular itch</li>
-<li>Build a tool just like XYZ, but less broken</li>
-<li>Build the best XYZ-tool ever!</li>
-</ul>
-
-
-<p>What are high-level features you are sure to build?
-</p>
-<ul>
-
-<li>What would you write on a billboard about your project? Users
-might only look for a few seconds.</li>
-
-<li>Use the issue tracker to track features and enhancement
-requests. It is not just for bugs, pre-populate it with feature
-descriptions so that potential contributors know what you would like them
-to work on.</li>
-</ul>
-
-<p>What are the high-level assumptions or ground rules for the project?
-</p>
-
-<p>For example:
-</p>
-
-<ul>
-<li> we will use programming language X on operating system Y for now.
-
-<li>We will, or will not, consider certain functional areas like
-internationalization, high security, concurrency, etc.  The list of
-functional areas will depend on what you are trying to do.
-
-<li>Try to keep this part short.
-</ul>
-
-
-<h3>Related resources</h3>
-
-<ul>
-<li>Link to other stuff that you know about.  It will help you
-research requirements and provide a useful resource to potential
-contributors.</li>
-
-<li>Why reinvent the wheel? What is better about this wheel?  Is there
-any existing project that you can partner with or reuse?</li>
-
-<li>Where would you go to try to find potential contibutors?</li>
-</ul>
-
+<h2>Related Resources</h2>
+<a href="http://www.bugzilla.org/">Bugzilla</a>, <a href="http://buildbot.net/trac">Buildbot</a>, <a href="http://gforge.org/gf/">GForge</a>, <a href="http://git-scm.com/">git</a>, <a href="https://hudson.dev.java.net/">Hudson</a>, <a href="http://www.mantisbt.org/">Mantis</a>, <a href="http://www.perforce.com/">Perforce</a>, <a href="http://www.logilab.org/857">Pylint</a>, <a href="http://subversion.tigris.org/">Subversion</a>, <a href="svnchecker.tigris.org">SVNChecker</a>, <a href="http://trac.edgewall.org/">Trac</a>, <a href="http://www.viewvc.org/">ViewVC</a>
 </body>
 </html>
