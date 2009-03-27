@@ -26,7 +26,7 @@ from repoguard.modules.bugtracker import Config
 
 class BugTracker(Handler):
     """
-    General bug trackering handler.
+    General bug tracking handler.
     """
     
     __config__ = Config
@@ -38,6 +38,7 @@ class BugTracker(Handler):
         
         Handler.__init__(self, transaction)
         
+        self.bugtracker = None
         self.manager = ModuleManager()
 
     def _summarize(self, config, protocol):
@@ -50,17 +51,21 @@ class BugTracker(Handler):
         """
         
         revision = self.transaction.revision
-        bugtracker = self.manager.load(self.load_info.name)(config)
+        self.bugtracker = self.manager.load(self.load_info.name)(config)
         
-        issues = bugtracker.parse_msg(self.transaction.commit_msg)
+        issues = config.parse_commit_msg(self.transaction.commit_msg)
         self.logger.debug("Bug IDs %s found.", ", ".join(issues))
         
-        msg = "\n\n".join([entry.msg for entry in protocol])
+        comment = "\n\n".join([entry.msg for entry in protocol])
         
         for issue in issues:
             self.logger.debug("Checking if issue %s exists.", issue)
-            if bugtracker.issue_exists(issue):
-                bugtracker.add_comment(issue, msg)
-                bugtracker.set_revision(issue, revision)
+            if self.bugtracker.issue_exists(issue):
+                self.logger.debug("Adding comment to %s", issue)
+                self.bugtracker.add_comment(issue, comment)
+                if config.custom_field is not None:
+                    msg = "Setting custom field %s"
+                    self.logger.debug(msg, config.custom_field)
+                    self.bugtracker.set_revision(issue, revision)
                 self.logger.debug("Issue %s finished.", issue)
         self.logger.debug("Bug tracker finished.")

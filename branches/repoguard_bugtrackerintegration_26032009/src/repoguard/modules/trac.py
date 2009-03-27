@@ -22,7 +22,7 @@ Module to interact with Trac
 
 """
 
-import re
+
 import xmlrpclib
 
 
@@ -38,7 +38,17 @@ class Trac(object):
         login_url = get_login_url(config.url, config.user, config.password)
         self.server = xmlrpclib.ServerProxy(login_url)
         self.ticket = []
-        self.pattern = re.compile(config.pattern, re.IGNORECASE)
+        
+    def _get_ticket(self, bug_id):
+        """
+        load the ticket from the trac-Server into a local variable.
+        """
+        
+        if not self.ticket:
+            try:
+                self.ticket = self.server.ticket.get(bug_id)
+            except:
+                pass
 
     def issue_exists(self, bug_id):
         """
@@ -93,16 +103,8 @@ class Trac(object):
             
         return self.server.ticket.update(bug_id, comment)
     
-    def _get_ticket(self, bug_id):
-        """
-        load the ticket from the trac-Server into a local variable.
-        """
-        
-        if not self.ticket:
-            try:
-                self.ticket = self.server.ticket.get(bug_id)
-            except:
-                pass
+    def set_revsion(self, bug_id, revsion):
+        pass
         
                 
 def get_login_url(url, user, password):
@@ -115,7 +117,7 @@ def get_login_url(url, user, password):
       url
         the url to the Trac-installation with /login/xmlprc at the end
                 
-      user
+      user 
         username of the user to log in
             
       password

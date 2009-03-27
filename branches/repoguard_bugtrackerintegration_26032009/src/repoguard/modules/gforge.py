@@ -49,41 +49,6 @@ class Gforge(object):
         self.issue = {}
         self.pattern = re.compile(config.pattern, re.IGNORECASE)
         
-    def issue_exists(self, bug_id):
-        """
-        checks if an issue exists and returns boolean
-        """
-
-        return True if self.service.getTrackerItem(self.hash, bug_id) else False
-            
-    def get_status(self, bug_id):
-        """
-        returns the status 
-        """
-        if not self.issue:
-            self._get_bug(bug_id)
-        
-        return self.issue["status"]
-            
-    def get_assigned(self):
-        """
-        returns the username
-        """
-        if not self.issue:
-            self._get_bug()
-        
-        return self.issue["user_name"]
-    
-    def add_comment(self, bug_id, comment):
-        """
-        adds a comment to the bug tracking system
-        
-        :param message: the message to ba added (string)
-        """
-        
-        self.service.addTrackerItemMessage(self.hash, bug_id, comment)
-        
-        
     def _get_bug(self, bug_id):
         """
         searches for a bug in the bug tracking system and extracts the 
@@ -110,5 +75,45 @@ class Gforge(object):
         
         user = self.service.getUser(self.hash, int(userid[0][1]))
         self.issue["user_name"] = str(user[1])
+        
+    def issue_exists(self, bug_id):
+        """
+        checks if an issue exists and returns boolean
+        """
+
+        return True if self.service.getTrackerItem(self.hash, bug_id) else False
+            
+    def get_status(self, bug_id):
+        """
+        returns the status 
+        """
+        if not self.issue:
+            self._get_bug(bug_id)
+        
+        return self.issue["status"]
+            
+    def get_handler(self):
+        """
+        returns the username
+        """
+        if not self.issue:
+            self._get_bug()
+        
+        return self.issue["user_name"]
+    
+    def add_comment(self, bug_id, comment):
+        """
+        adds a comment to the bug tracking system
+        
+        :param message: the message to ba added (string)
+        """
+        
+        self.service.addTrackerItemMessage(self.hash, bug_id, comment)
+        
+    def set_revision(self, bug_id, revision):
+        pass
+        
+        
+
         
         

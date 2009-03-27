@@ -22,14 +22,12 @@ BugzillaConnector
 """
 
 
-import re
-
 from bugz import Bugz
 
 
 class Bugzilla(object):
     """
-        Class to get/push informations from/to single Bugzilla tickets
+    Class to get/push informations from/to single Bugzilla tickets
     """
     def __init__(self, config):
         """ Constructor
@@ -42,7 +40,6 @@ class Bugzilla(object):
         """
 
         self.bugz = Bugz(config.url, config.user, config.password)
-        self.pattern = re.compile(config.pattern, re.IGNORECASE)
         self.issue = False
 
     def _get_bug(self, bug_id):
@@ -56,13 +53,6 @@ class Bugzilla(object):
         if not self.issue:
             self.issue = self.bugz.get(bug_id)
         return self.issue
-    
-    def parse_msg(self, msg):
-        """
-        Extract all issue ids from the given msg.
-        """
-        
-        return self.pattern.findall(msg)
     
     def issue_exists(self, bug_id):
         """ 
@@ -110,3 +100,6 @@ class Bugzilla(object):
         :type comment_to_add: String
         """ 
         self.bugz.modify(bug_id, comment=comment)
+        
+    def set_revision(self, bug_id, revision):
+        pass

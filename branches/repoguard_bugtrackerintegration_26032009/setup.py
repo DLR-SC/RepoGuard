@@ -127,6 +127,13 @@ setup(
             'Checker = repoguard.tools.checker:Checker',
             'Configuration = repoguard.tools.config:Configuration',
             'Repository = repoguard.tools.repository:Repository'
+        ],
+        
+        'svnchecker.modules' : [
+            'Mantis = repoguard.modules.mantis:Mantis',
+            'Trac = repoguard.modules.trac:Trac',
+            'Bugzilla = repoguard.modules.bugzilla:Bugzilla',
+            'GForge = repoguard.modules.gforge:GForge'
         ]
     }
 )

@@ -13,22 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Class that handles access to the mantis bug tracker. """
+""" 
+Class that handles access to the mantis bug tracker. 
+"""
 
-import re
 
 from suds.xsd.sxbasic import Import
 from suds.client import Client
 
-from repoguard.core.module import ConfigSerializer, String
-
-
-class Config(ConfigSerializer):
-    class types(ConfigSerializer.types):
-        url = String
-        user = String
-        password = String(optional=True)
-        
 
 class Mantis(object):
     """
@@ -47,14 +39,6 @@ class Mantis(object):
         self.user = config.user
         self.password = config.password
         self.custom_field = config.custom_field
-        self.pattern = re.compile(config.pattern, re.IGNORECASE)
-        
-    def parse_msg(self, msg):
-        """
-        Extract all issue ids from the given msg.
-        """
-        
-        return self.pattern.findall(msg)
 
     def issue_exists(self, bug_id):
         """ 
@@ -94,19 +78,18 @@ class Mantis(object):
         Sets the value of a field. 
         """
         
-        if self.custom_field is not None:
-            result = self.service.mc_issue_get(self.user, self.password, bug_id)
-            if hasattr(result, 'custom_fields') and result.custom_fields:
-                #If the notes are not set to None a web services error occurs.
-                result.notes = None
-                for custom_field in result.custom_fields:
-                    name = result.custom_fields[custom_field].field.name
-                    if name == self.custom_field:
-                        result.custom_fields[custom_field].value = value
-                        self.service.mc_issue_update(
-                            self.user, self.password, bug_id, result
-                        )
-                        return
+        result = self.service.mc_issue_get(self.user, self.password, bug_id)
+        if hasattr(result, 'custom_fields') and result.custom_fields:
+            #If the notes are not set to None a web services error occurs.
+            result.notes = None
+            for custom_field in result.custom_fields:
+                name = result.custom_fields[custom_field].field.name
+                if name == self.custom_field:
+                    result.custom_fields[custom_field].value = value
+                    self.service.mc_issue_update(
+                        self.user, self.password, bug_id, result
+                    )
+                    return
                 
-        raise ValueError("Unable to set custom field '%s'", self.custom_field)
+        raise ValueError("Unable to set custom field '%s'" % self.custom_field)
             
