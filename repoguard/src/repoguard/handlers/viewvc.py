@@ -1,4 +1,4 @@
-﻿# pylint: disable-msg=W0602, W0613
+﻿# pylint: disable-msg=
 
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -14,25 +14,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" makes an svndbadmin update for viewvc 1.1 """
+""" executes an svndbadmin update for viewvc 1.1 """
 
 from __future__ import with_statement
-
-import os.path
-
 from repoguard.core import process
 from repoguard.core.module import Handler, HandlerConfig, String
 
 
 
 class Config(HandlerConfig):
+    """ Class to handle configuration parameters
+    """
     class types(HandlerConfig.types):
+        """ Class to handle the svndbadmin_bin config parameter
+        """
         svndbadmin_bin = String
 
-class Viewvc(Handler):
-    """ this handler only works with subversion    
+class ViewVC(Handler):
+    """ 
+    
     """
     __config__ = Config
+    
+    
+    def __init__(self):
+        pass
                 
     def _summarize(self, config, _):
         """ Method uses external binary svndbadmin from viewvc 
@@ -41,9 +47,10 @@ class Viewvc(Handler):
             :param config: The config that has to be used.
             :type config: Config instance.
         """
+        
         repo_path = self.transaction.repos_path
         svndbadmin_bin = config.svndbadmin_bin
-        command = svndbadmin_bin+" update "+repo_path
+        command = svndbadmin_bin + " update " + repo_path
 
         process.execute(command)
 
