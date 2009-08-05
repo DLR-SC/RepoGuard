@@ -1,4 +1,4 @@
-# pylint: disable-msg=F0401
+# pylint: disable-msg=F0401,R0903,W0232,C0103
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,13 +24,24 @@ from repoguard.core.module import ConfigSerializer, String
 
 
 class Config(ConfigSerializer):
+    """
+    Mantis general configuration class.
+    """
+    
     class types(ConfigSerializer.types):
+        """
+        General Mantis configuration parameters.
+        """
+        
         url = String
         user = String
         password = String(optional=True)
         
 
 class Mantis(object):
+    """
+    Interface for easy use of the Mantis Connect web service interface.
+    """
     
     namespace = 'http://schemas.xmlsoap.org/soap/encoding/'
     pattern = re.compile('MANTIS[:#]|[\s\-_]ID ([0-9]+)', re.IGNORECASE)
@@ -76,7 +87,8 @@ class Mantis(object):
         """
         
         result = self.service.mc_issue_get(self.user, self.password, bug_id)
-        return result.handler.name
+        defined = hasattr(result, "handler") and hasattr(result.handler, "name")
+        return result.handler.name if defined else None
     
     def issue_add_note(self, bug_id, text):
         """
