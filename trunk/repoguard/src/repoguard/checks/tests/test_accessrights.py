@@ -22,34 +22,67 @@ from configobj import ConfigObj
 from repoguard.testutil import TestRepository
 from repoguard.checks.accessrights import AccessRights
 
-allow_config_string = """
-check_files = test\.java,
-allow_users = %s,
-"""
+ALLOW = True
+DENY = False
 
-deny_config_string = """
-check_files = test\.java,
-deny_users = %s,
-"""
+CONFIGS = (
+    ("""
+    check_files = test\.java,
+    """, DENY),
+    ("""
+    check_files = test\.java,
+    allow_users = test,
+    """,  DENY),
+    ("""
+    check_files = test\.java,
+    allow_users = %(user)s,
+    """,  ALLOW),
+    ("""
+    check_files = test\.java,
+    deny_users = test,
+    """, ALLOW),
+    ("""
+    check_files = test\.java,
+    deny_users = %(user)s,
+    """, DENY),
+    ("""
+    check_files = test\.java,
+    allow_users = test_user,
+    deny_users = %(user)s,
+    """, DENY),
+    ("""
+    check_files = test\.java,
+    allow_users = %(user)s,
+    deny_users = test_user,
+    """, ALLOW),
+    ("""check_files = test\.java,
+    allow_users = %(user)s,
+    deny_users = %(user)s,
+    """, DENY)
+)
 
 class TestAccessRights:
+    """
+    AccessRights Testcase
+    """
     
     @classmethod
     def setup_class(cls):
+        """
+        Setup the test case.
+        """
+        
         cls.repository = TestRepository()
         cls.transaction = cls.repository.create_default()[1]
 
-    def test_allow(self):
-        global allow_config_string
-        allow_config_string = allow_config_string % self.transaction.user_id
-        config = ConfigObj(allow_config_string.splitlines())
-        accessrights = AccessRights(self.transaction)
-        assert accessrights.run(config).success == True
+    def test_run(self):
+        """
+        Test for the access rights run method.
+        """
         
-    def test_deny(self):
-        global deny_config_string
-        deny_config_string = deny_config_string % self.transaction.user_id
-        config = ConfigObj(deny_config_string.splitlines())
-        accessrights = AccessRights(self.transaction)
-        assert accessrights.run(config).success == False
-
+        for config_string, result in CONFIGS:
+            config_string = config_string % {"user" : self.transaction.user_id}
+            config = ConfigObj(config_string.splitlines())
+            accessrights = AccessRights(self.transaction)
+            print config_string, "Allow" if result else "Deny"
+            assert accessrights.run(config).success == result
