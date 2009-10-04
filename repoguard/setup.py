@@ -38,7 +38,7 @@ setup(
     maintainer_email='malte.legenhausen@dlr.de',
     url='http://repoguard.tigris.org',
     classifiers=[
-        'Development Status :: 3 - Pre-Alpha',
+        'Development Status :: 1 - Pre-Alpha',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
@@ -75,16 +75,15 @@ setup(
     ],
     
     install_requires=[
-        'configobj>=4.5.3',
-        'pytz==2008c',
-        'soaplib>=0.7.2dev-r27'
+        'configobj==4.6.0',
+        'soaplib>=0.8.1'
     ],
     
     extras_require={
         'pylint' : [
             'logilab-common>=0.33.0', 
             'logilab-astng>=0.17.2',
-            'pylint>=0.14.0'
+            'pylint>=0.18.1'
         ],
         'suds' : [
             'suds>=0.3.3'

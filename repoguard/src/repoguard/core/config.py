@@ -35,7 +35,7 @@ import re
 
 from pkg_resources import resource_filename, Requirement
 
-from configobj import ConfigObj, Section, StringTypes
+from configobj import ConfigObj, Section
 
 from repoguard.core import constants
 
@@ -830,7 +830,7 @@ class Process(Section):
             if isinstance(config, Section):
                 config = config.name
                 
-            if isinstance(config, StringTypes):
+            if isinstance(config, str):
                 if config and config not in self.main['checks'][name]:
                     msg = "Unknown check config '%s' for '%s'" % (config, name)
                     raise KeyError(msg)
@@ -877,7 +877,7 @@ class Process(Section):
             if isinstance(config, Section):
                 config = config.name
                 
-            if isinstance(config, StringTypes):
+            if isinstance(config, str):
                 if config:
                     if config not in self.main['handlers'][name]:
                         msg = "Unknown handler config '%s'" % config

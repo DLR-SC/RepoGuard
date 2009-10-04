@@ -41,7 +41,6 @@ check and handler handling.
     Integer
 """
 
-import datetime
 import inspect
 import re
 import functools
