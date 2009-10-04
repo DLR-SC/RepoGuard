@@ -1,4 +1,4 @@
-# pylint: disable-msg=W0232
+# pylint: disable-msg=W0232,R0903,C0103
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,9 +25,24 @@ from tempfile import gettempdir
 from pylint.reporters.text import TextReporter
 
 from repoguard.core.module import Check, ConfigSerializer, Array, String
+
+
+def noop(_):
+    """
+    No operation function.
+    """
+    pass
     
 class Config(ConfigSerializer):
+    """
+    Configuration for PyLint check.
+    """
+    
     class types(ConfigSerializer.types):
+        """
+        Configurable parameters.
+        """
+        
         check_files = Array(String, optional=True, default=[".*\.py"])
         ignore_files = Array(String, optional=True, default=[])
         pylint_home = String(
@@ -42,7 +57,7 @@ class PyLint(Check):
     """
     
     __config__ = Config
-        
+    
     def _run(self, config):
         """
         Run the pylint check with the given config.
@@ -83,8 +98,11 @@ class PyLint(Check):
         
         output = StringIO.StringIO()
         reporter = TextReporter(output)
-
+        
         from pylint import lint
+        # Mock to prevent the sys.exit called by pylint.lint.Run.__init__
+        lint.sys.exit = noop
+        
         self.logger.debug("PyLint is running...")
         lint.Run(["--reports=n"] + files, reporter=reporter)
     
