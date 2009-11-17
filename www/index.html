@@ -13,24 +13,6 @@
 </head>
 <body>
 
-<div class="h2" id="ownermessage"> 
-	<h2>RepoGuard 0.1 now available (2009/10/06)</h2>
-	
-	<p>We are happy to announce Repoguard 0.1 which can be downloaded from <a href="http://repoguard.tigris.org/servlets/ProjectDocumentList?folderID=10905&expandFolder=10905&folderID=0">here</a>. If you find any bugs, please post them in our issue tracker.</p>
-	<p>The following list describes the new features:</p>
-	<ul>
-		<li>Improved support for version control systems: Subversion, Perforce* and git*.</li>
-		<li>Improved support for bug tracking systems: Bugzilla*, GForge*, Mantis and Trac*.</li>
-		<li>New configuration format with features like validation, inheritance and better redablity by using the <a href="http://www.voidspace.org.uk/python/configobj.html">ConfigObj</a> configuration format.</li>
-		<li>Improved check and handler workflow. Allow a more flexible use of the checks inside a profile execution process.</li>
-		<li>Extensible command line tool that allows an easier use and administration of the new SVNChecker.</li>
-		<li>Integration of the Mako Template Engine to allow an easy adjustment of the handler output format.*</li>
-		<li>More comfortable integration of new checks, handlers, command line tools and of course modules for accessing other version control systems.</li>
-	</ul>
-	<p>All features marked with an asterisk are not integrated in the current release. Read the issue tracker for more information.</p>
-	<p>There is currently a lack of documentation. New documentation will be added as soon as possible in our wiki so you can start using RepoGuard.</p>
-	<p align="right">Posted by Malte Legenhausen</p>
-</div>
 
 <div class="h2">
 <h2>Description</h2>
@@ -61,8 +43,18 @@ Extensibility is supported via an easy to use plug-in engine and a flexible conf
 <h2>Documentation</h2>
 <p>
 <ul>
+<li><a href="http://repoguard.tigris.org/wiki/Architecture">Architecture</a></li>
+<li><a href="http://repoguard.tigris.org/wiki/Installation">Installation</a></li>
+</ul>
+Unfortunately the documentation is not complete yet, still some parts of the old SVNChecker Documentation applies as well:
+<ul>
+<li><a href="http://svnchecker.tigris.org/manual.html">SVNChecker Documentation</a></li>
+Additionally there are the following publications:
+<ul>
 <li><a href="http://www.computer.org/portal/web/csdl/doi/10.1109/ICGSE.2009.51">Paper "RepoGuard: A Framework for Integration of Development Tools with Source Code Repositories"</a></li>
 <li><a href="http://www.slideshare.net/mlegenhausen/repoguard">Presentation "RepoGuard - Validation Framework for Version Control Systems"</a></li>
+<li><a href="http://repoguard.tigris.org/files/documents/6497/47029/Projektarbeit_Semester4_Malte_Legenhausen.pdf">Neukonzeption der SVNChecker-Konfiguration (Deutsch)</a></li>
+<li><a href="http://repoguard.tigris.org/files/documents/6497/47028/Bachelorthesis_Stefan_Pielicke.pdf">Erstellung offener Schnittstellen zur Integration beliebiger Versionsverwaltungs- und Issue-Tracking-Systemen in existierende Software- Konfigurationsumgebungen (Deutsch)</a></li>
 <li><a href="http://www.dlr.de/sc/repoguard">DLR Repoguard Homepage</a></li>
 </ul>
 </p>
@@ -184,6 +176,20 @@ Extensibility is supported via an easy to use plug-in engine and a flexible conf
 <div class="h2">
 	<h2>Download</h2>
 	<p align="justify">You can <a href="http://repoguard.tigris.org/servlets/ProjectDocumentList?folderID=10905&expandFolder=10905&folderID=0">download</a> the latest RepoGuard 0.1 or check out the <a href="http://repoguard.tigris.org/source/browse/repoguard/">repository</a> for the current developer version.</p>
+    
+	<p>The following list describes the new features:</p>
+	<ul>
+		<li>Improved support for version control systems: Subversion, Perforce* and git*.</li>
+		<li>Improved support for bug tracking systems: Bugzilla*, GForge*, Mantis and Trac*.</li>
+		<li>New configuration format with features like validation, inheritance and better redablity by using the <a href="http://www.voidspace.org.uk/python/configobj.html">ConfigObj</a> configuration format.</li>
+		<li>Improved check and handler workflow. Allow a more flexible use of the checks inside a profile execution process.</li>
+		<li>Extensible command line tool that allows an easier use and administration of the new SVNChecker.</li>
+		<li>Integration of the Mako Template Engine to allow an easy adjustment of the handler output format.*</li>
+		<li>More comfortable integration of new checks, handlers, command line tools and of course modules for accessing other version control systems.</li>
+	</ul>
+	<p>All features marked with an asterisk are not integrated in the current release. Read the issue tracker for more information.</p>
+	<p>There is currently a lack of documentation. New documentation will be added as soon as possible in our wiki so you can start using RepoGuard.</p>
+
 </div>
 
 <div class="h2">
