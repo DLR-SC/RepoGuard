@@ -1,219 +1,218 @@
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />                                                            <html>
-<head>
- <style type="text/css">
-/* <![CDATA[ */ 
-@import "http://www.tigris.org/branding/css/tigris.css"; 
-@import "http://www.tigris.org/branding/css/inst.css"; 
-/*  ]]> */
- </style>
-  <link rel="stylesheet" type="text/css" href="http://www.tigris.org/branding/css/print.css" media="print" />
-<script src="http://www.tigris.org/branding/scripts/tigris.js" type="text/javascript">
-</script>
- <title>Project Home</title>
-</head>
-<body>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><html>
+  <head>
+    <style type="text/css">
+      /* <![CDATA[ */ 
+      @import "http://www.tigris.org/branding/css/tigris.css"; 
+      @import "http://www.tigris.org/branding/css/inst.css"; 
+      /*  ]]> */
+    </style>
+    <link rel="stylesheet" type="text/css" href="http://www.tigris.org/branding/css/print.css" media="print" />
+    <script src="http://www.tigris.org/branding/scripts/tigris.js" type="text/javascript">
+    </script>
+    <title>Project Home</title>
+  </head>
 
+  <body>
+    <div class="h2">
+      <h2>Description</h2>
+      <p align="justify">
+        RepoGuard is an advanced validation framework with built-in integrations for several common version control systems. It is the successor of the <a href="http://svnchecker.tigris.org/">SVNChecker</a> framework.
+      </p>
 
-<div class="h2">
-<h2>Description</h2>
-    <p align="justify">
-      RepoGuard is an advanced validation framework with built-in integrations for several common version control systems. It is the successor of the <a href="http://svnchecker.tigris.org/">SVNChecker</a> framework.
-    </p>
-    
-	<div align="center" style="padding: 20px 0px">
-		<img src="images/repoguardarchitecture.png"/>
-	</div>
-	<div align="center" style="margin-bottom: 30px"><b>Architecture of RepoGuard</b></div>
-    
-	<p align="justify">
-Today modern software development is not possible without the aid of tools like version control systems, bug tracking systems or instruments that ensure the compliance with code conventions. Unfortunately, all of these tools "live in their own world", are only loosely coupled and do not interact with each other. RepoGuard addresses this problem by linking version control systems to other software development tools. It is implemented as an extension to several version control systems and provides interfaces to integrate other tools. The use of RepoGuard allows maximum control and validation of all committed resources before they are permanently stored. Additionally, RepoGuard provides communication channels in order to inform all relevant stakeholders about the failure or success of the process. Overall, RepoGuard provides simple but effective means to guarantee software quality standards in distributed development processes.
-    </p>
-	<p align="justify">
-RepoGuard is an advanced validation framework with built-in integrations for several common version control systems. The integration is carried out by utilizing the hook mechanisms each version control system provides. The user may provide configurations which are processed through inversion of control mechanisms. RepoGuard is completely written in the Python programming language which allows for easy integration of other tools. An extensible command line tool for advanced usage is provided which allows for comfortable administration.
-    </p>
-    <p align="justify">
-RepoGuard is based on two types of constituent parts: Checks and Handlers. These parts are configured by the user to specify what to do when processing a transaction of changes to the version control system. Checks are responsible for validating the content of a transaction. Handlers are responsible for handling the results and/or the output of Checks. The complete architecture of RepoGuard is shown in the figure.
-	</p>
-    <p align="justify">
-Extensibility is supported via an easy to use plug-in engine and a flexible configuration mechanism for Check and Handler execution. The plug-in engine offers the possibility to integrate self written Checks and Handlers, to integrate modules that provide the access to other version control systems or bug tracker, and to extend the administration command line tool. The following version control systems are currently supported: Subversion, git, and Perforce.
-	</p>
-    
-</div>
+      <div align="center" style="padding: 20px 0px">
+        <img src="images/repoguardarchitecture.png"/>
+      </div>
+      <div align="center" style="margin-bottom: 30px"><b>Architecture of RepoGuard</b></div>
 
+      <p align="justify">
+        Today modern software development is not possible without the aid of tools like version control systems, bug tracking systems or instruments that ensure the compliance with code conventions. Unfortunately, all of these tools "live in their own world", are only loosely coupled and do not interact with each other. RepoGuard addresses this problem by linking version control systems to other software development tools. It is implemented as an extension to several version control systems and provides interfaces to integrate other tools. The use of RepoGuard allows maximum control and validation of all committed resources before they are permanently stored. Additionally, RepoGuard provides communication channels in order to inform all relevant stakeholders about the failure or success of the process. Overall, RepoGuard provides simple but effective means to guarantee software quality standards in distributed development processes.
+      </p>
+      <p align="justify">
+        RepoGuard is an advanced validation framework with built-in integrations for several common version control systems. The integration is carried out by utilizing the hook mechanisms each version control system provides. The user may provide configurations which are processed through inversion of control mechanisms. RepoGuard is completely written in the Python programming language which allows for easy integration of other tools. An extensible command line tool for advanced usage is provided which allows for comfortable administration.
+      </p>
+      <p align="justify">
+        RepoGuard is based on two types of constituent parts: Checks and Handlers. These parts are configured by the user to specify what to do when processing a transaction of changes to the version control system. Checks are responsible for validating the content of a transaction. Handlers are responsible for handling the results and/or the output of Checks. The complete architecture of RepoGuard is shown in the figure.
+      </p>
+      <p align="justify">
+        Extensibility is supported via an easy to use plug-in engine and a flexible configuration mechanism for Check and Handler execution. The plug-in engine offers the possibility to integrate self written Checks and Handlers, to integrate modules that provide the access to other version control systems or bug tracker, and to extend the administration command line tool. The following version control systems are currently supported: Subversion, git, and Perforce.
+      </p>
+    </div>
 
-<div class="h2">
-<h2 id="doc">Documentation</h2>
-<p>
-<ul>
-<li><a href="http://repoguard.tigris.org/wiki/Architecture">Architecture</a></li>
-<li><a href="http://repoguard.tigris.org/wiki/Installation">Installation</a></li>
-<li><a href="http://repoguard.tigris.org/wiki/Configuration">Configuration</a></li>
-</ul>
-</p>
-<p>Unfortunately the documentation is not complete yet, still some parts of the old SVNChecker Documentation applies as well:</p>
-<p>
-<ul>
-<li><a href="http://svnchecker.tigris.org/manual.html">SVNChecker Documentation</a></li>
-</ul>
-</p>
-<p>Additionally there are the following publications:</p>
-<p>
-<ul>
-<li>Legenhausen, Malte and Pielicke, Stefan and Rühmkorf, Jens and Wendel, Heinrich and Schreiber, Andreas: <a class="http" href="http://dx.doi.org/10.1109/ICGSE.2009.51">RepoGuard: A Framework for Integration of Development Tools with SourceCode Repositories</a>, IEEE Computer Society, 4th IEEE International Conference on Global Software Engineering, 13.-16. Jul. 2009, Limerick, Irland</li>
-<li>Presentation held at ICGSE'09 in Limerick: <a class="http" href="http://www.slideshare.net/mlegenhausen/repoguard">RepoGuard - Validation Framework for Version Control Systems</li>
-<li>Legenhausen, Malte: <a href="http://repoguard.tigris.org/files/documents/6497/47029/Projektarbeit_Semester4_Malte_Legenhausen.pdf">Neukonzeption der SVNChecker-Konfiguration</a>, project report, University of Cooperative Education Mannheim, 2008 (in German)</li>
-<li>Pielicke, Stefane: <a href="http://repoguard.tigris.org/files/documents/6497/47028/Bachelorthesis_Stefan_Pielicke.pdf">Erstellung offener Schnittstellen zur Integration beliebiger Versionsverwaltungs- und Issue-Tracking-Systemen in existierende Software- Konfigurationsumgebungen</a>, bachelor thesis, Cologne University of Applied Sciences (in German)</li>
-<li><a href="http://www.dlr.de/sc/repoguard">DLR Repoguard Homepage</a></li>
-</ul>
-</p>
-</h2>
+    <div class="h2">
+      <h2 id="doc">Documentation</h2>
+      <p>
+        <ul>
+          <li><a href="http://repoguard.tigris.org/wiki/Architecture">Architecture</a></li>
+          <li><a href="http://repoguard.tigris.org/wiki/Installation">Installation</a></li>
+          <li><a href="http://repoguard.tigris.org/wiki/Configuration">Configuration</a></li>
+        </ul>
+      </p>
+      <p>Unfortunately the documentation is not complete yet, still some parts of the old SVNChecker Documentation applies as well:</p>
+      <ul>
+        <li><a href="http://svnchecker.tigris.org/manual.html">SVNChecker Documentation</a></li>
+      </ul>
+      <div class="h3">
+        <h3><a name="publications">Publications</a></h3>
+        <ul>
+          <li>Legenhausen, Malte and Pielicke, Stefan and Rühmkorf, Jens and Wendel, Heinrich and Schreiber, Andreas: <a class="http" href="http://dx.doi.org/10.1109/ICGSE.2009.51">RepoGuard: A Framework for Integration of Development Tools with SourceCode Repositories</a>, IEEE Computer Society, 4th IEEE International Conference on Global Software Engineering, 13.-16. Jul. 2009, Limerick, Irland</li>
+          <li>Presentation held at ICGSE'09 in Limerick: <a class="http" href="http://www.slideshare.net/mlegenhausen/repoguard">RepoGuard - Validation Framework for Version Control Systems</a></li>
+          <li>Legenhausen, Malte: <a href="http://repoguard.tigris.org/files/documents/6497/47029/Projektarbeit_Semester4_Malte_Legenhausen.pdf">Neukonzeption der SVNChecker-Konfiguration</a>, project report, University of Cooperative Education Mannheim, 2008 (in German)</li>
+          <li>Pielicke, Stefan: <a href="http://repoguard.tigris.org/files/documents/6497/47028/Bachelorthesis_Stefan_Pielicke.pdf">Erstellung offener Schnittstellen zur Integration beliebiger Versionsverwaltungs- und Issue-Tracking-Systemen in existierende Software- Konfigurationsumgebungen</a>, bachelor thesis, Cologne University of Applied Sciences, 2008 (in German)</li>
+        </ul>
+      </div>
 
-<div class="h2">
-<h2>Available Checks, Handlers and Bug Trackers</h2>
-<p>RepoGuard includes out-of-the-box many several Checks and Handlers that allows the instandly use without writing Checks and Handlers by your own.</p>
-<p>Following <a href="#checks">Checks</a>, <a href="#handlers">Handlers</a> and especially <a href="#bugtracker">Bug Trackers</a> are avialable:</p>
-<div>
-<h3><a name="checks">Checks</a></h3>
-<table width="100%">
-	<thead>
-		<tr>
-			<th width="200">Name</th>
-			<th>Summary</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr class="a">
-			<td>AccessRights</td>
-			<td>Check access rights on files.</td>
-		</tr>
-		<tr class="b">
-			<td>ASCIIEncoded</td>
-			<td>Check whether the files only contain ASCII Characters. Single chars can be allowed or denied.</td>
-		</tr>
-		<tr class="a">
-			<td>CaseInsensitiveFilenameClash</td>
-			<td>Tests, if a file with the same filename (ignoring the case) already exists in the repository.</td>
-		</tr>
-		<tr class="b">
-			<td>Checkout</td>
-			<td>Checkout files from the repository to file system locations.</td>
-		</tr>
-		<tr class="a">
-			<td>Checkstyle</td>
-			<td>Checks java files for coding style errors using Checkstyle.</td>
-		</tr>
-		<tr class="b">
-			<td>Keywords</td>
-			<td>Checks for svn:keywords on all added files in this commit. Currently only Subversion keywords are supported.</td>
-		</tr>
-		<tr class="a">
-			<td>Log</td>
-			<td>Creation of transaction report that can be published by the handlers.</td>
-		</tr>
-		<tr class="b">
-			<td>PyLint</td>
-			<td>Checks Python files for coding style using <a href="http://www.logilab.org/857">PyLint</a>.</td>
-		</tr>
-		<tr class="a">
-			<td>RejectTabs</td>
-			<td>Reject files with given extensions that include leading tabs.<br><i>Contributed by Adam Byrtek.</i></td>
-		</tr>
-		<tr class="b">
-			<td>UnitTests</td>
-			<td>Tests, if a unit test exists for a given Java class.</td>
-		</tr>
-		<tr class="a">
-			<td>XMLValidator</td>
-			<td>Checks XML files for correctness.</td>
-		</tr>
-	</tbody>
-</table>
-</div>
+      <div class="h3">
+        <h3><a name="links">Links</a></h3>
+        <ul>
+          <li><a href="http://www.dlr.de/sc/repoguard">DLR Repoguard Homepage</a></li>
+        </ul>
+      </div>
+    </div>
 
-<div>
-<h3><a name="handlers">Handlers</a></h3>
-<table width="100%" border="0">
-	<thead>
-		<tr>
-			<th width="200" class="mceVisualAid">Name</th>
-			<th>Summary</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr class="a">
-			<td>Buildbot</td>
-			<td>Build triggering of <a href="http://buildbot.net/trac">Buildbot</a> jobs, after successful check execution.</td>
-		</tr>
-		<tr class="b">
-			<td>Console</td>
-			<td>Simple console output handler.</td>
-		</tr>
-		<tr class="a">
-			<td>File</td>
-			<td>Write the results of the check execution in a log file.</td>
-		</tr>
-		<tr class="b">
-			<td>Hudson</td>
-			<td>Build triggering for <a href="https://hudson.dev.java.net/">Hudson</a> jobs, after successful check execution.</td>
-		</tr>
-		<tr class="a">
-			<td>Mail</td>
-			<td>Send the check results as mail to all developers.</td>
-		</tr>
-		<tr class="b">
-			<td>ViewVC</td>
-			<td>Executes the update process for the <a href="http://www.viewvc.org/">ViewVC</a> database.</td>
-		</tr>
-	</tbody>
-</table>
-</div>
+    <div class="h2">
+      <h2>Available Checks, Handlers and Bug Trackers</h2>
+      <p>RepoGuard includes out-of-the-box many several Checks and Handlers that allows the instandly use without writing Checks and Handlers by your own.</p>
+      <p>Following <a href="#checks">Checks</a>, <a href="#handlers">Handlers</a> and especially <a href="#bugtracker">Bug Trackers</a> are avialable:</p>
+      <div>
+        <h3><a name="checks">Checks</a></h3>
+        <table width="100%">
+          <thead>
+            <tr>
+              <th width="200">Name</th>
+              <th>Summary</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="a">
+              <td>AccessRights</td>
+              <td>Check access rights on files.</td>
+            </tr>
+            <tr class="b">
+              <td>ASCIIEncoded</td>
+              <td>Check whether the files only contain ASCII Characters. Single chars can be allowed or denied.</td>
+            </tr>
+            <tr class="a">
+              <td>CaseInsensitiveFilenameClash</td>
+              <td>Tests, if a file with the same filename (ignoring the case) already exists in the repository.</td>
+            </tr>
+            <tr class="b">
+              <td>Checkout</td>
+              <td>Checkout files from the repository to file system locations.</td>
+            </tr>
+            <tr class="a">
+              <td>Checkstyle</td>
+              <td>Checks java files for coding style errors using Checkstyle.</td>
+            </tr>
+            <tr class="b">
+              <td>Keywords</td>
+              <td>Checks for svn:keywords on all added files in this commit. Currently only Subversion keywords are supported.</td>
+            </tr>
+            <tr class="a">
+              <td>Log</td>
+              <td>Creation of transaction report that can be published by the handlers.</td>
+            </tr>
+            <tr class="b">
+              <td>PyLint</td>
+              <td>Checks Python files for coding style using <a href="http://www.logilab.org/857">PyLint</a>.</td>
+            </tr>
+            <tr class="a">
+              <td>RejectTabs</td>
+              <td>Reject files with given extensions that include leading tabs.<br><i>Contributed by Adam Byrtek.</i></td>
+              </tr>
+              <tr class="b">
+                <td>UnitTests</td>
+                <td>Tests, if a unit test exists for a given Java class.</td>
+              </tr>
+              <tr class="a">
+                <td>XMLValidator</td>
+                <td>Checks XML files for correctness.</td>
+              </tr>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-<div>
-<h3><a name="bugtracker">Bug Tracker</a></h3>
-<p align="justify">Several bug tracking systems are supported by RepoGuard. For each bug tracker there exists a Check and a corresponding Handler. The Check validates, if a commit message contains one or more valid IDs for an issue. By default, the commit message must contain a line with <i>'MANTIS ID <#>'</i> (will change when more bug tracker are available), where <i>'<#>'</i> is number of an issue ID that is set to status 'in_progress' and handled by the correct user. On success the corresponding handler append a note to the given issue IDs and can update a custom field with the current revision.</p>
-<p>Following bug tracking systems are supported out-of-the-box:</p>
-<ul>
-	<li><a href="http://www.bugzilla.org/">Bugzilla</a></li>
-	<li><a href="http://gforge.org/gf/">GForge</a></li>
-	<li><a href="http://www.mantisbt.org/">Mantis</a></li>
-	<li><a href="http://trac.edgewall.org/">Trac</a></li>
-</ul>
-</div>
-</div>
+      <div>
+        <h3><a name="handlers">Handlers</a></h3>
+        <table width="100%" border="0">
+          <thead>
+            <tr>
+              <th width="200" class="mceVisualAid">Name</th>
+              <th>Summary</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="a">
+              <td>Buildbot</td>
+              <td>Build triggering of <a href="http://buildbot.net/trac">Buildbot</a> jobs, after successful check execution.</td>
+            </tr>
+            <tr class="b">
+              <td>Console</td>
+              <td>Simple console output handler.</td>
+            </tr>
+            <tr class="a">
+              <td>File</td>
+              <td>Write the results of the check execution in a log file.</td>
+            </tr>
+            <tr class="b">
+              <td>Hudson</td>
+              <td>Build triggering for <a href="https://hudson.dev.java.net/">Hudson</a> jobs, after successful check execution.</td>
+            </tr>
+            <tr class="a">
+              <td>Mail</td>
+              <td>Send the check results as mail to all developers.</td>
+            </tr>
+            <tr class="b">
+              <td>ViewVC</td>
+              <td>Executes the update process for the <a href="http://www.viewvc.org/">ViewVC</a> database.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-<div class="h2">
-	<h2>Download</h2>
-	<p align="justify">You can <a href="http://repoguard.tigris.org/servlets/ProjectDocumentList?folderID=10905&expandFolder=10905&folderID=0">download</a> the latest RepoGuard 0.1 or check out the <a href="http://repoguard.tigris.org/source/browse/repoguard/">repository</a> for the current developer version.</p>
-    
-	<p>The following list describes the new features:</p>
-	<ul>
-		<li>Improved support for version control systems: Subversion, Perforce* and git*.</li>
-		<li>Improved support for bug tracking systems: Bugzilla*, GForge*, Mantis and Trac*.</li>
-		<li>New configuration format with features like validation, inheritance and better redablity by using the <a href="http://www.voidspace.org.uk/python/configobj.html">ConfigObj</a> configuration format.</li>
-		<li>Improved check and handler workflow. Allow a more flexible use of the checks inside a profile execution process.</li>
-		<li>Extensible command line tool that allows an easier use and administration of the new SVNChecker.</li>
-		<li>Integration of the Mako Template Engine to allow an easy adjustment of the handler output format.*</li>
-		<li>More comfortable integration of new checks, handlers, command line tools and of course modules for accessing other version control systems.</li>
-	</ul>
-	<p>All features marked with an asterisk are not integrated in the current release. Read the issue tracker for more information.</p>
+      <div>
+        <h3><a name="bugtracker">Bug Tracker</a></h3>
+        <p align="justify">Several bug tracking systems are supported by RepoGuard. For each bug tracker there exists a Check and a corresponding Handler. The Check validates, if a commit message contains one or more valid IDs for an issue. By default, the commit message must contain a line with <i>'MANTIS ID <#>'</i> (will change when more bug tracker are available), where <i>'<#>'</i> is number of an issue ID that is set to status 'in_progress' and handled by the correct user. On success the corresponding handler append a note to the given issue IDs and can update a custom field with the current revision.</p>
+        <p>Following bug tracking systems are supported out-of-the-box:</p>
+        <ul>
+          <li><a href="http://www.bugzilla.org/">Bugzilla</a></li>
+          <li><a href="http://gforge.org/gf/">GForge</a></li>
+          <li><a href="http://www.mantisbt.org/">Mantis</a></li>
+          <li><a href="http://trac.edgewall.org/">Trac</a></li>
+        </ul>
+      </div>
+    </div>
 
-</div>
+    <div class="h2">
+      <h2>Download</h2>
+      <p align="justify">You can <a href="http://repoguard.tigris.org/servlets/ProjectDocumentList?folderID=10905&expandFolder=10905&folderID=0">download</a> the latest RepoGuard 0.1 or check out the <a href="http://repoguard.tigris.org/source/browse/repoguard/">repository</a> for the current developer version.</p>
 
-<div class="h2">
-	<h2>Development</h2>
-	<a href="http://www.dlr.de/en/"><img src="images/DLR_Logo_250.png" align="right" hspace="15" vspace="8"/></a>
-	<p align="justify">RepoGuard is developed mainly by the <a href="http://www.dlr.de/sc/en/desktopdefault.aspx">Simulation and Software Technology divison</a> of the <a href="http://www.dlr.de/en/">German Aerospace Center (DLR)</a>. 
-	We are happy about any support for this project. For example, you might participate as a developer, bug reporter or simply by telling us your needs. 
-	Especially, if you have written additional checks, handlers, modules to access other version control systems, bug trackers or command line tools, we would be happy to include them into the RepoGuard distribution.</p>
-	<p>Just visit our forums or join our mailing lists on Tigris.</p>
-</div>
+      <p>The following list describes the new features:</p>
+      <ul>
+        <li>Improved support for version control systems: Subversion, Perforce* and git*.</li>
+        <li>Improved support for bug tracking systems: Bugzilla*, GForge*, Mantis and Trac*.</li>
+        <li>New configuration format with features like validation, inheritance and better redablity by using the <a href="http://www.voidspace.org.uk/python/configobj.html">ConfigObj</a> configuration format.</li>
+        <li>Improved check and handler workflow. Allow a more flexible use of the checks inside a profile execution process.</li>
+        <li>Extensible command line tool that allows an easier use and administration of the new SVNChecker.</li>
+        <li>Integration of the Mako Template Engine to allow an easy adjustment of the handler output format.*</li>
+        <li>More comfortable integration of new checks, handlers, command line tools and of course modules for accessing other version control systems.</li>
+      </ul>
+      <p>All features marked with an asterisk are not integrated in the current release. Read the issue tracker for more information.</p>
 
-<div class="h2">
-	<h2>Related Resources</h2>
-	<p><a href="http://www.bugzilla.org/">Bugzilla</a>, <a href="http://buildbot.net/trac">Buildbot</a>, <a href="http://gforge.org/gf/">GForge</a>, <a href="http://git-scm.com/">git</a>, <a href="https://hudson.dev.java.net/">Hudson</a>, <a href="http://www.mantisbt.org/">Mantis</a>, <a href="http://www.perforce.com/">Perforce</a>, <a href="http://www.logilab.org/857">Pylint</a>, <a href="http://subversion.tigris.org/">Subversion</a>, <a href="http://svnchecker.tigris.org">SVNChecker</a>, <a href="http://trac.edgewall.org/">Trac</a>, <a href="http://www.viewvc.org/">ViewVC</a></p>
-</div>
-</body>
+    </div>
+
+    <div class="h2">
+      <h2>Development</h2>
+      <a href="http://www.dlr.de/en/"><img src="images/DLR_Logo_250.png" align="right" hspace="15" vspace="8"/></a>
+      <p align="justify">RepoGuard is developed mainly by the <a href="http://www.dlr.de/sc/en/desktopdefault.aspx">Simulation and Software Technology divison</a> of the <a href="http://www.dlr.de/en/">German Aerospace Center (DLR)</a>. 
+        We are happy about any support for this project. For example, you might participate as a developer, bug reporter or simply by telling us your needs. 
+        Especially, if you have written additional checks, handlers, modules to access other version control systems, bug trackers or command line tools, we would be happy to include them into the RepoGuard distribution.</p>
+      <p>Just visit our forums or join our mailing lists on Tigris.</p>
+    </div>
+
+    <div class="h2">
+      <h2>Related Resources</h2>
+      <p><a href="http://www.bugzilla.org/">Bugzilla</a>, <a href="http://buildbot.net/trac">Buildbot</a>, <a href="http://gforge.org/gf/">GForge</a>, <a href="http://git-scm.com/">git</a>, <a href="https://hudson.dev.java.net/">Hudson</a>, <a href="http://www.mantisbt.org/">Mantis</a>, <a href="http://www.perforce.com/">Perforce</a>, <a href="http://www.logilab.org/857">Pylint</a>, <a href="http://subversion.tigris.org/">Subversion</a>, <a href="http://svnchecker.tigris.org">SVNChecker</a>, <a href="http://trac.edgewall.org/">Trac</a>, <a href="http://www.viewvc.org/">ViewVC</a></p>
+    </div>
+  </body>
 </html>
-
-              
-              
