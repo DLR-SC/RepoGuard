@@ -119,7 +119,8 @@ setup(
             'File = repoguard.handlers.file:File',
             'Mantis = repoguard.handlers.mantis:Mantis [suds]',
             'BuildBot = repoguard.handlers.buildbot:BuildBot [twisted]',
-            'Hudson = repoguard.handlers.hudson:Hudson'
+            'Hudson = repoguard.handlers.hudson:Hudson',
+            'ViewVC = repoguard.handlers.viewvc:ViewVC'
         ],
         
         'repoguard.tools' : [
