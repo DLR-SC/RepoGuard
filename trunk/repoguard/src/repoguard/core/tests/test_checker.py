@@ -12,17 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+import pkg_resources
 import tempfile
 
 from repoguard.core import constants
 from repoguard.core.checker import RepoGuard
+from repoguard.core.module import Check, Handler
 from repoguard.testutil import TestRepository
 
-main_config = """
+
+_MAIN_CONFIG = """
 template_dirs = resources/templates,
 """.splitlines()
 
-config_string = """
+
+_CONFIG_STRING = """
 vcs=svn
 
 [profiles]
@@ -72,12 +77,41 @@ vcs=svn
         password=root
 """
 
+
+def _load_entry_point_mock(_,group,name):
+    """ 
+    Mocks the C{load_entry_point} function. 
+    For handlers the handler base class is returned. For
+    the PyLint checker a checker instance which always ends up with
+    an error is returned. For all other checker a checker instance is 
+    returned which always succeeds.
+    """
+    
+    class ErrorCheck(Check):
+        def _run(self, _):
+            return self.error("")
+    class SuccessCheck(Check):
+        def _run(self, _):
+            return self.success()
+
+    if "handler" in group:
+        return Handler
+    else:
+        if name == "PyLint":
+            return ErrorCheck
+        else:
+            return SuccessCheck
+
+
 class TestRepoGuard(object):
+    """ Tests configuration pre and post commit checker runs. """
     
     @classmethod
     def setup_class(cls):
+        """ Creates the test setup. """
+        
         cls.repository = TestRepository()
-        cls.repository.add_file('test.py', 'print "Hallo Welt"')
+        cls.repository.add_file("test.py", "print 'Hallo Welt'")
         cls.repository.create_default()
         
         cls.precommit_checker = RepoGuard(
@@ -89,16 +123,21 @@ class TestRepoGuard(object):
             constants.POSTCOMMIT, cls.repository.repodir
         )
         cls.postcommit_checker.load_transaction("1")
+        pkg_resources.load_entry_point = lambda _, group, name: _load_entry_point_mock(_, group, name)
     
     def test_initialize(self):
-        config = config_string.replace("%DESTINATION%", tempfile.mkstemp()[1]).splitlines()
-        self.precommit_checker.load_config(main_config, config)
+        """ Tests the run initialization. """
+        
+        config = _CONFIG_STRING.replace("%DESTINATION%", tempfile.mkstemp()[1]).splitlines()
+        self.precommit_checker.load_config(_MAIN_CONFIG, config)
         assert not self.precommit_checker.main is None
         
-        self.postcommit_checker.load_config(main_config, config)
+        self.postcommit_checker.load_config(_MAIN_CONFIG, config)
         assert not self.postcommit_checker.main is None
         
     def test_run(self):
+        """ Tests the pre and post commit checker runs. """
+        
         result = self.precommit_checker.run()
         assert result == constants.ERROR
         

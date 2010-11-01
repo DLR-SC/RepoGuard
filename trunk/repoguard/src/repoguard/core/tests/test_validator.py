@@ -1,4 +1,4 @@
-# pylint: disable-msg=E1102
+#
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from repoguard.core.config import ProjectConfig
-from repoguard.core.validator import ConfigValidator
 
+import pkg_resources
 from validate import ValidateError
 
-success_config = """
+from repoguard.core.config import ProjectConfig
+from repoguard.core.module import Handler
+from repoguard.core.validator import ConfigValidator
+
+
+_SUCCESS_CONFIG = """
 vcs=svn
 
 [profiles]
@@ -62,7 +66,8 @@ vcs=svn
         file=default.log
 """.splitlines()
 
-error_config = """
+
+_ERROR_CONFIG = """
 vcs=svn
 
 [profiles]
@@ -77,14 +82,10 @@ vcs=svn
         checks=UnitTests, Checkout.default
         success=File.default, Console.success
         error=File.default, Console.error
-    
+
 [checks]        
     [[Checkout]]
-        [[[default]]]
-        entries=entry1,
-        entry1.source=test.java
-        entries.entry1.destination=.
-        
+
 [handlers]
     [[Console]]
         [[[success]]]
@@ -95,17 +96,34 @@ vcs=svn
         file=${hooks}/repoguard.log
 """.splitlines()
 
+
 class TestConfigValidator(object):
+    """ Tests the configuration validator. """
     
     @classmethod
     def setup_class(cls):
+        """ Creates the test setup. """
+        
         cls.validator = ConfigValidator()
+        pkg_resources.load_entry_point = lambda _, __, ___: Handler
+        pkg_resources.get_entry_map = lambda _, __: {"PyLint": None, "Mantis": None, "AccessRights": None, "ASCIIEncoded": None,
+                                                     "CaseInsensitiveFilenameClash": None, "Checkout": None, "Checkstyle": None,
+                                                     "Keywords": None, "Log": None, "RejectTabs": None, "UnitTests": None, 
+                                                     "XMLValidator": None, "File": None, "Console": None, "Mail": None, 
+                                                     "Mantis": None, "BuildBot": None, "Hudson": None}
 
     def test_validate_for_success(self):
-        config = ProjectConfig(success_config, "hooks")
+        """ Demonstrates a correct configuration. """
+        
+        config = ProjectConfig(_SUCCESS_CONFIG, "hooks")
         assert self.validator.validate(config) == 0
         
     def test_validate_for_error(self):
-        config = ProjectConfig(error_config, "hooks")
+        """ 
+        Demonstrates an incorrect configuration.
+        Missing default configurations for pylint and checkout checks.
+        """
+        
+        config = ProjectConfig(_ERROR_CONFIG, "hooks")
         result = self.validator.validate(config)
         assert result == 2
