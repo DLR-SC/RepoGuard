@@ -1,3 +1,4 @@
+#
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,32 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """    
 Test case for the buildbot script.
 """
 
-import py.test
 
-from repoguard.testutil import TestProtocol
+from configobj import ConfigObj
 
-config_string = """
+from repoguard.handlers.buildbot import BuildBot
+
+
+_CONFIG_STRING = """
 url=localhost
 port=8007
 user=admin
 password=foo
 """.splitlines()
     
-from configobj import ConfigObj
-    
-from repoguard.handlers.buildbot import BuildBot
     
 class TestBuildBot(object):
+    """ Tests the buildbot handler. """
     
     @classmethod
     def setup_class(cls):
-        cls.buildbot = BuildBot(None)
+        """ Creates the test setup. """
         
-    def test_summarize(self):
-        py.test.skip()
-        config = ConfigObj(config_string)
-        self.buildbot.summarize(config, TestProtocol(), True)
+        cls.buildbot = BuildBot(None)
+        cls.config = ConfigObj(_CONFIG_STRING)

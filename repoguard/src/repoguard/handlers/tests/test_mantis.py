@@ -1,4 +1,4 @@
-# pylint: disable-msg=W0232
+#
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,46 +13,48 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """
-Test methods for the Mail class.
+Tests the Mantis handler
 """
 
-import py.test
-
-from urllib2 import URLError
 
 from configobj import ConfigObj
 
 from repoguard.handlers.mantis import Mantis
-from repoguard.testutil import TestRepository, TestProtocol
+from repoguard.testutil import MantisMock, TestRepository, TestProtocol
 
-config_string="""
+
+_CONFIG_STRING = """
 protocol.include=Log,
 url=http://localhost/mantis/mc/mantisconnect.php?wsdl
 user=administrator
 password=root
 """
 
-class TestMantis:
+
+class TestMantis(object):
+    """ Tests the Mantis handler. """
     
     @classmethod
     def setup_class(cls):
         cls.test_protocol = TestProtocol()
         cls.test_protocol.add_entry(check="Foo")
         cls.test_protocol.add_entry(check="Log")
-        cls.config = ConfigObj(config_string.splitlines())
+        cls.config = ConfigObj(_CONFIG_STRING.splitlines())
         cls.repository = TestRepository()
         cls.repodir, cls.transaction = cls.repository.create_default()
+        from repoguard.modules import mantis
+        mantis.Mantis = MantisMock
         
     def test_check_include(self):
         config = Mantis.__config__.from_config(self.config)
         assert config.protocol.include == ['Log']
 
     def test_run(self):
+        """ Tests the successful execution of the handler. """
+        
         mantis = Mantis(self.transaction)
-        try:
-            mantis.summarize(
-                self.config, self.test_protocol, debug=True
-            )
-        except URLError:
-            py.test.skip()
+        mantis.summarize(
+            self.config, self.test_protocol, debug=True
+        )
