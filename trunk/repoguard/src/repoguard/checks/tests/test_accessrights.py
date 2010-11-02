@@ -1,4 +1,4 @@
-# pylint: disable-msg=W0232
+#
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """
 Test methods for the AccessRights class.
 """
+
 
 from configobj import ConfigObj
 
 from repoguard.testutil import TestRepository
 from repoguard.checks.accessrights import AccessRights
+
 
 ALLOW = True
 DENY = False
@@ -74,7 +77,8 @@ CONFIGS = (
     """, ALLOW),
 )
 
-class TestAccessRights:
+
+class TestAccessRights(object):
     """
     AccessRights Testcase
     """
