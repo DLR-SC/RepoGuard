@@ -58,7 +58,20 @@ CONFIGS = (
     ("""check_files = test\.java,
     allow_users = %(user)s,
     deny_users = %(user)s,
-    """, DENY)
+    """, DENY),
+    ("""ignore_files = .*,
+    allow_users = %(user)s,
+    deny_users = %(user)s,
+    """, ALLOW),
+    ("""ignore_files = .*,
+    allow_users = %(user)s,
+    """, ALLOW),
+    ("""ignore_files = .*,
+    deny_users = %(user)s,
+    """, ALLOW),
+    
+    ("""ignore_files = .*,
+    """, ALLOW),
 )
 
 class TestAccessRights:

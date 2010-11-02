@@ -47,8 +47,8 @@ class BuildBot(Handler):
         
     def _summarize(self, config, _):
         client = pb.PBClientFactory()
-        credentials = credentials.UsernamePassword(config.user, config.password)
-        result = client.login(credentials)
+        cred = credentials.UsernamePassword(config.user, config.password)
+        result = client.login(cred)
         reactor.connectTCP(config.url, config.port, client)
         result.addCallback(self.send_change).addErrback(self.stop)
         reactor.run()

@@ -1,5 +1,4 @@
-# pylint: disable-msg=W0232
-
+#
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """
 Test methods for the Mantis class.
 """
 
-import py.test
-
-from urllib2 import URLError
 
 from configobj import ConfigObj
 
 from repoguard.checks.mantis import Mantis
-from repoguard.testutil import TestRepository
+from repoguard.modules import mantis
+from repoguard.testutil import MantisMock, TestRepository
 
 
-config_string = """
+_CONFIG_STRING = """
 url=http://localhost/mantis/mc/mantisconnect.php?wsdl
 user=administrator
 password=root
@@ -36,18 +34,22 @@ check_in_progress=False
 check_handler=False
 """
 
-class TestMantis:
+
+class TestMantis(object):
+    """ Tests the Mantis checker. """
     
     @classmethod
     def setup_class(cls):
-        cls.config = ConfigObj(config_string.splitlines())
+        """ Creates the test setup. """
+        
+        cls.config = ConfigObj(_CONFIG_STRING.splitlines())
         cls.repository = TestRepository()
         cls.repodir, cls.transaction = cls.repository.create_default()
+        mantis.Mantis = MantisMock
 
-    def test_run(self):
-        mantis = Mantis(self.transaction)
-        try:
-            result = mantis.run(self.config, debug=True)
-        except URLError:
-            py.test.skip()
+    def test_success(self):
+        """ Tests successful run of the Mantis checker. """
+        
+        mantis_ = Mantis(self.transaction)
+        result = mantis_.run(self.config, debug=True)
         assert result.success == True

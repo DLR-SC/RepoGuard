@@ -1,3 +1,7 @@
+# pylint: disable=E1101,W0212,R0903
+# E1101: py.test.raises is callable
+# W0212: Access to protected is useful in tests
+# R0903: The class _RequirementMock is just a mock class
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -24,7 +28,6 @@ import tempfile
 
 import py.test
 
-from repoguard.core import config
 from repoguard.core import constants
 from repoguard.core.config import ProjectConfig, RepoGuardConfig, Process
 
@@ -128,11 +131,6 @@ def _resource_filename_mock(requirement, path):
     
     return requirement.path + "/"  + path
 
-# Activates the mocks for pkg_resources functions.
-config.Requirement = _RequirementMock
-config.resource_filename = _resource_filename_mock
-os.listdir = lambda _: [u"default.tpl.conf", u"python.tpl.conf"] # Required to make _get_templates work
-
 
 class TestRepoGuardConfig(object):
     """ Tests the repo guard specfic configuration. """
@@ -141,27 +139,34 @@ class TestRepoGuardConfig(object):
     def setup_class(cls):
         """ Creates the test setup. """
         
+        # Activates the mocks for pkg_resources functions
+        from repoguard.core import config
+        config.Requirement = _RequirementMock
+        config.resource_filename = _resource_filename_mock
+        # Required to make _get_templates work
+        os.listdir = lambda _: [u"default.tpl.conf", u"python.tpl.conf"] 
+
         cls.templatedir = tempfile.mkdtemp()
         cls.defaulttplfile = os.path.join(cls.templatedir, 
                                           "default.tpl.conf")
         cls.pythontplfile  = os.path.join(cls.templatedir, 
                                           "python.tpl.conf")
-        fp = open(cls.defaulttplfile, "w")
-        fp.write(_DEFAULT_CONFIG)
-        fp.close()
+        file_pointer = open(cls.defaulttplfile, "w")
+        file_pointer.write(_DEFAULT_CONFIG)
+        file_pointer.close()
         
-        fp = open(cls.pythontplfile, "w")
-        fp.write(_PYTHON_CONFIG)
-        fp.close()
+        file_pointer = open(cls.pythontplfile, "w")
+        file_pointer.write(_PYTHON_CONFIG)
+        file_pointer.close()
         
         cls.projectdir = tempfile.mkdtemp()
         cls.hooksdir = os.path.join(cls.projectdir, "hooks")
         os.mkdir(cls.hooksdir)
         
         cls.configfile = os.path.join(cls.hooksdir, constants.CONFIG_FILENAME)
-        config = (_REPOGUARD_CONFIG % (cls.templatedir, cls.projectdir))
+        config_ = (_REPOGUARD_CONFIG % (cls.templatedir, cls.projectdir))
         
-        cls.config = RepoGuardConfig(config.splitlines())
+        cls.config = RepoGuardConfig(config_.splitlines())
         
     def test_projects(self):
         """ Tests C{projects} property. """
@@ -176,7 +181,8 @@ class TestRepoGuardConfig(object):
     def test_template_dirs(self):
         """ Tests C{template_dirs} property. """
         
-        assert self.config.template_dirs == [self.templatedir, "repoguard/cfg/templates"]
+        assert self.config.template_dirs == [self.templatedir, 
+                                             "repoguard/cfg/templates"]
         
     def test_validate(self):
         """ Tests validation method. """
@@ -196,13 +202,13 @@ class TestProjectConfig(object):
                                           "default.tpl.conf")
         cls.pythontplfile  = os.path.join(cls.templatedir, 
                                           "python.tpl.conf")
-        fp = open(cls.defaulttplfile, "w")
-        fp.write(_DEFAULT_CONFIG)
-        fp.close()
+        file_pointer = open(cls.defaulttplfile, "w")
+        file_pointer.write(_DEFAULT_CONFIG)
+        file_pointer.close()
         
-        fp = open(cls.pythontplfile, "w")
-        fp.write(_PYTHON_CONFIG)
-        fp.close()
+        file_pointer = open(cls.pythontplfile, "w")
+        file_pointer.write(_PYTHON_CONFIG)
+        file_pointer.close()
         
         cls.config = ProjectConfig(_PROJECT_CONFIG, "hooks", [cls.templatedir])
         
@@ -256,9 +262,9 @@ class TestProjectConfig(object):
         assert len(test.precommit.checks) == 2
         
         process = default.precommit
-        name, config, interp = process.checks[0]
+        name, config_, interp = process.checks[0]
         assert name == "PyLint"
-        assert config["check_files"] == [".*\\.py"]
+        assert config_["check_files"] == [".*\\.py"]
         assert interp == constants.ABORTONERROR
                 
         assert default.postcommit is None
@@ -276,13 +282,13 @@ class TestProcess(object):
                                           "default.tpl.conf")
         cls.pythontplfile  = os.path.join(cls.templatedir, 
                                           "python.tpl.conf")
-        fp = open(cls.defaulttplfile, "w")
-        fp.write(_DEFAULT_CONFIG)
-        fp.close()
+        file_pointer = open(cls.defaulttplfile, "w")
+        file_pointer.write(_DEFAULT_CONFIG)
+        file_pointer.close()
         
-        fp = open(cls.pythontplfile, "w")
-        fp.write(_PYTHON_CONFIG)
-        fp.close()
+        file_pointer = open(cls.pythontplfile, "w")
+        file_pointer.write(_PYTHON_CONFIG)
+        file_pointer.close()
         
         cls.projectdir = tempfile.mkdtemp()
         cls.hooksdir = os.path.join(cls.projectdir, "hooks")
