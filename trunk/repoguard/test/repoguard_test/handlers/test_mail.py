@@ -36,6 +36,7 @@ _LOCAL_CONFIG = """
 addresses=dummy@localhost,
 """.splitlines()
 
+
 _REMOTE_CONFIG = """
 level=1
 addresses=x,
@@ -43,6 +44,14 @@ sender=x
 smtp.server=x
 smtp.user=x
 smtp.password=x
+""".splitlines()
+
+
+_REMOTE_CONFIG_WITHOUT_USER = """
+level=1
+addresses=x,
+sender=x
+smtp.server=x
 """.splitlines()
 
 
@@ -85,6 +94,7 @@ class TestMail(object):
         cls.test_protocol = TestProtocol()
         cls.local_config = ConfigObj(_LOCAL_CONFIG)
         cls.remote_config = ConfigObj(_REMOTE_CONFIG)
+        cls.remote_without_user_config = ConfigObj(_REMOTE_CONFIG_WITHOUT_USER)
         cls.repository = TestRepository()
         cls.repodir, cls.transaction = cls.repository.create_default()
         cls.handler = Mail(cls.transaction)
@@ -128,3 +138,10 @@ class TestMail(object):
         
         mail = Mail(self.transaction)
         mail.summarize(self.remote_config, self.test_protocol, True)
+        
+    def test_remote_without_user_summarize(self):
+        """ Tests remote configuration without SMTP user. """
+        
+        mail = Mail(self.transaction)
+        mail.summarize(self.remote_without_user_config, 
+                       self.test_protocol, True)
