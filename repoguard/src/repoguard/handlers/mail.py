@@ -1,4 +1,6 @@
-# pylint: disable-msg=W0232
+# pylint: disable-msg=R0903,C0103,W0232
+# R0903,C0103,W0232: Caused by class type used for configuration.
+#
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +15,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """ Send the message as E-Mail. """
+
 
 import smtplib
 import socket
@@ -22,35 +26,51 @@ import datetime
 from repoguard.core.module import ConfigSerializer, Handler, HandlerConfig
 from repoguard.core.module import Array, String, Integer
 
+
 class SMTP(ConfigSerializer):
+    """ The SMTP server configuration. """
     class types:
+        """ Only the server is required; all other 
+        parameters are optionally. """
+        
         server = String
         port = Integer(optional=True, default=25)
         user = String(optional=True, default=None)
         password = String(optional=True, default=None)
 
 class Config(HandlerConfig):
+    """ General configuration. """
+    
     class types(HandlerConfig.types):
+        """ Only the destination addresses are required. """
+        
         level = Integer(optional=True, default=0)
         sender = String(optional=True)
         addresses = Array(String)
         smtp = SMTP(optional=True)
         
+
 class Mail(Handler):
+    """ Performs notification via Email. """
     
     __config__ = Config
 
     def success_subject(self):
+        """ Creates the mail subject when everything is fine. """
+        
         from_id = self.transaction.user_id
         date = datetime.datetime.now().strftime("%H:%M - %d.%m.%Y")
         return "SVN update by %s at %s" % (from_id, date)
     
     def error_subject(self, check, result):
+        """ Creates the mail subject when there is an error. """
+        
         user_id = self.transaction.user_id
         msg = "Checkin %s by '%s' in check '%s'"
         return msg % (result, user_id, check.capitalize())
     
-    def create_mail(self, from_address, to_address, subject, content):
+    @staticmethod
+    def create_mail(from_address, to_address, subject, content):
         """ 
         Creates the content of the mail. 
         """
@@ -63,15 +83,17 @@ class Mail(Handler):
         Actually send the message. 
         """
 
-        sender = config.sender or self.transaction.user_id + "@" + socket.gethostname()
+        sender = config.sender or self.transaction.user_id + "@" \
+                                  + socket.gethostname()
         
         if config.smtp:
             server = smtplib.SMTP(config.smtp.server, config.smtp.port)
             server.set_debuglevel(config.level)
-            if not config.smtp.user is None and not config.smtp.password is None:
+            if not config.smtp.user is None \
+               and not config.smtp.password is None:
                 server.login(config.smtp.user, config.smtp.password)
         else:
-            server = smtplib.SMTP('localhost')
+            server = smtplib.SMTP("localhost")
             server.set_debuglevel(config.level)
         
         for receiver in receivers:
@@ -80,6 +102,8 @@ class Mail(Handler):
         server.quit()
         
     def _summarize(self, config, protocol):
+        """ Implements the handler flow. """
+        
         subject = self.success_subject()
         msg = str(protocol) + "\n"
         for entry in protocol:
