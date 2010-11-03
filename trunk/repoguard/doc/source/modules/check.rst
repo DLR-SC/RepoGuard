@@ -2,39 +2,64 @@ Available Check Modules
 ========================
 
 The following checks are currently supported.
+
+:mod:`repoguard.checks.accessrights` -- Privilege Check
+--------------------------------------------------------
   
 .. automodule:: repoguard.checks.accessrights
-	:members:
+
+:mod:`repoguard.checks.asciiencoded` -- ASCII-only Check
+--------------------------------------------------------
 
 .. automodule:: repoguard.checks.asciiencoded
-	:members:
+
+:mod:`repoguard.checks.caseinsensitivefilenameclash` -- Name Clash Check
+------------------------------------------------------------------------
 
 .. automodule:: repoguard.checks.caseinsensitivefilenameclash
-	:members:
+
+:mod:`repoguard.checks.checkout` -- Checkout Check
+--------------------------------------------------
 
 .. automodule:: repoguard.checks.checkout
-	:members:
+
+:mod:`repoguard.checks.checkstyle` -- Checkstyle Check
+------------------------------------------------------
 
 .. automodule:: repoguard.checks.checkstyle
-	:members:
+
+:mod:`repoguard.checks.keywords` -- SVN Keyword Check
+-----------------------------------------------------
     
 .. automodule:: repoguard.checks.keywords
-	:members:
+
+:mod:`repoguard.checks.log` -- Log Check
+----------------------------------------
 
 .. automodule:: repoguard.checks.log
-	:members:
+
+
+:mod:`repoguard.checks.mantis` -- Mantis Check
+----------------------------------------------
 
 .. automodule:: repoguard.checks.mantis
-	:members:
+
+:mod:`repoguard.checks.pylint_` -- Pylint Check
+-----------------------------------------------
 
 .. automodule:: repoguard.checks.pylint_
-	:members:
+
+:mod:`repoguard.checks.rejecttabs` -- Tab Character Check
+---------------------------------------------------------
 
 .. automodule:: repoguard.checks.rejecttabs
-	:members:
+
+:mod:`repoguard.checks.unittests` -- Java Unit Test Check
+---------------------------------------------------------
 
 .. automodule:: repoguard.checks.unittests
-	:members:
+
+:mod:`repoguard.checks.xmlvalidator` -- XML File Check
+------------------------------------------------------
 
 .. automodule:: repoguard.checks.xmlvalidator
-	:members:

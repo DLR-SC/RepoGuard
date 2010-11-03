@@ -15,7 +15,6 @@ Core Modules
 .. toctree::
    :maxdepth: 2
    
-   core/main
    core/base
    core/configuration
    core/util
