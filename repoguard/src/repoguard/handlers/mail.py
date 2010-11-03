@@ -26,8 +26,8 @@ class SMTP(ConfigSerializer):
     class types:
         server = String
         port = Integer(optional=True, default=25)
-        user = String
-        password = String
+        user = String(optional=True, default=None)
+        password = String(optional=True, default=None)
 
 class Config(HandlerConfig):
     class types(HandlerConfig.types):
@@ -68,7 +68,8 @@ class Mail(Handler):
         if config.smtp:
             server = smtplib.SMTP(config.smtp.server, config.smtp.port)
             server.set_debuglevel(config.level)
-            server.login(config.smtp.user, config.smtp.password)
+            if not config.smtp.user is None and not config.smtp.password is None:
+                server.login(config.smtp.user, config.smtp.password)
         else:
             server = smtplib.SMTP('localhost')
             server.set_debuglevel(config.level)
