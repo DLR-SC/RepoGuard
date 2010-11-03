@@ -4,26 +4,39 @@ Available Handler Modules
 Handler are basically meant to report about the results of the executed checks.
 
 
+:mod:`repoguard.handlers.buildbot` -- BuildBot Handler
+------------------------------------------------------
+
 ** The support of BuildBot is currently broken. **
 
 .. automodule:: repoguard.handlers.buildbot
-   :members:
+
+:mod:`repoguard.handlers.console` -- Console Handler
+----------------------------------------------------
 
 .. automodule:: repoguard.handlers.console
-   :members:
+
+:mod:`repoguard.handlers.file` -- File Handler
+----------------------------------------------
 
 .. automodule:: repoguard.handlers.file
-   :members:
+
+:mod:`repoguard.handlers.hudson` -- Hudson Handler
+--------------------------------------------------
 
 .. automodule:: repoguard.handlers.hudson
-   :members:
+
+:mod:`repoguard.handlers.mail` -- Mail Handler
+----------------------------------------------
 
 .. automodule:: repoguard.handlers.mail
-   :members:
+
+:mod:`repoguard.handlers.mantis` -- Mantis Handler
+----------------------------------------------------
 
 .. automodule:: repoguard.handlers.mantis
-   :members:
+
+:mod:`repoguard.handlers.viewvc` -- ViewVC Handler
+--------------------------------------------------
 
 .. automodule:: repoguard.handlers.viewvc
-   :members:
-	

@@ -1,13 +1,16 @@
 Configuration Classes
 =====================
 
-The following gives an overview about the constants, the configuration classes, and the configuration validation module.
+The following sections give an overview about the constants, the configuration classes, and the configuration validation module.
   
+:mod:`repoguard.core.constants` -- Global Constants
+---------------------------------------------------
+
 .. automodule:: repoguard.core.constants
-	:members:
+
+Configuration and Validation
+----------------------------
 
 .. automodule:: repoguard.core.config
-	:members:
 
 .. automodule:: repoguard.core.validator
-	:members:
