@@ -21,6 +21,8 @@ Tests the Mantis handler
 """
 
 
+from StringIO import StringIO
+
 from configobj import ConfigObj
 
 from repoguard.handlers import mantis
@@ -32,6 +34,8 @@ protocol.include=Log,
 url=http://localhost/mantis/mc/mantisconnect.php?wsdl
 user=administrator
 password=root
+custom_field = peter
+vcs_sync_url=http://localhost/mantis/plugin.php?page=Source/import&id=all
 """
 
 
@@ -48,7 +52,8 @@ class TestMantis(object):
         cls.config = ConfigObj(_CONFIG_STRING.splitlines())
         cls.repository = TestRepository()
         cls.repodir, cls.transaction = cls.repository.create_default()
-        # Activates the Mantis mock
+        # Activates mocks
+        mantis.urllib2.urlopen = lambda _: StringIO("No Revisions Parsed.")
         mantis.base.Mantis = MantisMock
         
     def test_check_include(self):
