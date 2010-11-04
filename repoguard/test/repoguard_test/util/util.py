@@ -158,3 +158,8 @@ class MantisMock(object):
         """ Does nothing. """
         
         pass
+
+    def issue_set_custom_field(self, _, __, ___):
+        """ Does nothing. """
+        
+        pass
