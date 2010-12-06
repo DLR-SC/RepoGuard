@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """
 Setup script for the RepoGuard distribution.
 """
@@ -23,110 +24,119 @@ import os
 from setuptools import setup, find_packages
 
 
-WIN32_CONFIG_HOME = os.path.join(os.path.expanduser("~"), '.repoguard')
-LINUX_CONFIG_HOME = '/usr/local/share/repoguard'
-CONFIG_HOME = WIN32_CONFIG_HOME if sys.platform == 'win32' else LINUX_CONFIG_HOME
+WIN32_CONFIG_HOME = os.path.join(os.path.expanduser("~"), ".repoguard")
+LINUX_CONFIG_HOME = "/usr/local/share/repoguard"
+CONFIG_HOME = WIN32_CONFIG_HOME if sys.platform == "win32" else LINUX_CONFIG_HOME
+
+
+# Renames the main repoguard script for test purposes
+# to prevent that the current repoguard start script is overridden
+console_scripts = "repoguard = repoguard.main:main"
+if "install" in sys.argv and "--with-debug" in sys.argv:
+    sys.argv.remove("--with-debug")
+    console_scripts = "repoguard-debug = repoguard.main:main"
+
 
 setup(
-    name='repoguard', 
-    version='0.2-dev',
-    description='RepoGuard is a framework for Subversion hook scripts.',
-    long_description='RepoGuard is a framework for Subversion pre-commit hooks in order to implement checks of the to be commited files before they are commited. For example, you can check for the code style or unit tests. The output of the checks can be send by mail or be written into a file or simply print to the console..',
-    author='Deutsches Zentrum fuer Luft- und Raumfahrt e.V. (DLR)',
-    author_email='Malte.Legenhausen@dlr.de',
-    maintainer='Deutsches Zentrum fuer Luft- und Raumfahrt e.V. (DLR)',
-    maintainer_email='malte.legenhausen@dlr.de',
-    url='http://repoguard.tigris.org',
+    name="repoguard", 
+    version="0.2.0-dev",
+    description="RepoGuard is a framework for Subversion hook scripts.",
+    long_description="RepoGuard is a framework for Subversion pre-commit hooks in order to implement checks of the to be commited files before they are commited. For example, you can check for the code style or unit tests. The output of the checks can be send by mail or be written into a file or simply print to the console..",
+    author="Deutsches Zentrum fuer Luft- und Raumfahrt e.V. (DLR)",
+    author_email="Malte.Legenhausen@dlr.de",
+    maintainer="Deutsches Zentrum fuer Luft- und Raumfahrt e.V. (DLR)",
+    maintainer_email="tobias.schlauch@dlr.de",
+    url="http://repoguard.tigris.org",
     classifiers=[
-        'Development Status :: 1 - Pre-Alpha',
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'Intended Audience :: System Administrators',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: POSIX',
-        'Programming Language :: Python',
-        'Topic :: Software Development',
-        'Topic :: Software Development :: Quality Assurance',
-        'Topic :: Software Development :: Bug Tracking',
-        'Topic :: Software Development :: Version Control',
+        "Development Status :: 1 - Pre-Alpha",
+        "Environment :: Console",
+        "Intended Audience :: Developers",
+        "Intended Audience :: System Administrators",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: POSIX",
+        "Programming Language :: Python",
+        "Topic :: Software Development",
+        "Topic :: Software Development :: Quality Assurance",
+        "Topic :: Software Development :: Bug Tracking",
+        "Topic :: Software Development :: Version Control",
     ],
     
     namespace_packages=[
-        'repoguard.checks',
-        'repoguard.handlers',
-        'repoguard.modules',
-        'repoguard.tools'
+        "repoguard.checks",
+        "repoguard.handlers",
+        "repoguard.modules",
+        "repoguard.tools"
     ],
     
-    packages=find_packages('src', exclude=["*.tests", "*.testutil"]),
+    packages=find_packages("src", exclude=["*.tests", "*.testutil"]),
     package_dir={
-        '' : 'src'
+        "" : "src"
     },
     
     data_files=[
         (CONFIG_HOME, [
-            'cfg/repoguard.conf',
-            'cfg/logger.conf'
+            "cfg/repoguard.conf",
+            "cfg/logger.conf"
         ]),
-        ('cfg/templates', [
-            'cfg/templates/default.tpl.conf',
-            'cfg/templates/python.tpl.conf'
+        ("cfg/templates", [
+            "cfg/templates/default.tpl.conf",
+            "cfg/templates/python.tpl.conf"
         ])
     ],
     
     install_requires=[
-        'configobj==4.6.0',
-        'soaplib>=0.8.1'
+        "configobj==4.6.0",
+        "soaplib>=0.8.1"
     ],
     
     extras_require={
-        'pylint' : [
-            'logilab-common>=0.33.0',
-            'logilab-astng>=0.17.2',
-            'pylint>=0.18.1'
+        "pylint" : [
+            "logilab-common>=0.33.0",
+            "logilab-astng>=0.17.2",
+            "pylint>=0.18.1"
         ],
-        'suds' : [
-            'suds>=0.3.3'
+        "suds" : [
+            "suds>=0.3.3"
         ],
-        'twisted' : [
-            'twisted>=8.1.0'
+        "twisted" : [
+            "twisted>=8.1.0"
         ]
     },
     
     entry_points={
-        'console_scripts': [
-            'repoguard = repoguard.main:main'
+        "console_scripts": [
+            console_scripts
         ],
                     
-        'repoguard.checks' : [
-            'AccessRights = repoguard.checks.accessrights:AccessRights',
-            'ASCIIEncoded = repoguard.checks.asciiencoded:ASCIIEncoded',
-            'CaseInsensitiveFilenameClash = repoguard.checks.caseinsensitivefilenameclash:CaseInsensitiveFilenameClash',
-            'Checkout = repoguard.checks.checkout:Checkout',
-            'Checkstyle = repoguard.checks.checkstyle:Checkstyle',
-            'Keywords = repoguard.checks.keywords:Keywords',
-            'Log = repoguard.checks.log:Log',
-            'Mantis = repoguard.checks.mantis:Mantis [suds]',
-            'PyLint = repoguard.checks.pylint_:PyLint [pylint]',
-            'RejectTabs = repoguard.checks.rejecttabs:RejectTabs',
-            'UnitTests = repoguard.checks.unittests:UnitTests',
-            'XMLValidator = repoguard.checks.xmlvalidator:XMLValidator'
+        "repoguard.checks" : [
+            "AccessRights = repoguard.checks.accessrights:AccessRights",
+            "ASCIIEncoded = repoguard.checks.asciiencoded:ASCIIEncoded",
+            "CaseInsensitiveFilenameClash = repoguard.checks.caseinsensitivefilenameclash:CaseInsensitiveFilenameClash",
+            "Checkout = repoguard.checks.checkout:Checkout",
+            "Checkstyle = repoguard.checks.checkstyle:Checkstyle",
+            "Keywords = repoguard.checks.keywords:Keywords",
+            "Log = repoguard.checks.log:Log",
+            "Mantis = repoguard.checks.mantis:Mantis [suds]",
+            "PyLint = repoguard.checks.pylint_:PyLint [pylint]",
+            "RejectTabs = repoguard.checks.rejecttabs:RejectTabs",
+            "UnitTests = repoguard.checks.unittests:UnitTests",
+            "XMLValidator = repoguard.checks.xmlvalidator:XMLValidator"
         ],
         
-        'repoguard.handlers' : [
-            'Mail = repoguard.handlers.mail:Mail',
-            'Console = repoguard.handlers.console:Console',
-            'File = repoguard.handlers.file:File',
-            'Mantis = repoguard.handlers.mantis:Mantis [suds]',
-            'BuildBot = repoguard.handlers.buildbot:BuildBot [twisted]',
-            'Hudson = repoguard.handlers.hudson:Hudson',
-            'ViewVC = repoguard.handlers.viewvc:ViewVC'
+        "repoguard.handlers" : [
+            "Mail = repoguard.handlers.mail:Mail",
+            "Console = repoguard.handlers.console:Console",
+            "File = repoguard.handlers.file:File",
+            "Mantis = repoguard.handlers.mantis:Mantis [suds]",
+            "BuildBot = repoguard.handlers.buildbot:BuildBot [twisted]",
+            "Hudson = repoguard.handlers.hudson:Hudson",
+            "ViewVC = repoguard.handlers.viewvc:ViewVC"
         ],
         
-        'repoguard.tools' : [
-            'Checker = repoguard.tools.checker:Checker',
-            'Configuration = repoguard.tools.config:Configuration',
-            'Repository = repoguard.tools.repository:Repository'
+        "repoguard.tools" : [
+            "Checker = repoguard.tools.checker:Checker",
+            "Configuration = repoguard.tools.config:Configuration",
+            "Repository = repoguard.tools.repository:Repository"
         ]
     }
 )
