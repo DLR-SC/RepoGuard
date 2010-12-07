@@ -87,7 +87,6 @@ class Mantis(Handler):
         try:
             file_object = urllib2.urlopen(vcs_sync_url)
             content = file_object.read()
-            print content
             self.logger.debug(content)
             file_object.close()
         except IOError, error:
