@@ -86,7 +86,7 @@ setup(
     
     install_requires=[
         "configobj==4.6.0",
-        "soaplib>=0.8.1"
+        "soaplib==0.8.1"
     ],
     
     extras_require={
