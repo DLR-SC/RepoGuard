@@ -114,7 +114,8 @@ class Mantis(Handler):
         for issue in issues:
             self.logger.debug("Checking if issue %s exists", issue)
             if self.mantis.issue_exists(issue):
-                self.add_note(issue, msg)
+                if config.vcs_sync_url is None:
+                    self.add_note(issue, msg)
                 if config.custom_field is not None:
                     revision = self.transaction.revision
                     self.set_revision(issue, config.custom_field, revision)
