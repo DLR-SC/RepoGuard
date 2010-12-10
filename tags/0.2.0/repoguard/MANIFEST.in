@@ -1,8 +1,0 @@
-exclude .*
-
-recursive-include cfg *.conf
-
-recursive-exclude test/* *.py
-
-prune doc
-graft docs/html
