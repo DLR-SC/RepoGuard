@@ -1,23 +1,7 @@
-RepoGuard is a framework for Subversion commit hooks in order to
-implement checks of the to be committed files before they are committed.
+RepoGuard is a framework for Subversion pre-commit hooks in order to
+implement checks of the to be commited files before they are commited.
 For example, you can check for the code style or unit tests. The output
-of the checks can be send by email or be written into a file or simply
+of the checks can be send by mail or be written into a file or simply
 print to the console.
 
 See http://repoguard.tigris.org
-
-Requirements:
- * Python >= 2.5
- * configobj == 4.6.0
- * soaplib == 0.8.1
- 
- * For pylint check:
-   * logilab-common >= 0.33.0
-   * logilab-astng >= 0.17.2
-   * pylint >= 0.18.1
-   
- * For Mantis check and handler:
-   * suds >= 0.3.3
-    
- * For experimental BuildBot handler:
-   * twisted >= 8.1.0

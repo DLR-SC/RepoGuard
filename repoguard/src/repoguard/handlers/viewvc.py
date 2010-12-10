@@ -1,4 +1,5 @@
-﻿#
+﻿# pylint: disable-msg=
+
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,9 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-""" Executes an svndbadmin update for viewvc 1.1 """
-
+""" executes an svndbadmin update for viewvc 1.1 """
 
 from __future__ import with_statement
 from repoguard.core import process
@@ -33,11 +32,14 @@ class Config(HandlerConfig):
 
 class ViewVC(Handler):
     """ 
-    Runs the update script of ViewVC.
+    
     """
     __config__ = Config
     
     
+    def __init__(self):
+        pass
+                
     def _summarize(self, config, _):
         """ Method uses external binary svndbadmin from viewvc 
             to update the viewvc database with changes 
@@ -51,3 +53,4 @@ class ViewVC(Handler):
         command = svndbadmin_bin + " update " + repo_path
 
         process.execute(command)
+

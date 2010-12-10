@@ -57,17 +57,14 @@ def main(argv=sys.argv):
         
     usage += "Write repoguard mode -h to get more help for every option"
     
-    version = pkg_resources.require("repoguard")[0].version
-    full_name = "RepoGuard Command Line Tools v" + version
-    parser = OptionParser(usage=usage, version=full_name)
+    parser = OptionParser(usage=usage, version="RepoGuard Command 0.1")
     if not argv[1:] or not tools.has_key(argv[1]):
         parser.parse_args()
         parser.print_help()
         return 1    
     
     tool, descriptor = tools[argv[1]]
-    full_name = tool.__class__.__name__ + " Tools v" + version
-    parser = OptionParser(usage=descriptor.usage, version=full_name)
+    parser = OptionParser(usage=descriptor.usage, version=tool.version)
     return getattr(tool, descriptor.method)(parser) or 0
 
 if __name__ == "__main__":
