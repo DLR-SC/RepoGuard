@@ -1,0 +1,11 @@
+0.2.0
+=====
+ * Fixed Checkstyle check failure when during a commit just files have been deleted (ISSUE 18).
+ * Correctly included the ViewVC handler (ISSUE 22).
+ * Fixed AccessRight check that prevented the commit although no files have been matched (ISSUE 25).
+ * Added anonymous authentication to the Mail handler (ISSUE 26).
+ * Added support for synchronizing a Subversion repository with Mantis (ISSUE 27).
+
+0.1.0
+=====
+ * Initial release.
