@@ -39,7 +39,7 @@ if "install" in sys.argv and "--with-debug" in sys.argv:
 
 setup(
     name="repoguard", 
-    version="0.2.0",
+    version="0.3.0-dev",
     description="RepoGuard is a framework for Subversion hook scripts.",
     long_description="RepoGuard is a framework for Subversion pre-commit hooks in order to implement checks of the to be commited files before they are commited. For example, you can check for the code style or unit tests. The output of the checks can be send by mail or be written into a file or simply print to the console..",
     author="Deutsches Zentrum fuer Luft- und Raumfahrt e.V. (DLR)",
