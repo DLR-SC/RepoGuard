@@ -72,7 +72,7 @@
     <div class="h2">
       <h2>Available Checks, Handlers and Bug Trackers</h2>
       <p>RepoGuard includes out-of-the-box many several Checks and Handlers that allows the instandly use without writing Checks and Handlers by your own.</p>
-      <p>Following <a href="#checks">Checks</a>, <a href="#handlers">Handlers</a> and especially <a href="#bugtracker">Bug Trackers</a> are avialable:</p>
+      <p>Following <a href="#checks">Checks</a>, <a href="#handlers">Handlers</a> and especially <a href="#bugtracker">Bug Trackers</a> are available:</p>
       <div>
         <h3><a name="checks">Checks</a></h3>
         <table width="100%">
@@ -175,9 +175,13 @@
         <p align="justify">Several bug tracking systems are supported by RepoGuard. For each bug tracker there exists a Check and a corresponding Handler. The Check validates, if a commit message contains one or more valid IDs for an issue. By default, the commit message must contain a line with <i>'MANTIS ID <#>'</i> (will change when more bug tracker are available), where <i>'<#>'</i> is number of an issue ID that is set to status 'in_progress' and handled by the correct user. On success the corresponding handler append a note to the given issue IDs and can update a custom field with the current revision.</p>
         <p>Following bug tracking systems are supported out-of-the-box:</p>
         <ul>
+          <li><a href="http://www.mantisbt.org/">Mantis</a></li>
+        </ul>
+        
+        <p>In addition support for the following bug tracker is underway <a href="http://repoguard.tigris.org/issues/show_bug.cgi?id=11">(see Issue 11)</a>:</p>
+        <ul>
           <li><a href="http://www.bugzilla.org/">Bugzilla</a></li>
           <li><a href="http://gforge.org/gf/">GForge</a></li>
-          <li><a href="http://www.mantisbt.org/">Mantis</a></li>
           <li><a href="http://trac.edgewall.org/">Trac</a></li>
         </ul>
       </div>
@@ -185,20 +189,31 @@
 
     <div class="h2">
       <h2>Download</h2>
-      <p align="justify">You can <a href="http://repoguard.tigris.org/servlets/ProjectDocumentList?folderID=10905&expandFolder=10905&folderID=0">download</a> the latest RepoGuard 0.1 or check out the <a href="http://repoguard.tigris.org/source/browse/repoguard/">repository</a> for the current developer version.</p>
-
-      <p>The following list describes the new features:</p>
+      <p align="justify">You can <a href="http://repoguard.tigris.org/servlets/ProjectDocumentList?folderID=11599&expandFolder=11599&folderID=10905">download</a> the latest RepoGuard or check out the <a href="http://repoguard.tigris.org/source/browse/repoguard/">repository</a> for the current developer version.</p>
+      <h3>Current Release</h3>
+      <h4>Release 0.2.0</h4>
+      <p align="justify"><a href="http://repoguard.tigris.org/servlets/ProjectDocumentList?folderID=11599&expandFolder=11599&folderID=10905">Donwload RepoGuard 0.2.0.</a></p>
+      <p>The following list describes new features and bug fixes:</p>
       <ul>
-        <li>Improved support for version control systems: Subversion, Perforce* and git*.</li>
-        <li>Improved support for bug tracking systems: Bugzilla*, GForge*, Mantis and Trac*.</li>
-        <li>New configuration format with features like validation, inheritance and better redablity by using the <a href="http://www.voidspace.org.uk/python/configobj.html">ConfigObj</a> configuration format.</li>
+        <li>Added anonymous authentication to the Mail handler.</li>
+        <li>Added support for synchronizing a Subversion repository with Mantis.</li>
+        <li>Fixed Checkstyle check failure when during a commit just files have been deleted.</li>
+        <li>Correctly included the ViewVC handler again.</li>
+        <li>Fixed AccessRight check that prevented the commit although no files have been matched.</li>
+      </ul>
+
+      <h3>Previous Releases</h3>
+      <h4>Release 0.1.0</h4>
+      <p align="justify"><a href="http://repoguard.tigris.org/servlets/ProjectDocumentList?folderID=10905&expandFolder=10905&folderID=11599">Donwload RepoGuard 0.1.0.</a></p>
+      <p>The following list describes features and bug fixes of release 0.1.0:</p>
+      <ul>
+        <li>Improved support for version control system Subversion.</li>
+        <li>Improved support for bug tracking system Mantis.</li>
+        <li>New configuration format with features like validation, inheritance and better readablity by using the <a href="http://www.voidspace.org.uk/python/configobj.html">ConfigObj</a> configuration format.</li>
         <li>Improved check and handler workflow. Allow a more flexible use of the checks inside a profile execution process.</li>
-        <li>Extensible command line tool that allows an easier use and administration of the new SVNChecker.</li>
-        <li>Integration of the Mako Template Engine to allow an easy adjustment of the handler output format.*</li>
+        <li>Extensible command line tool that allows an easier use and administration.</li>
         <li>More comfortable integration of new checks, handlers, command line tools and of course modules for accessing other version control systems.</li>
       </ul>
-      <p>All features marked with an asterisk are not integrated in the current release. Read the issue tracker for more information.</p>
-
     </div>
 
     <div class="h2">
