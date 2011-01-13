@@ -53,8 +53,8 @@ class TestRepository(object):
         self.add_file("test 1.txt", "content")    
         self.set_property("test 1.txt", "svn:keywords", "Date")
         self.add_file("test.java", "public interface test {\n}\n")
-        self.commit(self.commit_message)
-        return self.repodir, Transaction(self.repodir, "1")
+        transaction = self.commit(self.commit_message)
+        return self.repodir, transaction
 
     def add_file(self, filename, content):
         """ Creates a new file in the repository. """
@@ -74,7 +74,9 @@ class TestRepository(object):
         """ Performs a commit. """
         
         os.popen("svn commit -m \"%s\" %s" % (commit_message, self.chkdir))
-        return Transaction(self.repodir, "1")
+        transaction = Transaction(self.repodir, "1")
+        atexit.register(transaction.cleanup)
+        return transaction
     
     def create_diretory(self, path):
         """
