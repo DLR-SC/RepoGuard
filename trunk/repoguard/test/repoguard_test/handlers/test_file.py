@@ -60,6 +60,7 @@ class TestFile(object):
         file_object = open(filename, "r")
         content = file_object.read()
         file_object.close()
+        os.remove(filename)
         assert content == str(TestProtocolEntry.error()) + SEPARATOR
         
     def test_summarize(self):
@@ -73,4 +74,5 @@ class TestFile(object):
         file_object = open(filename, "r")
         content = file_object.read()
         file_object.close()
+        os.remove(filename)
         assert content == str(self.test_protocol) + SEPARATOR
