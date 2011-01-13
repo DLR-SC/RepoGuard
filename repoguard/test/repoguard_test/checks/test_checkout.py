@@ -19,6 +19,7 @@ Test methods for the Checkout class.
 """
 
 
+import os
 import tempfile
 
 from configobj import ConfigObj
@@ -41,8 +42,11 @@ class TestCheckout(object):
     def setup_class(cls):
         """ Creates the test setup. """
         
-        config = _CONFIG_STRING.replace("%DESTINATION%", tempfile.mkstemp()[1])\
+        fd, filepath = tempfile.mkstemp()
+        config = _CONFIG_STRING.replace("%DESTINATION%", filepath)\
                  .splitlines()
+        os.close(fd)
+        os.remove(filepath)
         cls.config = ConfigObj(config)
         cls.repository = TestRepository()
         cls.repodir, cls.transaction = cls.repository.create_default()

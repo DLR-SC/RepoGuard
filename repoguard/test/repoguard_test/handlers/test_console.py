@@ -67,7 +67,7 @@ class TestConsole(object):
 
         error_file.close()
         success_file.close()
-
+        
         with open(error_filename, "r") as file_object:
             assert file_object.read() == self.console.pattern \
                                          % TestProtocolEntry.error()
@@ -76,6 +76,9 @@ class TestConsole(object):
             assert file_object.read() == self.console.pattern \
                                          % TestProtocolEntry.success()
         
+        os.remove(error_filename)
+        os.remove(success_filename)
+
     def test_summarize(self):
         """ Tests the successful execution of the handler. """
         
@@ -93,3 +96,5 @@ class TestConsole(object):
         with open(error_filename, "r") as file_object:
             assert file_object.read() == self.console.pattern \
                                          % self.test_protocol
+        
+        os.remove(error_filename)

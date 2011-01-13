@@ -24,6 +24,7 @@ Test methods of the C{Config} class.
 
 
 import os
+import shutil
 import tempfile
 
 import py.test
@@ -167,7 +168,14 @@ class TestRepoGuardConfig(object):
         config_ = (_REPOGUARD_CONFIG % (cls.templatedir, cls.projectdir))
         
         cls.config = RepoGuardConfig(config_.splitlines())
+
+    @classmethod
+    def teardown_class(cls):
+        """ Cleans up the temporary directories. """
         
+        shutil.rmtree(cls.templatedir, True)
+        shutil.rmtree(cls.projectdir, True)        
+
     def test_projects(self):
         """ Tests C{projects} property. """
         
@@ -211,6 +219,12 @@ class TestProjectConfig(object):
         file_pointer.close()
         
         cls.config = ProjectConfig(_PROJECT_CONFIG, "hooks", [cls.templatedir])
+        
+    @classmethod
+    def teardown_class(cls):
+        """ Cleans up the temporary directories. """
+        
+        shutil.rmtree(cls.templatedir, True)
         
     def test_extended(self):
         """ Tests C{extended} property. """
@@ -298,6 +312,13 @@ class TestProcess(object):
         
         cls.config = ProjectConfig(_PROJECT_CONFIG, "hooks", [cls.templatedir])
         cls._profile = cls.config.profile("default")
+        
+    @classmethod
+    def teardown_class(cls):
+        """ Cleans up the temporary directories. """
+        
+        shutil.rmtree(cls.templatedir, True)
+        shutil.rmtree(cls.projectdir, True)
         
     def test_set_process(self):
         """ Tests setting the process section. """

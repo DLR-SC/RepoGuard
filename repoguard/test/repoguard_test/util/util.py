@@ -21,7 +21,9 @@ Some global test settings and methods.
 """
 
 
+import atexit
 import os
+import shutil
 import tempfile
 
 from repoguard.core import constants
@@ -42,6 +44,8 @@ class TestRepository(object):
         
         os.popen("svnadmin create %s" % self.repodir)
         os.popen("svn co file:///%s \"%s\"" % (self.repodir, self.chkdir))
+        
+        atexit.register(self._cleanup)
 
     def create_default(self):
         """ Creates the default repository content. """
@@ -83,7 +87,13 @@ class TestRepository(object):
         os.mkdir(os.path.join(self.chkdir, path))
         os.popen("svn add \"%s\"" % os.path.join(self.chkdir, path))
     
+    def _cleanup(self):
+        """ Deletes the created temporary repository. """
+        
+        shutil.rmtree(self.repodir, True)
+        shutil.rmtree(self.chkdir, True)
     
+
 class TestProtocol(Protocol):
     """
     Test protocol class.

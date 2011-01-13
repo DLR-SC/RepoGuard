@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """
 Test methods for the RejectTabs class.
 """
 
-
-import os
-import tempfile
 
 from configobj import ConfigObj
 
@@ -40,8 +38,6 @@ class TestRejectTabs(object):
     def setup_class(cls):
         """ Creates the test setup. """
         
-        handle, _ = tempfile.mkstemp()
-        os.fdopen(handle).close()
         cls.config = ConfigObj(_CONFIG_STRING.splitlines())
 
     def test_reject_leading_tabs(self):
