@@ -42,15 +42,20 @@ class TestCheckout(object):
     def setup_class(cls):
         """ Creates the test setup. """
         
-        fd, filepath = tempfile.mkstemp()
-        config = _CONFIG_STRING.replace("%DESTINATION%", filepath)\
+        file_descriptor, cls._dest_filepath = tempfile.mkstemp()
+        config = _CONFIG_STRING.replace("%DESTINATION%", cls._dest_filepath)\
                  .splitlines()
-        os.close(fd)
-        os.remove(filepath)
+        os.close(file_descriptor)
         cls.config = ConfigObj(config)
         cls.repository = TestRepository()
         cls.repodir, cls.transaction = cls.repository.create_default()
 
+    @classmethod
+    def teardown_class(cls):
+        """ Removes the checked out file. """
+        
+        os.remove(cls._dest_filepath)
+    
     def test_run(self):
         """ Tests the successful run. """
         

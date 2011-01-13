@@ -145,6 +145,7 @@ class TestRepoGuardConfig(object):
         config.Requirement = _RequirementMock
         config.resource_filename = _resource_filename_mock
         # Required to make _get_templates work
+        cls._listdir = os.listdir
         os.listdir = lambda _: [u"default.tpl.conf", u"python.tpl.conf"] 
 
         cls.templatedir = tempfile.mkdtemp()
@@ -173,6 +174,7 @@ class TestRepoGuardConfig(object):
     def teardown_class(cls):
         """ Cleans up the temporary directories. """
         
+        os.listdir = cls._listdir # Set listdir to the correct function again
         shutil.rmtree(cls.templatedir, True)
         shutil.rmtree(cls.projectdir, True)        
 

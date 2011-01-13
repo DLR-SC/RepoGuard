@@ -17,7 +17,6 @@
 
 
 import pkg_resources
-import os
 import tempfile
 
 from repoguard.core import constants
@@ -137,17 +136,13 @@ class TestRepoGuard(object):
     def test_initialize(self):
         """ Tests the run initialization. """
         
-        fd, filepath = tempfile.mkstemp()
-        config = _CONFIG_STRING.replace("%DESTINATION%", filepath)\
+        config = _CONFIG_STRING.replace("%DESTINATION%", tempfile.mkstemp()[1])\
                  .splitlines()
         self.precommit_checker.load_config(_MAIN_CONFIG, config)
         assert not self.precommit_checker.main is None
         
         self.postcommit_checker.load_config(_MAIN_CONFIG, config)
         assert not self.postcommit_checker.main is None
-        
-        os.close(fd)
-        os.remove(filepath)
         
     def test_run(self):
         """ Tests the pre and post commit checker runs. """
