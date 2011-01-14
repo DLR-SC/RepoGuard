@@ -16,6 +16,7 @@
 """ Tests the RepoGuard main class. """
 
 
+import os
 import pkg_resources
 import tempfile
 
@@ -136,8 +137,11 @@ class TestRepoGuard(object):
     def test_initialize(self):
         """ Tests the run initialization. """
         
-        config = _CONFIG_STRING.replace("%DESTINATION%", tempfile.mkstemp()[1])\
+        file_descriptor, filepath = tempfile.mkstemp()
+        config = _CONFIG_STRING.replace("%DESTINATION%", filepath)\
                  .splitlines()
+        os.close(file_descriptor)
+        os.remove(filepath)
         self.precommit_checker.load_config(_MAIN_CONFIG, config)
         assert not self.precommit_checker.main is None
         
