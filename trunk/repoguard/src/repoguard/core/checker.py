@@ -17,7 +17,6 @@ Module that contains the main RepoGuard class.
 """
 
 import os
-import re
 
 from repoguard.core import constants
 from repoguard.core.logger import LoggerFactory
@@ -39,10 +38,6 @@ class RepoGuard(object):
         :param hook: The hook that has to be executed. Valid values are 
                      constants.PRECOMMIT or constants.POSTCOMMIT.
         :type hook: constants.PRECOMMIT, constants.POSTCOMMIT.
-        
-        :param transaction_name: The name of the current transaction.
-        :type transaction_name: string
-        
         :param repository_path: The path to the current repository.
         :type repository_path: string
         """
@@ -96,22 +91,20 @@ class RepoGuard(object):
         validator = ConfigValidator(excepts=True)
         return validator.validate(self.main)
     
-    def _default_regex(self):
+    def _combined_profile_regexes(self):
         """
-        Generates the default regex expression that manches all files, that are
-        not covered by any profile.
-        
-        :return: Regex expression that matches all uncovert files.
-        :rtype: string
+        Returns a regular expression string which matches all 
+        files that are covered by any special profile. A special
+        profile defines a non-empty regex parameter.
         """
         
-        files = set(self.transaction.get_files().keys())
+        combined_profile_regexes = ""
         for profile in self.main.profiles:
-            self.transaction.profile = profile.regex or "^$"
-            files -= frozenset(self.transaction.get_files().keys())
-            
-        # generation of the regex for all files that are left.
-        return '^(%s)$' % '|'.join([re.escape(item) for item in files])
+            if not profile.regex is None:
+                combined_profile_regexes += "(%s)|" % profile.regex
+        if not combined_profile_regexes:
+            combined_profile_regexes = None
+        return combined_profile_regexes   
     
     def run(self):
         """
@@ -124,16 +117,24 @@ class RepoGuard(object):
         """
         
         self.logger.debug("Running run...")
-        default = self._default_regex()
-        self.logger.debug("Default regex: %s", default)
+        combined_profile_regexes = self._combined_profile_regexes()
+        self.logger.debug("Default ignore regex: %s", combined_profile_regexes)
         
         # Process executing
         for profile in self.main.profiles:
             self.logger.debug("Running profile '%s'...", profile.name)
-            self.transaction.profile = profile.regex or default
-        
+            ignores = list()
+            if not profile.regex is None:
+                self.transaction.profile = profile.regex
+            else: 
+                # default profile: covers all files
+                # which are not handled by a special profile
+                self.transaction.profile = ".*"
+                if not combined_profile_regexes is None:
+                    ignores = [combined_profile_regexes]
+                
             # if there are no files in this profile continue
-            if not self.transaction.get_files():
+            if not self.transaction.get_files(ignore_list=ignores):
                 self.logger.debug("Profile '%s' skipped.", profile.name)
                 continue
             
