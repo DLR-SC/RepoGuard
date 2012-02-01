@@ -1,4 +1,4 @@
-# pylint: disable-msg=F0401,R0903,W0232,C0103
+#
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """ Class that handles access to the mantis bug tracker. """
+
 
 import re
 
-from suds.xsd.sxbasic import Import
 from suds.client import Client
 
 from repoguard.core.module import ConfigSerializer, String
@@ -31,7 +32,7 @@ class Config(ConfigSerializer):
     class types(ConfigSerializer.types):
         """
         General Mantis configuration parameters.
-        """
+        """ # pylint: disable=W0232,C0103
         
         url = String
         user = String
@@ -43,15 +44,12 @@ class Mantis(object):
     Interface for easy use of the Mantis Connect web service interface.
     """
     
-    namespace = 'http://schemas.xmlsoap.org/soap/encoding/'
     pattern = re.compile('MANTIS[:#]|[\s\-_]ID ([0-9]+)', re.IGNORECASE)
     
     def __init__(self, config):
         """ 
         Initialize the MantisModule object. 
         """
-        
-        Import.bind(self.namespace)
         
         self.client = Client(config.url)
         self.service = self.client.service
@@ -117,4 +115,4 @@ class Mantis(object):
                     return
                 
         raise ValueError("Unable to set custom field '%s'", name)
-            
+    
