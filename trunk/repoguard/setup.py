@@ -86,7 +86,6 @@ setup(
     
     install_requires=[
         "configobj==4.6.0",
-        "soaplib==0.8.1"
     ],
     
     extras_require={
@@ -96,7 +95,7 @@ setup(
             "pylint>=0.18.1"
         ],
         "suds" : [
-            "suds>=0.3.3"
+            "suds-jurko>=0.4.1"
         ],
         "twisted" : [
             "twisted>=8.1.0"
