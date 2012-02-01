@@ -1,4 +1,4 @@
-# pylint: disable-msg=W0703,W0232
+#
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,20 +41,18 @@ check and handler handling.
     Integer
 """
 
+
+import functools
 import inspect
 import re
-import functools
 
 import pkg_resources
-
 from validate import Validator
 
 from repoguard.core import constants
 from repoguard.core.protocol import ProtocolEntry
 from repoguard.core.logger import LoggerFactory
 
-from soaplib.serializers.clazz import ClassSerializer
-from soaplib.serializers import primitive as soap
 
 def _objectname(obj):
     """
@@ -69,7 +67,7 @@ def _objectname(obj):
     
     return obj.__name__ if hasattr(obj, '__name__') else obj.__class__.__name__
 
-class Boolean(soap.Boolean):
+class Boolean(object):
     """
     Class that represents an boolean value.
     """
@@ -95,7 +93,8 @@ class Boolean(soap.Boolean):
     def validate(cls, value):
         return Validator().check('boolean', value)
 
-class String(soap.String):
+
+class String(object):
     """
     Class that represents an string value.
     """
@@ -152,8 +151,9 @@ class String(soap.String):
             raise ValueError(msg % (value, cls.regex))
     
         return value
+
             
-class Integer(soap.Integer):
+class Integer(object):
     """
     Class that represents an int value.
     """
@@ -190,8 +190,9 @@ class Integer(soap.Integer):
         """
         
         return Validator().check('integer', value)
+    
             
-class Array(soap.Array):
+class Array(object):
     """
     Class that represents an array/list structure.
     """
@@ -223,7 +224,7 @@ class Array(soap.Array):
         :type default: object
         """
         
-        soap.Array.__init__(self, serializer)
+        self.serializer = serializer
         self.minsize = minsize
         self.maxsize = maxsize
         self.optional = optional
@@ -251,7 +252,8 @@ class Array(soap.Array):
         
         return value
 
-class ConfigSerializer(ClassSerializer):
+
+class ConfigSerializer(object):
     """
     Serializer class that converts given config in an object representation
     and from an object representation to a config.
@@ -279,8 +281,9 @@ class ConfigSerializer(ClassSerializer):
         :type default: object
         """
         
-        ClassSerializer.__init__(self)
-        
+        cls = self.__class__
+        for key, _ in inspect.getmembers(cls.types):
+            setattr(self, key, None)
         self.optional = optional
         self.default = default
         
@@ -292,7 +295,7 @@ class ConfigSerializer(ClassSerializer):
         :param cls: The class that has to be checked.
         :type cls: ConfigSerializer
         
-        :param value: A configserializer instance that has to be cheched.
+        :param value: A configserializer instance that has to be checked.
         :type value: ConfigSerializer
         """
         
