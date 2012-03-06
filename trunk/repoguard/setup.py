@@ -21,21 +21,22 @@ Setup script for the RepoGuard distribution.
 import sys
 import os
 
+from distribute_setup import use_setuptools
+use_setuptools()
 from setuptools import setup, find_packages
 
 
-WIN32_CONFIG_HOME = os.path.join(os.path.expanduser("~"), ".repoguard")
-LINUX_CONFIG_HOME = "/usr/local/share/repoguard"
-CONFIG_HOME = WIN32_CONFIG_HOME if sys.platform == "win32" else LINUX_CONFIG_HOME
-
+_WIN32_CONFIG_HOME = os.path.join(os.path.expanduser("~"), ".repoguard")
+_LINUX_CONFIG_HOME = "/usr/local/share/repoguard"
+CONFIG_HOME = _WIN32_CONFIG_HOME if sys.platform == "win32" else _LINUX_CONFIG_HOME
+CONFIG_HOME = os.getenv("REPOGUARD_CONFIG_HOME", CONFIG_HOME)
+DEBUG = os.getenv("REPOGUARD_DEBUG")
 
 # Renames the main repoguard script for test purposes
 # to prevent that the current repoguard start script is overridden
-console_scripts = "repoguard = repoguard.main:main"
-if "install" in sys.argv and "--with-debug" in sys.argv:
-    sys.argv.remove("--with-debug")
-    console_scripts = "repoguard-debug = repoguard.main:main"
-
+_CONSOLE_SCRIPTS = "repoguard = repoguard.main:main"
+if DEBUG:
+    _CONSOLE_SCRIPTS = "repoguard-debug = repoguard.main:main"
 
 setup(
     name="repoguard", 
@@ -60,19 +61,17 @@ setup(
         "Topic :: Software Development :: Bug Tracking",
         "Topic :: Software Development :: Version Control",
     ],
-    
     namespace_packages=[
+        "repoguard",
         "repoguard.checks",
         "repoguard.handlers",
         "repoguard.modules",
         "repoguard.tools"
     ],
-    
     packages=find_packages("src", exclude=["*.tests", "*.testutil"]),
     package_dir={
         "" : "src"
     },
-    
     data_files=[
         (CONFIG_HOME, [
             "cfg/repoguard.conf",
@@ -83,30 +82,30 @@ setup(
             "cfg/templates/python.tpl.conf"
         ])
     ],
-    
     install_requires=[
-        "configobj==4.6.0",
+        "configobj>=4.6.0",
+        "setuptools"
     ],
-    
     extras_require={
+        "dev" : [
+            "Sphinx>=1.1.2",
+            "pylint>=0.18.1",
+            "pytest>=2.2.3"
+        ],
         "pylint" : [
-            "logilab-common>=0.33.0",
-            "logilab-astng>=0.17.2",
             "pylint>=0.18.1"
         ],
-        "suds" : [
+        "mantis" : [
             "suds-jurko>=0.4.1"
         ],
-        "twisted" : [
+        "buildbot" : [
             "twisted>=8.1.0"
         ]
     },
-    
     entry_points={
         "console_scripts": [
-            console_scripts
+            _CONSOLE_SCRIPTS
         ],
-                    
         "repoguard.checks" : [
             "AccessRights = repoguard.checks.accessrights:AccessRights",
             "ASCIIEncoded = repoguard.checks.asciiencoded:ASCIIEncoded",
@@ -115,23 +114,21 @@ setup(
             "Checkstyle = repoguard.checks.checkstyle:Checkstyle",
             "Keywords = repoguard.checks.keywords:Keywords",
             "Log = repoguard.checks.log:Log",
-            "Mantis = repoguard.checks.mantis:Mantis [suds]",
+            "Mantis = repoguard.checks.mantis [mantis]",
             "PyLint = repoguard.checks.pylint_:PyLint [pylint]",
             "RejectTabs = repoguard.checks.rejecttabs:RejectTabs",
             "UnitTests = repoguard.checks.unittests:UnitTests",
             "XMLValidator = repoguard.checks.xmlvalidator:XMLValidator"
         ],
-        
         "repoguard.handlers" : [
             "Mail = repoguard.handlers.mail:Mail",
             "Console = repoguard.handlers.console:Console",
             "File = repoguard.handlers.file:File",
-            "Mantis = repoguard.handlers.mantis:Mantis [suds]",
-            "BuildBot = repoguard.handlers.buildbot:BuildBot [twisted]",
+            "Mantis = repoguard.handlers.mantis:Mantis [mantis]",
+            "BuildBot = repoguard.handlers.buildbot:BuildBot [buildbot]",
             "Hudson = repoguard.handlers.hudson:Hudson",
             "ViewVC = repoguard.handlers.viewvc:ViewVC"
         ],
-        
         "repoguard.tools" : [
             "Checker = repoguard.tools.checker:Checker",
             "Configuration = repoguard.tools.config:Configuration",
