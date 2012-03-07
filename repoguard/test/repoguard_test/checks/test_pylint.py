@@ -71,12 +71,19 @@ class TestPyLint(object):
         cls._config_with_pylintrc = ConfigObj(checker_config.splitlines())
         
         # Mocking pylint and StringIO modules
+        cls._string_io_class = pylint_.StringIO.StringIO
         pylint_.StringIO.StringIO = _StringIoMock
         lint.Run = _RunMock
-
+        
+    @classmethod
+    def teardown_class(cls):
+        """ Resets the StringIO class. """
+        
+        pylint_.StringIO.StringIO = cls._string_io_class
+        
     def test_for_success(self):
         """ Checks behavior without pylint errors. """
-        
+
         _StringIoMock.success = True
         repository = TestRepository()
         repository.add_file("test.py", '""" docstring. """\n\nprint "hallo"')
@@ -87,7 +94,7 @@ class TestPyLint(object):
 
     def test_for_failure(self):
         """ Checks behavior with existing pylint errors. """
-        
+
         _StringIoMock.success = False
         repository = TestRepository()
         repository.add_file("test.py", 'print "hallo"')

@@ -38,6 +38,52 @@ if DEBUG: # Adds a debug prefix to allow test with new version without de-activa
     _CONSOLE_SCRIPTS = "repoguard-debug = repoguard.main:main"
 
 
+class test(core.Command):
+    """ Runs all unit tests. """
+    
+    _PYTEST_EXECUTABLE = "py.test"
+    _TEST_DIR = "test"
+
+    description = "Runs all unit tests using py.test."
+    user_options = [
+        ("out=", None, "Specifies the output format of the test results." \
+         + "Formats: xml, standard out. Default: standard out."),
+        ("covout=", None, "Specifies the output format of the coverage report." \
+         + "Formats: xml, html. Default: html")]
+
+
+    def __init__(self, distribution):
+        self.verbose = None
+        self.out = None
+        self.covout = None
+
+        core.Command.__init__(self, distribution)
+
+    def initialize_options(self):
+        self.out = None
+        if sys.platform == "win32":
+            self._PYTEST_EXECUTABLE += ".exe"
+        self.covout = None
+        self.verbose = False
+
+    def finalize_options(self):
+        self.verbose = self.distribution.verbose
+        
+    def run(self):
+        if self.out == "xml":
+            options = "--junitxml={0} {1}".format("./xunit.xml", self._TEST_DIR)
+        else:
+            options = " {0}".format(self._TEST_DIR)
+        
+        if not self.covout is None:
+            options = "--cov=src --cov-report={0} {1}".format(self.covout, options)
+
+        command = "{0} {1}".format(self._PYTEST_EXECUTABLE, options)
+        if self.verbose:
+            print(command)
+        subprocess.call(command)
+
+
 class doc(core.Command):
     """ Creates the developer documentation. """
     
@@ -71,7 +117,7 @@ class doc(core.Command):
 setup(
     name="repoguard", 
     version="0.3.0-dev",
-    cmdclass={"doc": doc},
+    cmdclass={"doc": doc, "test": test},
     description="RepoGuard is a framework for Subversion hook scripts.",
     long_description="RepoGuard is a framework for Subversion pre-commit hooks in order to implement checks of the to be commited files before they are commited. For example, you can check for the code style or unit tests. The output of the checks can be send by mail or be written into a file or simply print to the console..",
     author="Deutsches Zentrum fuer Luft- und Raumfahrt e.V. (DLR)",
@@ -121,7 +167,8 @@ setup(
         "dev" : [
             "Sphinx>=1.1.2",
             "pylint>=0.18.1",
-            "pytest>=2.2.3"
+            "pytest>=2.2.3",
+            "pytest-cov>=1.5" 
         ],
         "pylint" : [
             "pylint>=0.18.1"
