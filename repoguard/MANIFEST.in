@@ -1,6 +1,7 @@
 exclude .*
 
 include distribute_setup.py
+include AUTHORS
 recursive-include cfg *.conf
 
 recursive-exclude test/* *.py

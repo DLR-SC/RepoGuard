@@ -41,7 +41,7 @@ if DEBUG: # Adds a debug prefix to allow test with new version without de-activa
 class _pylint(core.Command):
     """ Runs the pylint command. """
 
-    _COMMAND_TEMPLATE = "{0} --rcfile=pylintrc --output-format={1} src/repoguard test/repoguard_test > {2}"
+    _COMMAND_TEMPLATE = "{0} --rcfile=dev/pylintrc --output-format={1} src/repoguard test/repoguard_test > {2}"
 
     description = "Runs the pylint command."
     user_options = [
@@ -73,11 +73,13 @@ class _pylint(core.Command):
 
     def _correct_path_delimiter(self):
         if self.out != "html" and sys.platform == "win32":
-            with open(self.output_file_path, "rb") as file_object:
-                content = file_object.read().replace("\\", "/")
-            with open(self.output_file_path, "wb") as file_object:
-                file_object.write(content)
-
+            file_object = open(self.output_file_path, "rb")
+            content = file_object.read().replace("\\", "/")
+            file_object.close()
+            file_object = open(self.output_file_path, "wb")
+            file_object.write(content)
+            file_object.close()
+                
 
 class test(core.Command):
     """ Runs all unit tests. """
@@ -112,7 +114,7 @@ class test(core.Command):
             options = " test"
         
         if not self.covout is None:
-            options = "--cov=src --cov-report={0} {1}".format(self.covout, options)
+            options = "--cov=src --cov-config=dev/coveragerc --cov-report={0} {1}".format(self.covout, options)
 
         command = "{0} {1}".format(self.command, options)
         if self.verbose:

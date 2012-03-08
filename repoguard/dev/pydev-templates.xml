@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><templates><template autoinsert="false" context="org.python.pydev.editor.templates.python.modules" deleted="false" description="Module: Empty" enabled="true" id="org.python.pydev.editor.templates.python.module.empty" name="&lt;Empty&gt;"># See the file "LICENSE" for the full license governing this code.
+
+
+""" """
+</template><template autoinsert="false" context="org.python.pydev.editor.templates.python.modules" deleted="false" description="Module: Class" enabled="true" id="org.python.pydev.editor.templates.python.module.class" name="Module: Class"># See the file "LICENSE" for the full license governing this code.
+
+
+""" """
+
+
+class ${MyClass}(${object}):
+    '''
+    ${classdocs}
+    '''
+
+    def __init__(self, ${params}):
+        '''
+        ${Constructor}
+        '''
+
+        ${cursor}
+</template><template autoinsert="false" context="org.python.pydev.editor.templates.python.modules" deleted="false" description="Module: Main" enabled="true" id="org.python.pydev.editor.templates.python.module.main" name="Module: Main"># See the file "LICENSE" for the full license governing this code.
+
+
+""" """
+
+
+if __name__ == '__main__':
+    ${pass}${cursor}
+</template><template autoinsert="false" context="org.python.pydev.editor.templates.python.modules" deleted="false" description="Module: Unittest" enabled="true" id="org.python.pydev.editor.templates.python.module.unittest" name="Module: Unittest"># See the file "LICENSE" for the full license governing this code.
+
+
+""" """
+
+
+class Test(object):
+
+    def test_${Name}(self):
+        ${pass}${cursor}
+
+</template><template autoinsert="false" context="org.python.pydev.editor.templates.python.modules" deleted="false" description="Module: Unittest with setup_method and teardown_method" enabled="true" name="Module: Unittest with setUp and tearDown"># See the file "LICENSE" for the full license governing this code.
+
+
+""" """
+
+
+class Test(object):
+
+    def setup_method(self, method):
+        pass
+
+    def teardown_method(self, method):
+        pass
+        
+    def test_${Name}(self):
+        ${pass}${cursor}
+</template><template autoinsert="false" context="org.python.pydev.editor.templates.python.modules" deleted="false" description="Module: Unittest with setup_class and teardown_class" enabled="true" name="Module: Unittest with setup_class and teardown_class"># See the file "LICENSE" for the full license governing this code.
+
+
+""" """
+
+
+class Test(object):
+
+    @classmethod
+    def setup_class(cls):
+        pass
+
+    @classmethod
+    def teardown_class(cls):
+        pass
+        
+    def test_${Name}(self):
+        ${pass}${cursor}
+</template></templates>
