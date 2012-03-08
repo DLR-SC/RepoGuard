@@ -25,7 +25,7 @@ import subprocess
 
 from distribute_setup import use_setuptools
 use_setuptools()
-from setuptools import setup, find_packages, command
+import setuptools
 
 
 _WIN32_CONFIG_HOME = os.path.join(os.path.expanduser("~"), ".repoguard")
@@ -38,31 +38,67 @@ if DEBUG: # Adds a debug prefix to allow test with new version without de-activa
     _CONSOLE_SCRIPTS = "repoguard-debug = repoguard.main:main"
 
 
+class _pylint(core.Command):
+    """ Runs the pylint command. """
+
+    _COMMAND_TEMPLATE = "{0} --rcfile=pylintrc --output-format={1} src/repoguard test/repoguard_test > {2}"
+
+    description = "Runs the pylint command."
+    user_options = [
+        ("command=", None, "Path and name of the pylint command line tool. Default: pylint"),
+        ("out=", None, "Specifies the output type (html or parseable). Default: html")]
+
+    def initialize_options(self):
+        self.verbose = False
+        self.command = "pylint"
+        if sys.platform == "win32":
+            self.command += ".bat"
+        self.out = "html"
+        self.output_file_path = "pylint.html"
+        python_path = [os.path.realpath(path) for path in ["src", "test"]]
+        os.environ["PYTHONPATH"] = os.pathsep.join(python_path)
+
+    def finalize_options(self):
+        self.verbose = self.distribution.verbose
+        if self.out != "html":
+            self.output_file_path = "pylint.txt"
+
+    def run(self):
+        command = self._COMMAND_TEMPLATE.format(self.command, self.out, self.output_file_path)
+        if self.verbose:
+            print(command)
+        subprocess.call(command)
+        
+        self._correct_path_delimiter()
+
+    def _correct_path_delimiter(self):
+        if self.out != "html" and sys.platform == "win32":
+            with open(self.output_file_path, "rb") as file_object:
+                content = file_object.read().replace("\\", "/")
+            with open(self.output_file_path, "wb") as file_object:
+                file_object.write(content)
+
+
 class test(core.Command):
     """ Runs all unit tests. """
     
-    _PYTEST_EXECUTABLE = "py.test"
-    _TEST_DIR = "test"
-
     description = "Runs all unit tests using py.test."
     user_options = [
+        ("command=", None, "Path and name of the pytest command line tool. Default: py.test"),
         ("out=", None, "Specifies the output format of the test results." \
          + "Formats: xml, standard out. Default: standard out."),
         ("covout=", None, "Specifies the output format of the coverage report." \
-         + "Formats: xml, html. Default: html")]
+         + "Formats: xml, html.")]
 
 
     def __init__(self, distribution):
-        self.verbose = None
-        self.out = None
-        self.covout = None
-
         core.Command.__init__(self, distribution)
 
     def initialize_options(self):
+        self.command = "py.test"
         self.out = None
         if sys.platform == "win32":
-            self._PYTEST_EXECUTABLE += ".exe"
+            self.command += ".exe"
         self.covout = None
         self.verbose = False
 
@@ -71,18 +107,54 @@ class test(core.Command):
         
     def run(self):
         if self.out == "xml":
-            options = "--junitxml={0} {1}".format("./xunit.xml", self._TEST_DIR)
+            options = "--junitxml=./xunit.xml test"
         else:
-            options = " {0}".format(self._TEST_DIR)
+            options = " test"
         
         if not self.covout is None:
             options = "--cov=src --cov-report={0} {1}".format(self.covout, options)
 
-        command = "{0} {1}".format(self._PYTEST_EXECUTABLE, options)
+        command = "{0} {1}".format(self.command, options)
         if self.verbose:
             print(command)
         subprocess.call(command)
 
+
+class audit(core.Command):
+    """ Runs pylint for coding standards compliance check 
+    and determines the code coverage. """
+
+    description = "Runs pylint for coding standards compliance check and determines the code coverage."
+    user_options = [("out=", None, "Specifies the output type (user readable or ci). Default: user readable")]
+    sub_commands = [("_pylint", None), ("test", None)]
+
+    def __init__(self, distribution):
+        core.Command.__init__(self, distribution)
+        
+    def initialize_options(self):
+        self.verbose = False
+        self.out = None
+    
+    def finalize_options(self):
+        self.verbose = self.distribution.verbose
+
+    def run(self):
+        self._set_sub_command_options()
+        for command_name in self.get_sub_commands():
+            self.run_command(command_name)
+    
+    def _set_sub_command_options(self):
+        test_options = self.distribution.get_option_dict("test")
+        pylint_options = self.distribution.get_option_dict("_pylint")
+        if self.out is None:
+            test_options["out"] = ("", None)
+            test_options["covout"] = ("", "html")
+            pylint_options["out"] = ("", "html")
+        else:
+            test_options["out"] = ("", "xml")
+            test_options["covout"] = ("", "xml")
+            pylint_options["out"] = ("", "parseable")
+    
 
 class doc(core.Command):
     """ Creates the developer documentation. """
@@ -94,9 +166,6 @@ class doc(core.Command):
 
     
     def __init__(self, distribution):
-        self.verbose = None
-        self.command = None
-
         core.Command.__init__(self, distribution)
 
     def initialize_options(self):
@@ -114,10 +183,10 @@ class doc(core.Command):
             print(command)
         subprocess.call(command)
 
-setup(
+setuptools.setup(
     name="repoguard", 
     version="0.3.0-dev",
-    cmdclass={"doc": doc, "test": test},
+    cmdclass={"doc": doc, "test": test, "_pylint": _pylint, "audit": audit},
     description="RepoGuard is a framework for Subversion hook scripts.",
     long_description="RepoGuard is a framework for Subversion pre-commit hooks in order to implement checks of the to be commited files before they are commited. For example, you can check for the code style or unit tests. The output of the checks can be send by mail or be written into a file or simply print to the console..",
     author="Deutsches Zentrum fuer Luft- und Raumfahrt e.V. (DLR)",
@@ -145,7 +214,7 @@ setup(
         "repoguard.modules",
         "repoguard.tools"
     ],
-    packages=find_packages("src", exclude=["*.tests", "*.testutil"]),
+    packages=setuptools.find_packages("src", exclude=["*.tests", "*.testutil"]),
     package_dir={
         "" : "src"
     },
