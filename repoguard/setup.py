@@ -55,7 +55,7 @@ class _BaseCommandRunner(core.Command):
     def _run_command(self, command):
         if self.verbose:
             print(command)
-        subprocess.call(command)
+        subprocess.call(command, shell=True)
     
     def _perform_post_actions(self):
         pass
@@ -169,7 +169,7 @@ def _run_setup(config_home, console_scripts):
         maintainer_email="tobias.schlauch@dlr.de",
         license="Apache License Version 2.0",
         url="http://repoguard.tigris.org",
-        platform="independent",
+        platforms=["Linux", "Unix", "Windows"],
         classifiers=[
             "Development Status :: 1 - Pre-Alpha",
             "Environment :: Console",
