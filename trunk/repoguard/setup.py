@@ -31,6 +31,8 @@ class clean(_clean.clean):
             shutil.rmtree("dist")
         if os.path.exists(".coverage") and not self.dry_run:
             os.remove(".coverage")
+        if os.path.exists("coverage.xml") and not self.dry_run:
+            os.remove("coverage.xml")
         if os.path.exists("src/repoguard.egg-info") and not self.dry_run:
             shutil.rmtree("src/repoguard.egg-info")
 
@@ -111,7 +113,6 @@ class test(_BaseCommandRunner):
             self.command += ".exe"
         self.out = None
         self.covout = None
-        self.verbose = False
 
     def finalize_options(self):
         self.verbose = self.distribution.verbose
