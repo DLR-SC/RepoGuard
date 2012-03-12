@@ -83,10 +83,8 @@ class pylint(_BaseCommandRunner):
 
     def _create_command(self):
         return (
-            "%s --rcfile=%s --output-format=%s %s %s > %s"
-            % (self.command, os.path.realpath("dev/pylintrc"), self.out,
-               os.path.realpath("src/repoguard"), os.path.realpath("test/repoguard_test"), 
-               self.output_file_path))
+            "%s --rcfile=dev/pylintrc --output-format=%s src/repoguard test/repoguard_test > %s"
+            % (self.command, self.out, self.output_file_path))
 
     def _perform_post_actions(self):
         if self.out == "text" and sys.platform == "win32":
