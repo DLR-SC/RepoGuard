@@ -29,13 +29,13 @@ disable=I0011,SIMILARITIES
 output-format=text
 
 # Include message's id in output
-include-ids=no
+include-ids=yes
 
 # Put messages in a separate file for each module / package specified on the# command line instead of printing them on stdout. Reports (if any) will be# written in a file name "pylint_global.[txt|html]".
 files-output=no
 
 # Tells whether to display a full report or only the messages
-reports=yes
+reports=no
 
 # Python expression which should return a note less than 10 (10 is the highest# note). You have access to the variables errors warning, statement which# respectively contain the number of errors / warnings messages and the total# number of statements analyzed. This is used by the global evaluation report# (RP0004).
 evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
