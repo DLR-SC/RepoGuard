@@ -6,6 +6,7 @@ Setup script for the RepoGuard distribution.
 """
 
 
+from __future__ import with_statement
 from distutils.command import clean as _clean
 from distutils import core
 import os
@@ -35,7 +36,7 @@ class clean(_clean.clean):
 
 
 class _BaseCommandRunner(core.Command):
-    """ Base class for cammand line commands. """
+    """ Base class for encapsulating command line commands. """
     
     user_options = [("command=", None, "Path and name of the command line tool.")]
     
@@ -82,17 +83,15 @@ class pylint(_BaseCommandRunner):
 
     def _create_command(self):
         return (
-            "{0} --rcfile=dev/pylintrc --output-format={1} src/repoguard test/repoguard_test > {2}"
-            .format(self.command, self.out, self.output_file_path))
+            "%s --rcfile=dev/pylintrc --output-format=%s src/repoguard test/repoguard_test > %s"
+            % (self.command, self.out, self.output_file_path))
 
     def _perform_post_actions(self):
         if self.out != "html" and sys.platform == "win32":
-            file_object = open(self.output_file_path, "rb")
-            content = file_object.read().replace("\\", "/")
-            file_object.close()
-            file_object = open(self.output_file_path, "wb")
-            file_object.write(content)
-            file_object.close()
+            with open(self.output_file_path, "rb") as file_object:
+                content = file_object.read().replace("\\", "/")
+            with open(self.output_file_path, "wb") as file_object:
+                file_object.write(content)
                 
 
 class test(_BaseCommandRunner):
@@ -122,9 +121,9 @@ class test(_BaseCommandRunner):
             options = "--junitxml=build/xunit.xml test"
         if not self.covout is None:
             options = (
-                "--cov=src --cov-config=dev/coveragerc --cov-report={0} {1}"
-                .format(self.covout, options))
-        return "{0} {1}".format(self.command, options)
+                "--cov=src --cov-config=dev/coveragerc --cov-report=%s %s"
+                % (self.covout, options))
+        return "%s %s" % (self.command, options)
 
 
 def _perform_setup():
@@ -202,14 +201,15 @@ def _run_setup(config_home, console_scripts):
         ],
         install_requires=[
             "configobj>=4.6.0",
-            "setuptools"
+            "setuptools>=0.6"
         ],
         extras_require={
             "dev": [
-                "Sphinx>=1.1.2",
+                "Sphinx>=1.1.3",
                 "pylint>=0.18.1",
                 "pytest>=2.2.3",
-                "pytest-cov>=1.5" 
+                "pytest-cov>=1.5",
+                "coverage.py>=3.5"
             ],
             "pylint": [
                 "pylint>=0.18.1"
