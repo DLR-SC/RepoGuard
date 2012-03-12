@@ -38,8 +38,6 @@ class clean(_clean.clean):
 class _BaseCommandRunner(core.Command):
     """ Base class for encapsulating command line commands. """
     
-    user_options = [("command=", None, "Path and name of the command line tool.")]
-    
     def run(self):
         self._create_build_dir()
         command = self._create_command()
@@ -67,7 +65,9 @@ class pylint(_BaseCommandRunner):
     """ Runs the pylint command. """
 
     description = "Runs the pylint command."
-    user_options = [("out=", None, "Specifies the output type (html or txt). Default: html")]
+    user_options = [
+        ("command=", None, "Path and name of the command line tool."),
+        ("out=", None, "Specifies the output type (html or text). Default: html")]
 
     def initialize_options(self):
         self.command = "pylint"
@@ -78,16 +78,18 @@ class pylint(_BaseCommandRunner):
 
     def finalize_options(self):
         self.verbose = self.distribution.verbose
-        if self.out != "html":
+        if self.out == "text":
             self.output_file_path = "build/pylint.txt"
 
     def _create_command(self):
         return (
-            "%s --rcfile=dev/pylintrc --output-format=%s src/repoguard test/repoguard_test > %s"
-            % (self.command, self.out, self.output_file_path))
+            "%s --rcfile=%s --output-format=%s %s %s > %s"
+            % (self.command, os.path.realpath("dev/pylintrc"), self.out,
+               os.path.realpath("src/repoguard"), os.path.realpath("test/repoguard_test"), 
+               self.output_file_path))
 
     def _perform_post_actions(self):
-        if self.out != "html" and sys.platform == "win32":
+        if self.out == "text" and sys.platform == "win32":
             with open(self.output_file_path, "rb") as file_object:
                 content = file_object.read().replace("\\", "/")
             with open(self.output_file_path, "wb") as file_object:
@@ -99,6 +101,7 @@ class test(_BaseCommandRunner):
     
     description = "Runs all unit tests using py.test."
     user_options = [
+        ("command=", None, "Path and name of the command line tool."),
         ("out=", None, "Specifies the output format of the test results." \
          + "Formats: xml, standard out. Default: standard out."),
         ("covout=", None, "Specifies the output format of the coverage report." \
