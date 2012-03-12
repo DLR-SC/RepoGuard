@@ -69,7 +69,7 @@ class pylint(_BaseCommandRunner):
     description = "Runs the pylint command."
     user_options = [
         ("command=", None, "Path and name of the command line tool."),
-        ("out=", None, "Specifies the output type (html or text). Default: html")]
+        ("out=", None, "Specifies the output type (html, parseable). Default: html")]
 
     def initialize_options(self):
         self.command = "pylint"
@@ -80,7 +80,7 @@ class pylint(_BaseCommandRunner):
 
     def finalize_options(self):
         self.verbose = self.distribution.verbose
-        if self.out == "text":
+        if self.out == "parseable":
             self.output_file_path = "build/pylint.txt"
 
     def _create_command(self):
@@ -89,7 +89,7 @@ class pylint(_BaseCommandRunner):
             % (self.command, self.out, self.output_file_path))
 
     def _perform_post_actions(self):
-        if self.out == "text" and sys.platform == "win32":
+        if self.out == "parseable" and sys.platform == "win32":
             with open(self.output_file_path, "rb") as file_object:
                 content = file_object.read().replace("\\", "/")
             with open(self.output_file_path, "wb") as file_object:
