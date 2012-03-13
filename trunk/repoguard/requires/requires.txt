@@ -1,0 +1,2 @@
+configobj>=4.6.0
+setuptools>=0.6
