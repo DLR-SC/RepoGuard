@@ -12,31 +12,31 @@ Requirements:
 The following requirements can be automatically resolved by the setup script.
  * RepoGuard core dependencies:
   * configobj >= 4.6.0
-  * setuptools
- 
+  * setuptools >=0.6
+   
  * Pylint check dependencies:
    * pylint >= 0.18.1
    
  * Mantis check and handler dependencies:
-   * suds-jurko >= 0.4.1
+   * suds >= 0.4
     
  * Experimental BuildBot handler dependencies:
    * twisted >= 8.1.0
 
 You have the following installation options:
- * Install with pip from PyPi (recommend)
-  * Standard installation: pip install repoguard
-  * Install with Mantis support: pip install repoguard[mantis]
-  * Install with BuildBot support: pip install repoguard[buildbot]
-  
- * Install with easy_install from PyPi
-  * Standard installation: easy_install repoguard
-  * Install with Mantis support: easy_install repoguard[mantis]
-  * Install with BuildBot support: easy_install repoguard[buildbot]
-  
  * Install from source:
   * Download the source package from http://repoguard.tigris.org/servlets/ProjectDocumentList
   * tar -xf repoguard-x.y.z.tar / unzip repoguard-x.y.z.zip
   * cd repoguard-x.y.z
-  * python setup.py install # Ensures that configobj and setuptools is installed
-  * To automatically install the Mantis / BuildBot dependencies see above. Your RepoGuard installation will not be touched! In addition, the easy_install command should be available.
+  * python setup.py install # Ensures that configobj and setuptools (provides the easy_install command) is installed
+  * To automatically install the Mantis / BuildBot dependencies see below.
+ 
+ * Install with easy_install from PyPi
+  * Core installation: easy_install repoguard
+  * Install with Mantis support: easy_install repoguard[mantis]
+  * Install with BuildBot support: easy_install repoguard[buildbot]
+
+ * Install with pip from PyPi
+  * Core installation: pip install repoguard
+  * Install with Mantis support: pip install repoguard[mantis]
+  * Install with BuildBot support: pip install repoguard[buildbot]
