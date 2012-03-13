@@ -23,18 +23,12 @@ class clean(_clean.clean):
     """ Little clean extension: Cleans up a non-empty build directory. """
     
     def run(self):
-        if os.path.exists("build") and not self.dry_run:
-            shutil.rmtree("build")
-        if os.path.exists("doc/html") and not self.dry_run:
-            shutil.rmtree("doc/html")
-        if os.path.exists("dist") and not self.dry_run:
-            shutil.rmtree("dist")
-        if os.path.exists(".coverage") and not self.dry_run:
-            os.remove(".coverage")
-        if os.path.exists("coverage.xml") and not self.dry_run:
-            os.remove("coverage.xml")
-        if os.path.exists("src/repoguard.egg-info") and not self.dry_run:
-            shutil.rmtree("src/repoguard.egg-info")
+        for path in ["build", "doc/html", "doc/doctrees", "dist", 
+                     "src/repoguard.egg-info", ".coverage", "coverage.xml"]:
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            elif os.path.isfile(path):
+                os.remove(path)
 
 
 class _BaseCommandRunner(core.Command):
@@ -217,7 +211,7 @@ def _run_setup(config_home, console_scripts):
                 "pylint>=0.18.1"
             ],
             "mantis": [
-                "suds-jurko>=0.4.1"
+                "suds>=0.4"
             ],
             "buildbot": [
                 "twisted>=8.1.0"
