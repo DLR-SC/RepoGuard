@@ -126,7 +126,8 @@ def _perform_setup():
     _set_pythonpath()
     config_home = _get_config_home()
     console_scripts = _get_console_scripts()
-    _run_setup(config_home, console_scripts)
+    install_requires, extras_require = _get_requirements()
+    _run_setup(config_home, console_scripts, install_requires, extras_require)
     
 def _set_pythonpath():
     python_path = [os.path.realpath(path) for path in ["src", "test"]]
@@ -142,11 +143,26 @@ def _get_config_home():
 def _get_console_scripts():
     debug = os.getenv("REPOGUARD_DEBUG")
     console_scripts = "repoguard = repoguard.main:main"
-    if debug: # Adds a debug prefix to allow test with new version without de-activating the old one
+    if debug: # Adds a debug prefix to allow test with a new version without de-activating the old one
         console_scripts = "repoguard-debug = repoguard.main:main"
     return console_scripts
 
-def _run_setup(config_home, console_scripts):
+def _get_requirements():
+    extras_require = dict()
+    install_requires = list()
+    for name in os.listdir("requires"):
+        if name == "requires.txt":
+            install_requires = (_read_requirements_from_file("requires/" + name))
+        elif name.startswith("requires"):
+            extras_name = name[9:-4]
+            extras_require[extras_name] = _read_requirements_from_file("requires/" + name)
+    return install_requires, extras_require
+
+def _read_requirements_from_file(path):
+    with open(path, "rb") as file_object:
+        return file_object.read().splitlines()
+
+def _run_setup(config_home, console_scripts, install_requires, extras_require):
     setuptools.setup(
         name="repoguard", 
         version="0.3.0",
@@ -195,28 +211,8 @@ def _run_setup(config_home, console_scripts):
                 "cfg/templates/python.tpl.conf"
             ])
         ],
-        install_requires=[
-            "configobj>=4.6.0",
-            "setuptools>=0.6"
-        ],
-        extras_require={
-            "dev": [
-                "Sphinx>=1.1.3",
-                "pylint>=0.18.1",
-                "pytest>=2.2.3",
-                "pytest-cov>=1.5",
-                "coverage.py>=3.5"
-            ],
-            "pylint": [
-                "pylint>=0.18.1"
-            ],
-            "mantis": [
-                "suds>=0.4"
-            ],
-            "buildbot": [
-                "twisted>=8.1.0"
-            ]
-        },
+        install_requires=install_requires,
+        extras_require=extras_require,
         entry_points={
             "console_scripts": [
                 console_scripts
