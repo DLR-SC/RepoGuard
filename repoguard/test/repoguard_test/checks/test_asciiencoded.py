@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=R0201
-# R0201: Cannot make test methods static as nose would not
-#        recognize them anymore.
+#
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,67 +16,57 @@
 
 
 """
-Test methods for the ASCII check.
+Tests the ASCII check.
 """
 
 
 from configobj import ConfigObj
+import mock
 
-from repoguard.checks.asciiencoded import ASCIIEncoded
-from repoguard_test.util import TestRepository
+from repoguard.checks import asciiencoded
 
 
 class TestASCIIEncoded(object):
-    """ Tests the ASCII check. """
         
     @classmethod
     def setup_class(cls):
-        """ Creates the test setup. """
+        cls._file_mock = mock.MagicMock(spec=file)
+        transaction = mock.Mock()
+        transaction.get_files = mock.Mock(return_value={"filepath":"A"})
         
-        cls.config = ConfigObj(encoding='UTF-8')
-        
-    def test_ascii_check_success(self):
-        """ Performs ASCII check which finds NO non-ASCII letters. """
-        
-        repository = TestRepository()
-        repository.add_file("test.py", '""" docstring. """\nprint "hällo@#"')
-        transaction = repository.commit()  
-        
-        asciiencoded = ASCIIEncoded(transaction)
-        result = asciiencoded.ascii_check(
-            transaction.get_file("test.py"), "ä", "e"
-        )
-        assert not result
-        
-    def test_ascii_check_error(self):
-        """ Performs ASCII check which finds non-ASCII letters. """
-        
-        repository = TestRepository()
-        repository.add_file("test.py", '""" docstring. """\nprint "hellö@#"')
-        transaction = repository.commit()
-        
-        asciiencoded = ASCIIEncoded(transaction)
-        result = asciiencoded.ascii_check(
-            transaction.get_file("test.py"), "ö", "e"
-        )
-        assert result
+        cls._config = ConfigObj(encoding='UTF-8')
+        cls._asciiencoded = asciiencoded.ASCIIEncoded(transaction)
+
+    def test_default_contains_ascii_only(self):
+        with mock.patch("repoguard.checks.asciiencoded.open", create=True) as open_mock:
+            self._init_file_mock(open_mock, '""" doc"""\nprint "hllo@#"')
+            assert self._asciiencoded.ascii_check("test.py", "", "") == list()
+            
+    def test_default_contains_non_ascii(self):
+        with mock.patch("repoguard.checks.asciiencoded.open", create=True) as open_mock:
+            self._init_file_mock(open_mock, '""" doc"""\nprint "hällo@#"')
+            errors = self._asciiencoded.ascii_check("test.py", "", "")
+            assert errors[0][1] == 20
+            
+    def test_include_character(self):
+        with mock.patch("repoguard.checks.asciiencoded.open", create=True) as open_mock:
+            self._init_file_mock(open_mock, '""" doc"""\nprint "hällo@#"')
+            assert self._asciiencoded.ascii_check("test.py", "ä", "") == list()
+    
+    def test_exclude_character(self):
+        with mock.patch("repoguard.checks.asciiencoded.open", create=True) as open_mock:
+            self._init_file_mock(open_mock, '""" doc. """\nprint "hell@#"')
+            errors = self._asciiencoded.ascii_check("test.py", "", "e")
+            assert errors[0][1] == 22
+            
+    def _init_file_mock(self, open_mock, file_content):
+        open_mock.return_value.__enter__.return_value = self._file_mock
+        self._file_mock.readlines = mock.Mock(return_value=[file_content])
         
     def test_run_success(self):
-        """ Performs a successful run. """
-        
-        repository = TestRepository()
-        repository.add_file("test.py", '""" docstring. """\nprint "hallo@#"')
-        transaction = repository.commit()  
-        
-        asciiencoded = ASCIIEncoded(transaction)
-        assert asciiencoded.run(self.config, debug=True).success == True
+        self._asciiencoded.ascii_check = mock.Mock(return_value=list()) 
+        assert self._asciiencoded.run(self._config, debug=True).success
         
     def test_run_error(self):
-        """ Peforms a failure run. """
-        
-        repository = TestRepository()
-        repository.add_file("test.py", '""" docstring. """\nprint "hällö@#"')
-        transaction = repository.commit()  
-        
-        asciiencoded = ASCIIEncoded(transaction)
-        assert asciiencoded.run(self.config, debug=True).success == False
+        self._asciiencoded.ascii_check = mock.Mock(return_value=[(0, 0, 0)]) 
+        assert not self._asciiencoded.run(self._config, debug=True).success

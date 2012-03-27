@@ -14,87 +14,72 @@
 # limitations under the License.
 
 
+
 """
-Test methods of the console handler.
+Tests the console handler.
 """
 
-
-from __future__ import with_statement
-
-import os
-import sys
-import tempfile
 
 from configobj import ConfigObj
+import mock
+import StringIO
 
 from repoguard.core import constants
 from repoguard.handlers.console import Console
-from repoguard_test.util import TestProtocol, TestProtocolEntry
 
 
 class TestConsole(object):
-    """ Implements the console handler tests. """
     
-    @classmethod
-    def setup_class(cls):
-        """ Creates the test setup. """
+    def setup_method(self, _):
+        self._entry = mock.MagicMock(result=constants.SUCCESS)
+        self._protocol = mock.MagicMock(result=constants.SUCCESS)
+        self._protocol.filter.return_value = self._protocol
+        self._success_file = StringIO.StringIO()
+        self._error_file = StringIO.StringIO()
         
-        cls.test_protocol = TestProtocol()
-        cls.test_protocol.add_entry(result=constants.SUCCESS, msg="dummy")
-        cls.test_protocol.add_entry(result=constants.ERROR, msg="dummy")
-        
-        cls.console = Console(None)
-        cls.config = ConfigObj()
-    
-    def test_run(self):
-        """ Tests the successful execution of a certain handler step. """
-        
-        error_filehandle, error_filename = tempfile.mkstemp()
-        success_filehandle, success_filename = tempfile.mkstemp()
-        
-        error_file = os.fdopen(error_filehandle, "w")
-        success_file = os.fdopen(success_filehandle, "w")
-        
-        self.console.out = {
-            constants.SUCCESS : success_file,
-            constants.WARNING : error_file,
-            constants.ERROR : error_file,
-            constants.EXCEPTION : error_file
+        self._config = ConfigObj()
+        self._console = Console(None)
+        self._console.out = {
+            constants.SUCCESS: self._success_file,
+            constants.WARNING: self._error_file,
+            constants.ERROR: self._error_file,
+            constants.EXCEPTION: self._error_file
         }
         
-        self.console.singularize(self.config, TestProtocolEntry.error())
-        self.console.singularize(self.config, TestProtocolEntry.success())
-
-        error_file.close()
-        success_file.close()
+    def test_singularize_success_channel(self):
+        self._console.singularize(self._config, self._entry)
+        assert self._success_file.len > 0
         
-        with open(error_filename, "r") as file_object:
-            assert file_object.read() == self.console.pattern \
-                                         % TestProtocolEntry.error()
-
-        with open(success_filename, "r") as file_object:
-            assert file_object.read() == self.console.pattern \
-                                         % TestProtocolEntry.success()
+    def test_singularize_warning_channel(self):
+        self._entry.result = constants.WARNING
+        self._console.singularize(self._config, self._entry)
+        assert self._error_file.len > 0
         
-        os.remove(error_filename)
-        os.remove(success_filename)
-
-    def test_summarize(self):
-        """ Tests the successful execution of the handler. """
+    def test_singularize_error_channel(self):
+        self._entry.result = constants.ERROR
+        self._console.singularize(self._config, self._entry)
+        assert self._error_file.len > 0
         
-        error_filehandle, error_filename = tempfile.mkstemp()
-        error_file = os.fdopen(error_filehandle, "w")
-        self.console.out = {
-            constants.SUCCESS : sys.stdout,
-            constants.WARNING : error_file,
-            constants.ERROR : error_file,
-            constants.EXCEPTION : error_file
-        }
-        self.console.summarize(self.config, self.test_protocol)
-        error_file.close()
+    def test_singularize_exception_channel(self):
+        self._entry.result = constants.EXCEPTION
+        self._console.singularize(self._config, self._entry)
+        assert self._error_file.len > 0
         
-        with open(error_filename, "r") as file_object:
-            assert file_object.read() == self.console.pattern \
-                                         % self.test_protocol
+    def test_summarize_success_channel(self):
+        self._console.summarize(self._config, self._protocol)
+        assert self._success_file.len > 0
+    
+    def test_summarize_warning_channel(self):
+        self._protocol.result = constants.WARNING
+        self._console.summarize(self._config, self._protocol)
+        assert self._error_file.len > 0
         
-        os.remove(error_filename)
+    def test_summarize_error_channel(self):
+        self._protocol.result = constants.ERROR
+        self._console.summarize(self._config, self._protocol)
+        assert self._error_file.len > 0
+        
+    def test_summarize_exception_channel(self):
+        self._protocol.result = constants.EXCEPTION
+        self._console.summarize(self._config, self._protocol)
+        assert self._error_file.len > 0

@@ -15,41 +15,60 @@
 
 
 """
-Test methods for the Mantis class.
+Testa the Mantis check.
 """
 
 
 from configobj import ConfigObj
+import mock
 
-from repoguard.checks.mantis import Mantis
-from repoguard.modules import mantis
-from repoguard_test.util import MantisMock, TestRepository
+from repoguard.checks import mantis
 
 
-_CONFIG_STRING = """
+_CONFIG_DEFAULT = """
 url=http://localhost/mantis/mc/mantisconnect.php?wsdl
-user=administrator
-password=root
-check_in_progress=False
-check_handler=False
+user=me
+password=secret
+check_in_progress=True
+check_handler=True
 """
 
 
-class TestMantis(object):
-    """ Tests the Mantis checker. """
+class TestMantisCheck(object):
     
     @classmethod
     def setup_class(cls):
-        """ Creates the test setup. """
+        cls._mantis_module = mock.Mock()
+        mantis.base.Mantis = mock.Mock(return_value=cls._mantis_module)
         
-        cls.config = ConfigObj(_CONFIG_STRING.splitlines())
-        cls.repository = TestRepository()
-        cls.repodir, cls.transaction = cls.repository.create_default()
-        mantis.Mantis = MantisMock
+        cls.config = ConfigObj(_CONFIG_DEFAULT.splitlines())
+        cls._mantis = mantis.Mantis(mock.Mock(user_id="me"))
 
-    def test_success(self):
-        """ Tests successful run of the Mantis checker. """
+    def test_no_issue_ids(self):
+        self._mantis_module.extract_issues.return_value = list()
+        assert not self._mantis.run(self.config).success
+
+    def test_issue_not_exists(self):
+        self._mantis_module.extract_issues.return_value = ["1278"]
+        self._mantis_module.issue_exists.return_value = False
+        assert not self._mantis.run(self.config).success
+
+    def test_issue_not_in_progress(self):
+        self._mantis_module.extract_issues.return_value = ["1278"]
+        self._mantis_module.issue_exists.return_value = True
+        self._mantis_module.issue_get_status.return_value = "assigned"
+        assert not self._mantis.run(self.config).success
+    
+    def test_issue_not_wrong_handler(self):
+        self._mantis_module.extract_issues.return_value = ["1278"]
+        self._mantis_module.issue_exists.return_value = True
+        self._mantis_module.issue_get_status.return_value = "in_progress"
+        self._mantis_module.issue_get_handler.return_value = "anotheruser"
+        assert not self._mantis.run(self.config).success
         
-        mantis_ = Mantis(self.transaction)
-        result = mantis_.run(self.config, debug=True)
-        assert result.success == True
+    def test_success(self):
+        self._mantis_module.extract_issues.return_value = ["1278"]
+        self._mantis_module.issue_exists.return_value = True
+        self._mantis_module.issue_get_status.return_value = "in_progress"
+        self._mantis_module.issue_get_handler.return_value = "me"
+        assert self._mantis.run(self.config).success

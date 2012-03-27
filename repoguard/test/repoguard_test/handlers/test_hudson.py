@@ -1,5 +1,3 @@
-# pylint: disable=R0903
-# R0903: _UrlOpenResponseMock is just a mock and needs no more methods.
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -17,53 +15,31 @@
 
 
 """
-Test module for the Hudson handler.
+Tests the Hudson/Jenkins handler.
 """
 
 
+from __future__ import with_statement
+
 from configobj import ConfigObj
+import mock
 
 from repoguard.handlers import hudson
-from repoguard_test.util import TestRepository, TestProtocol
 
 
-_CONFIG_STRING = """
+_CONFIG_DEFAULT = """
 url='http://localhost/build'
 token='test'
-""".splitlines()
-
-
-def _urlopen_mock(url, params):
-    """ Mocks the urllib.urlopen function. """
-    
-    assert url == 'http://localhost/build'
-    assert params == 'token=test'
-    return _UrlOpenResponseMock()
-
-
-class _UrlOpenResponseMock(object):
-    """ Mocks the urllib.urlopen result. """
-    
-    def close(self):
-        """ Does nothing. """
-        
-        pass
+"""
 
 
 class TestHudson(object):
-    """ Tests the Hudson handler. """
     
     @classmethod
     def setup_class(cls):
-        """ Creates the test setup. """
+        hudson.urlopen = mock.Mock()
+        cls._config = ConfigObj(_CONFIG_DEFAULT.splitlines())
+        cls._handler = hudson.Hudson(None)
         
-        hudson.urlopen = _urlopen_mock
-        cls.repository = TestRepository()
-        cls.repodir, cls.transaction = cls.repository.create_default()
-        cls.handler = hudson.Hudson(cls.transaction)
-        cls.config = ConfigObj(_CONFIG_STRING)
-        
-    def test_summarize(self):
-        """ Tests the successful execution of the Hudson handler. """
-        
-        self.handler.summarize(self.config, TestProtocol(), True)
+    def test_success(self):
+        self._handler.summarize(self._config, mock.MagicMock(), True)

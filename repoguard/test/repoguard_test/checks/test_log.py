@@ -1,5 +1,3 @@
-# pylint: disable=E1101
-# E1101:  'ConfigSerializer' HAS a 'viewvc' member.
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -17,50 +15,37 @@
 
 
 """
-Test methods for the Log class.
+Test the Log check.
 """
 
 
 from configobj import ConfigObj
+import mock
 
-from repoguard.checks.log import Log
-from repoguard_test.util import TestRepository
+from repoguard.checks import log
 
-_CONFIG_STRING = """
+
+_CONFIG_DEFAULT = """
 viewvc.url=http://localhost
 viewvc.root=test
 viewvc.view=test
 """
 
-class TestConfig(object):
-    """ Tests configuration of the log check. """
-    
-    @classmethod
-    def setup_class(cls):
-        """ Creates test setup. """
-        
-        cls.config = ConfigObj(_CONFIG_STRING.splitlines())
-    
-    def test_encode(self):
-        """ Tests configuration loading from string. """
-        
-        config = Log.__config__.from_config(self.config)
-        url = config.viewvc.encode(1)
-        assert url == "http://localhost?revision=1&root=test&view=test"
-
 
 class TestLog(object):
-    """ Tests of the log check. """
     
     @classmethod
     def setup_class(cls):
-        """ Creates the test setup. """
+        cls._config = ConfigObj(_CONFIG_DEFAULT.splitlines())
         
-        cls.config = ConfigObj(_CONFIG_STRING.splitlines())
-        cls.repository = TestRepository()
-        cls.repodir, cls.transaction = cls.repository.create_default()
-
-    def test_run(self):
-        """ Tests the successful execution of the check. """
-        log = Log(self.transaction)
-        assert log.run(self.config).success == True
+    def test_success(self):
+        transaction = mock.Mock(user_id="user", revision="1", commit_msg="")
+        transaction.get_files.return_value = {"filepath":"A"}
+        assert log.Log(transaction).run(self._config).success
+        
+    def test_encode(self):
+        # pylint: disable=E1101
+        # E1101:  'ConfigSerializer' HAS a 'viewvc' member.
+        config = log.Log.__config__.from_config(self._config)
+        url = config.viewvc.encode(1)
+        assert url == "http://localhost?revision=1&root=test&view=test"

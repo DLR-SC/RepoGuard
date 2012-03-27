@@ -1,5 +1,3 @@
-# pylint: disable=R0903
-# R0903: Just the mock classes have to few methods.
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -17,88 +15,44 @@
 
 
 """
-Test methods for the Pylint class.
+Tests the Pylint check.
 """
 
 
 from configobj import ConfigObj
-from pylint import lint
+import mock
 
 from repoguard.checks import pylint_
-from repoguard_test.util import TestRepository
-        
-
-class _StringIoMock(object):
-    """ Mock of the StringIO class. """
-   
-    success = True # Used to trigger errors
-   
-    def __init__(self):
-        """ Just calls the default StringIO constructor. """
-       
-        pass
-   
-    def getvalue(self):
-        """ Mocks the StringIO.getvalue method. """
-        
-        if self.success:
-            return None
-        else:
-            return "error"
 
 
-class _RunMock:
-    """ Mocks the lint.Run class. """
-    
-    def __init__(self, _, reporter=None):
-        """ Effectively the constructor dies nothing. """
-        
-        pass
-        
-        
 class TestPyLint(object):
-    """ Tests pylint checker. """
-    
-    @classmethod
-    def setup_class(cls):
-        """ Creates the test setup. """
-        
-        checker_config = "ignore_files=,\n"
-        # Test without pylintrc
-        cls._config_without_pylintrc = ConfigObj(checker_config.splitlines())
-        # Test with custom pylintrc
-        checker_config += "config_file=pylintrc\n"
-        cls._config_with_pylintrc = ConfigObj(checker_config.splitlines())
-        
-        # Mocking pylint and StringIO modules
-        cls._string_io_class = pylint_.StringIO.StringIO
-        pylint_.StringIO.StringIO = _StringIoMock
-        lint.Run = _RunMock
-        
-    @classmethod
-    def teardown_class(cls):
-        """ Resets the StringIO class. """
-        
-        pylint_.StringIO.StringIO = cls._string_io_class
-        
-    def test_for_success(self):
-        """ Checks behavior without pylint errors. """
 
-        _StringIoMock.success = True
-        repository = TestRepository()
-        repository.add_file("test.py", '""" docstring. """\n\nprint "hallo"')
-        transaction = repository.commit()
-        pylint = pylint_.PyLint(transaction)
-        assert pylint.run(self._config_without_pylintrc).success == True
-        assert pylint.run(self._config_with_pylintrc).success == True
+    def setup_method(self, _):
+        self._transaction = mock.Mock()
+        self._transaction.get_files.return_value = {"filepath":"A"}
+        self._transaction.get_file.return_value = "filepath"
+        
+        self._without_pylintrc = ConfigObj()
+        self._with_pylintrc = ConfigObj(["config_file=pylintrc"])
+        self._pylint = pylint_.PyLint(self._transaction)
+        
+    def test_no_files(self):
+        self._transaction.get_files.return_value = list()
+        assert self._pylint.run(self._without_pylintrc).success
+        assert self._pylint.run(self._with_pylintrc).success
 
-    def test_for_failure(self):
-        """ Checks behavior with existing pylint errors. """
+    def test_no_modified_files(self):
+        self._transaction.get_files.return_value = {"filepath":"D"}
+        assert self._pylint.run(self._without_pylintrc).success
+        assert self._pylint.run(self._with_pylintrc).success
 
-        _StringIoMock.success = False
-        repository = TestRepository()
-        repository.add_file("test.py", 'print "hallo"')
-        transaction = repository.commit()
-        pylint = pylint_.PyLint(transaction)
-        assert pylint.run(self._config_without_pylintrc).success == False
-        assert pylint.run(self._config_with_pylintrc).success == False
+    def test_success(self):
+        pylint_.lint.Run = mock.Mock()
+        assert self._pylint.run(self._without_pylintrc).success
+        assert self._pylint.run(self._with_pylintrc).success
+
+    def test_failure(self):
+        # Let pylint return an error
+        pylint_.lint.Run = mock.Mock(side_effect=lambda _, __, ___: mock.Mock())
+        assert not self._pylint.run(self._without_pylintrc).success
+        assert not self._pylint.run(self._with_pylintrc).success

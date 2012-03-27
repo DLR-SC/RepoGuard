@@ -1,7 +1,3 @@
-# pylint: disable=R0903, R0201
-# R0903: The _ProcessFunctionMock does not to to have more methods.
-# R0201: test_classpath is only recognized as test method when 
-#        it is a "normal" method.
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -19,105 +15,59 @@
 
 
 """
-Test methods for the Checkstyle class.
+Test the for the Checkstyle check.
 """
 
 
 import os
+import sys
 
 from configobj import ConfigObj
+import mock
 
 from repoguard.core import process
-from repoguard.checks.checkstyle import Checkstyle, Config
-from repoguard_test.util import TestRepository
+from repoguard.checks import checkstyle
 
 
-_CONFIG_STRING = """
+_CONFIG_DEFAULT = """
 java=C:/Programme/Java/jdk1.6.0_11/bin/java.exe
 paths=C:/,
 config_file=checkstylefile
 """
 
 
-class _ProcessFunctionMock(object):
-    """ Mocks repoguard.core.process.execute function. """
-    
-    success = True
-    def __call__(self, command):
-        """
-        For the checkstyle command behavior is defined by C{success}.
-        For svnlook (and all others) a valid change set is returned.
-        """
-        
-        result = ""
-        if "java" in command: # Mocks checkstyle command
-            if not self.success:
-                raise process.ProcessException(command, -1, "error")
-        else: # Mocks svnlook command
-            result = " U Test.java"
-        return result
-    
-
 class TestCheckstyle(object):
-    """ Tests the check style checker. """
-    
     
     @classmethod
     def setup_class(cls):
-        """ Creates test setup. """
+        transaction = mock.Mock()
+        transaction.get_files.return_value = {"filepath":"A"}
+        transaction.get_file.return_value = "filepath"
+        checkstyle.process.execute = mock.Mock()
         
-        cls.config = ConfigObj(_CONFIG_STRING.splitlines())
-        cls.default_execute = None
-        
-    def setup(self):
-        """ Mocks process.execute."""
-        
-        self.default_execute = process.execute
-        process.execute = _ProcessFunctionMock()
-        
-    def teardown(self):
-        """ Resets the process.execute mock. """
-        
-        process.execute = self.default_execute
-        
-    def test_for_success(self):
-        """ Tests successful behavior. """
-        
-        _ProcessFunctionMock.success = True
-        repository = TestRepository()
-        repository.add_file("Test.java", "public class test { }\n")
-        transaction = repository.commit()
-        checkstyle_check = Checkstyle(transaction)
-        assert checkstyle_check.run(self.config, debug=True).success == True
+        cls._config = ConfigObj(_CONFIG_DEFAULT.splitlines())
+        cls._checkstyle = checkstyle.Checkstyle(transaction)
 
-    def test_for_failure(self):
-        """ Tests failure behavior. """
+    def test_success(self):
+        assert self._checkstyle.run(self._config, debug=True).success
+
+    def test_failure(self):
+        checkstyle.process.execute.side_effect = process.ProcessException("", -1, "")
+        assert not self._checkstyle.run(self._config, debug=True).success
+
         
-        _ProcessFunctionMock.success = False
-        repository = TestRepository()
-        repository.add_file("Test.java", "public class test { }")
-        transaction = repository.commit()
-        checkstyle_check = Checkstyle(transaction)
-        assert checkstyle_check.run(self.config, debug=True).success == False
-        
-    def test_classpath(self):
-        """ Tests Java class path creation. """
-        
-        # Mocking some os functions
-        isdir = os.path.isdir
-        listdir = os.listdir
-        os.path.isdir = lambda path: path == "/libs"
-        os.listdir = lambda _: ["foo.jar", "bar.txt"]
-        # Check it
-        try:
-            config = Config()
-            config.paths = ["/libs", "/path/dummy.jar"]
-            result = ":".join((
-                os.path.normpath("/libs/foo.jar"), 
-                os.path.normpath("/path/dummy.jar")
-            ))
-            assert config.classpath == result
-        finally:
-            # Reset some os functions
-            os.path.isdir = isdir
-            os.listdir = listdir
+def test_classpath():
+    isdir = os.path.isdir
+    listdir = os.listdir
+    os.path.isdir = lambda path: path == "/libs"
+    os.listdir = lambda _: ["foo.jar", "bar.txt"]
+    config = checkstyle.Config()
+    config.paths = ["/libs", "/path/dummy.jar"]
+    try:
+        if sys.platform == "win32":
+            assert config.classpath == "\\libs\\foo.jar:\\path\\dummy.jar"
+        else:
+            assert config.classpath == "/libs/foo.jar:/path/dummy.jar"
+    finally:
+        os.path.isdir = isdir
+        os.listdir = listdir

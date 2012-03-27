@@ -15,41 +15,33 @@
 
 
 """
-Test methods for the XMLValidator class.
+Tests the XMLValidator check.
 """
 
 
 from configobj import ConfigObj
+import mock
+import StringIO
 
-from repoguard.checks.xmlvalidator import XMLValidator
-from repoguard_test.util import TestRepository
+from repoguard.checks import xmlvalidator
 
 
 class TestXMLValidator(object):
-    """ Tests the XML validator. """
     
     @classmethod
     def setup_class(cls):
-        """ Creates the test setup. """
+        cls._transaction = mock.Mock()
+        cls._transaction.get_files = mock.Mock(return_value={"filepath":"A"})
         
-        cls.config = ConfigObj(list())
+        cls._config = ConfigObj()
+        cls._xmlvalidator = xmlvalidator.XMLValidator(cls._transaction)
 
-    def test_for_success(self):
-        """ Tests successful validation. """
-        
-        repository = TestRepository()
+    def test_validation_success(self):
         content = '<?xml version="1.0" encoding="UTF-8"?><body></body>'
-        repository.add_file("Test.xml", content)
-        transaction = repository.commit()
-        xmlvalidator = XMLValidator(transaction)
-        assert xmlvalidator.run(self.config).success == True
+        self._transaction.get_file = mock.Mock(return_value=StringIO.StringIO(content))
+        assert self._xmlvalidator.run(self._config).success
 
-    def test_for_failure(self):
-        """ Tests unsuccessful validation. """
-        
-        repository = TestRepository()
-        content = '<?xml version="1.0" encoding="UTF-8"?><body>/body>'
-        repository.add_file("Test.xml", content)
-        transaction = repository.commit()
-        xmlvalidator = XMLValidator(transaction)
-        assert xmlvalidator.run(self.config).success == False
+    def test_validation_failure(self):
+        content = '<?xml version="1.0" encoding="UTF-8"?>NOT_VALID'
+        self._transaction.get_file = mock.Mock(return_value=StringIO.StringIO(content))
+        assert not self._xmlvalidator.run(self._config).success

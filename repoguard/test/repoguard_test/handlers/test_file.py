@@ -15,64 +15,51 @@
 
 
 """
-Test methods of the file handler.
+Tests the file handler.
 """
 
 
-import os
-import tempfile
+from __future__ import with_statement
 
 from configobj import ConfigObj
+import mock
+import pytest
 
-from repoguard.core import constants
-from repoguard.handlers.file import File, SEPARATOR
-from repoguard_test.util import TestProtocol, TestProtocolEntry
+from repoguard.handlers import file as file_
 
 
-_CONFIG_STRING = """
-file=%s
-"""
+_CONFIG_DEFAULT = "file=/path/to/output/file"
 
 
 class TestFile(object):
-    """ Implements the file handler tests. """
     
-    @classmethod
-    def setup_class(cls):
-        """ Creates the test setup. """
+    def setup_method(self, _):
+        self._entry = mock.Mock()
+        self._protocol = mock.MagicMock()
         
-        cls.test_protocol = TestProtocol()
-        cls.test_protocol.add_entry(result=constants.SUCCESS, msg="dummy")
-        cls.test_protocol.add_entry(result=constants.ERROR, msg="dummy")
-        cls.file_ = File(None)
-    
-    def test_run(self):
-        """ Tests the successful execution of a certain handler step. """
-         
-        filehandle, filename = tempfile.mkstemp()
+        self._config = ConfigObj(_CONFIG_DEFAULT.splitlines())
+        self._file = file_.File(None)
         
-        os.fdopen(filehandle).close()
+    def test_nonexisting_filepath(self):
+        with mock.patch("repoguard.handlers.file.os.path.exists", create=True) as exists:
+            exists.return_value = False
+            with pytest.raises(IOError):
+                self._file.singularize(self._config, mock.Mock(), debug=True)
         
-        config = ConfigObj((_CONFIG_STRING % filename).splitlines())
-        
-        self.file_.singularize(config, TestProtocolEntry.error())
-
-        file_object = open(filename, "r")
-        content = file_object.read()
-        file_object.close()
-        os.remove(filename)
-        assert content == str(TestProtocolEntry.error()) + SEPARATOR
-        
-    def test_summarize(self):
-        """ Tests the successful execution of the handler. """
-        
-        filehandle, filename = tempfile.mkstemp()
-        os.fdopen(filehandle).close()
-        config = ConfigObj((_CONFIG_STRING % filename).splitlines())
-        self.file_.summarize(config, self.test_protocol)
-        
-        file_object = open(filename, "r")
-        content = file_object.read()
-        file_object.close()
-        os.remove(filename)
-        assert content == str(self.test_protocol) + SEPARATOR
+    def test_singularize_success(self):
+        with mock.patch("repoguard.handlers.file.os.path.exists", create=True) as exists:
+            exists.return_value = True
+            with mock.patch("repoguard.handlers.file.open", create=True) as open_mock:
+                self._file.singularize(self._config, self._entry, True)
+                assert self._write_called(open_mock)
+            
+    def test_summary_success(self):
+        with mock.patch("repoguard.handlers.file.os.path.exists", create=True) as exists:
+            exists.return_value = True
+            with mock.patch("repoguard.handlers.file.open", create=True) as open_mock:
+                self._file.summarize(self._config, self._protocol, True)
+                assert self._write_called(open_mock)
+                
+    @staticmethod
+    def _write_called(open_mock):
+        return open_mock.return_value.__enter__.return_value.write.called
