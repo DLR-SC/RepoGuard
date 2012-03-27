@@ -45,7 +45,6 @@ class TestCheckstyle(object):
         transaction = mock.Mock()
         transaction.get_files.return_value = {"filepath":"A"}
         transaction.get_file.return_value = "filepath"
-        checkstyle.process.execute = mock.Mock()
         
         cls._config = ConfigObj(_CONFIG_DEFAULT.splitlines())
         cls._checkstyle = checkstyle.Checkstyle(transaction)
