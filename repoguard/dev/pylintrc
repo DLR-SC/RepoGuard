@@ -2,45 +2,61 @@
 # Specify a configuration file.
 #rcfile=
 
-# Python code to execute, usually for sys.path manipulation such as# pygtk.require().
+# Python code to execute, usually for sys.path manipulation such as
+# pygtk.require().
 #init-hook=
 
 # Profiled execution.
 profile=no
 
-# Add files or directories to the blacklist. They should be base names, not# paths.
+# Add files or directories to the blacklist. They should be base names, not
+# paths.
 ignore=CVS
 
 # Pickle collected data for later comparisons.
 persistent=no
 
-# List of plugins (as comma separated values of python modules names) to load,# usually to register additional checkers.
+# List of plugins (as comma separated values of python modules names) to load,
+# usually to register additional checkers.
 load-plugins=
 
 [MESSAGES CONTROL]
-# Enable the message, report, category or checker with the given id(s). You can# either give multiple identifier separated by comma (,) or put this option# multiple time.
+# Enable the message, report, category or checker with the given id(s). You can
+# either give multiple identifier separated by comma (,) or put this option
+# multiple time.
 #enable=
 
-# Disable the message, report, category or checker with the given id(s). You# can either give multiple identifier separated by comma (,) or put this option# multiple time (only on the command line, not in the configuration file where# it should appear only once).
+# Disable the message, report, category or checker with the given id(s). You
+# can either give multiple identifier separated by comma (,) or put this option
+# multiple time (only on the command line, not in the configuration file where
+# it should appear only once).
 disable=I0011,SIMILARITIES
 
 [REPORTS]
-# Set the output format. Available formats are text, parseable, colorized, msvs# (visual studio) and html
+# Set the output format. Available formats are text, parseable, colorized, msvs
+# (visual studio) and html
 output-format=text
 
 # Include message's id in output
 include-ids=yes
 
-# Put messages in a separate file for each module / package specified on the# command line instead of printing them on stdout. Reports (if any) will be# written in a file name "pylint_global.[txt|html]".
+# Put messages in a separate file for each module / package specified on the
+# command line instead of printing them on stdout. Reports (if any) will be
+# written in a file name "pylint_global.[txt|html]".
 files-output=no
 
 # Tells whether to display a full report or only the messages
 reports=no
 
-# Python expression which should return a note less than 10 (10 is the highest# note). You have access to the variables errors warning, statement which# respectively contain the number of errors / warnings messages and the total# number of statements analyzed. This is used by the global evaluation report# (RP0004).
+# Python expression which should return a note less than 10 (10 is the highest
+# note). You have access to the variables errors warning, statement which
+# respectively contain the number of errors / warnings messages and the total
+# number of statements analyzed. This is used by the global evaluation report
+# (RP0004).
 evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
 
-# Add a comment according to your evaluation note. This is used by the global# evaluation report (RP0004).
+# Add a comment according to your evaluation note. This is used by the global
+# evaluation report (RP0004).
 comment=no
 
 [BASIC]
@@ -60,21 +76,22 @@ const-rgx=(([A-Z_][A-Z0-9_]*)|(__.*__))$
 class-rgx=[A-Z_][a-zA-Z0-9]+$
 
 # Regular expression which should only match correct function names
-function-rgx=[a-z_][a-z0-9_]{2,30}$
+function-rgx=[a-z_][a-z0-9_]{2,40}$
 
 # Regular expression which should only match correct method names
-method-rgx=[a-z_][a-z0-9_]{2,30}$
+method-rgx=[a-z_][a-z0-9_]{2,40}$
 
 # Regular expression which should only match correct instance attribute names
 attr-rgx=[a-z_][a-z0-9_]{2,30}$
 
 # Regular expression which should only match correct argument names
-argument-rgx=[a-z_][a-z0-9_]{2,30}$
+argument-rgx=[a-z_][a-z0-9_]{2,30}$|_*
 
 # Regular expression which should only match correct variable names
 variable-rgx=[a-z_][a-z0-9_]{2,30}$
 
-# Regular expression which should only match correct list comprehension /# generator expression variable names
+# Regular expression which should only match correct list comprehension /
+# generator expression variable names
 inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
 
 # Good variable names which should always be accepted, separated by a comma
@@ -83,8 +100,9 @@ good-names=i,j,k,ex,Run,_
 # Bad variable names which should always be refused, separated by a comma
 bad-names=foo,bar,baz,toto,tutu,tata
 
-# Regular expression which should only match functions or classes name which do# not require a docstring
-no-docstring-rgx=((_.*)|(test_.*)|(setup.*)|(teardown.*))
+# Regular expression which should only match functions or classes name which do
+# not require a docstring
+no-docstring-rgx=((_.*)|(test_.*)|(setup.*)|(teardown.*)|(Test.*))
 
 [FORMAT]
 # Maximum number of characters on a single line.
@@ -93,7 +111,8 @@ max-line-length=120
 # Maximum number of lines in a module
 max-module-lines=1000
 
-# String used as indentation unit. This is usually " " (4 spaces) or "\t" (1# tab).
+# String used as indentation unit. This is usually " " (4 spaces) or "\t" (1
+# tab).
 indent-string='    '
 
 [MISCELLANEOUS]
@@ -111,34 +130,42 @@ ignore-comments=yes
 ignore-docstrings=yes
 
 [TYPECHECK]
-# Tells whether missing members accessed in mixin class should be ignored. A# mixin class is detected if its name ends with "mixin" (case insensitive).
+# Tells whether missing members accessed in mixin class should be ignored. A
+# mixin class is detected if its name ends with "mixin" (case insensitive).
 ignore-mixin-members=yes
 
-# List of classes names for which member attributes should not be checked# (useful for classes with attributes dynamically set).
+# List of classes names for which member attributes should not be checked
+# (useful for classes with attributes dynamically set).
 ignored-classes=SQLObject
 
-# When zope mode is activated, add a predefined set of Zope acquired attributes# to generated-members.
+# When zope mode is activated, add a predefined set of Zope acquired attributes
+# to generated-members.
 zope=no
 
-# List of members which are set dynamically and missed by pylint inference# system, and so shouldn't trigger E0201 when accessed. Python regular# expressions are accepted.
+# List of members which are set dynamically and missed by pylint inference
+# system, and so shouldn't trigger E0201 when accessed. Python regular
+# expressions are accepted.
 generated-members=REQUEST,acl_users,aq_parent
 
 [VARIABLES]
 # Tells whether we should check for unused import in __init__ files.
 init-import=no
 
-# A regular expression matching the beginning of the name of dummy variables# (i.e. not used).
+# A regular expression matching the beginning of the name of dummy variables
+# (i.e. not used).
 dummy-variables-rgx=_|dummy
 
-# List of additional names supposed to be defined in builtins. Remember that# you should avoid to define new builtins when possible.
+# List of additional names supposed to be defined in builtins. Remember that
+# you should avoid to define new builtins when possible.
 additional-builtins=
 
 [CLASSES]
-# List of interface methods to ignore, separated by a comma. This is used for# instance to not check methods defines in Zope's Interface base class.
+# List of interface methods to ignore, separated by a comma. This is used for
+# instance to not check methods defines in Zope's Interface base class.
 ignore-iface-methods=isImplementedBy,deferred,extends,names,namesAndDescriptions,queryDescriptionFor,getBases,getDescriptionFor,getDoc,getName,getTaggedValue,getTaggedValueTags,isEqualOrExtendedBy,setTaggedValue,isImplementedByInstancesOf,adaptWith,is_implemented_by
 
 # List of method names used to declare (i.e. assign) instance attributes.
-defining-attr-methods=__init__,__new__,setUp,initialize_options
+defining-attr-methods=__init__,__new__,setup_method,initialize_options
 
 # List of valid names for the first argument in a class method.
 valid-classmethod-first-arg=cls
@@ -147,7 +174,8 @@ valid-classmethod-first-arg=cls
 # Maximum number of arguments for function / method
 max-args=5
 
-# Argument names that match this expression will be ignored. Default to name# with leading underscore
+# Argument names that match this expression will be ignored. Default to name
+# with leading underscore
 ignored-argument-names=_.*
 
 # Maximum number of locals for function / method body
@@ -178,15 +206,19 @@ max-public-methods=20
 # Deprecated modules which should not be used, separated by a comma
 deprecated-modules=regsub,string,TERMIOS,Bastion,rexec
 
-# Create a graph of every (i.e. internal and external) dependencies in the# given file (report RP0402 must not be disabled)
+# Create a graph of every (i.e. internal and external) dependencies in the
+# given file (report RP0402 must not be disabled)
 import-graph=
 
-# Create a graph of external dependencies in the given file (report RP0402 must# not be disabled)
+# Create a graph of external dependencies in the given file (report RP0402 must
+# not be disabled)
 ext-import-graph=
 
-# Create a graph of internal dependencies in the given file (report RP0402 must# not be disabled)
+# Create a graph of internal dependencies in the given file (report RP0402 must
+# not be disabled)
 int-import-graph=
 
 [EXCEPTIONS]
-# Exceptions that will emit a warning when being caught. Defaults to# "Exception"
+# Exceptions that will emit a warning when being caught. Defaults to
+# "Exception"
 overgeneral-exceptions=Exception
