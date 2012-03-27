@@ -19,6 +19,8 @@ Test the for the Checkstyle check.
 """
 
 
+from __future__ import with_statement
+
 import os
 import sys
 
@@ -49,11 +51,13 @@ class TestCheckstyle(object):
         cls._checkstyle = checkstyle.Checkstyle(transaction)
 
     def test_success(self):
-        assert self._checkstyle.run(self._config, debug=True).success
+        with mock.patch("repoguard.checks.checkstyle.process.execute"):
+            assert self._checkstyle.run(self._config, debug=True).success
 
     def test_failure(self):
-        checkstyle.process.execute.side_effect = process.ProcessException("", -1, "")
-        assert not self._checkstyle.run(self._config, debug=True).success
+        with mock.patch("repoguard.checks.checkstyle.process.execute") as process_mock:
+            process_mock.side_effect = process.ProcessException("", -1, "")
+            assert not self._checkstyle.run(self._config, debug=True).success
 
         
 def test_classpath():
