@@ -13,26 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """ 
 Python coding style check.
 """
 
-import StringIO
-import os
 
+import os
+import StringIO
 from tempfile import gettempdir
 
+from pylint import lint
 from pylint.reporters.text import TextReporter
 
 from repoguard.core.module import Check, ConfigSerializer, Array, String
 
 
-def noop(_):
-    """
-    No operation function.
-    """
-    pass
-    
 class Config(ConfigSerializer):
     """
     Configuration for PyLint check.
@@ -99,9 +95,8 @@ class PyLint(Check):
         output = StringIO.StringIO()
         reporter = TextReporter(output)
         
-        from pylint import lint
         # Mock to prevent the sys.exit called by pylint.lint.Run.__init__
-        lint.sys.exit = noop
+        lint.sys.exit = lambda _: 0
         
         self.logger.debug("PyLint is running...")
         lint.Run(["--reports=n"] + files, reporter=reporter)

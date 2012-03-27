@@ -19,6 +19,8 @@ Tests the UnitTests check.
 """
 
 
+from __future__ import with_statement
+
 from configobj import ConfigObj
 import mock
 
