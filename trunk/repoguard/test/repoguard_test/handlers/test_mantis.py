@@ -1,5 +1,3 @@
-# pylint: disable=E1101
-# E1101: ConfigSerializer has the protocol member -> False-Negative.
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -24,48 +22,79 @@ Tests the Mantis handler
 from StringIO import StringIO
 
 from configobj import ConfigObj
+import mock
 
 from repoguard.handlers import mantis
-from repoguard_test.util import MantisMock, TestRepository, TestProtocol
 
 
-_CONFIG_STRING = """
-protocol.include=Log,
+_CONFIG_DEFAULT = """
 url=http://localhost/mantis/mc/mantisconnect.php?wsdl
-user=administrator
-password=root
-custom_field = peter
+user=user
+password=secret
+custom_field = custom
+"""
+
+_CONFIG_WITH_VCS_SYNC = """
+url=http://localhost/mantis/mc/mantisconnect.php?wsdl
+user=user
+password=secret
+custom_field = custom
 vcs_sync_url=http://localhost/mantis/plugin.php?page=Source/import&id=all
 """
 
 
 class TestMantis(object):
-    """ Tests the Mantis handler. """
     
-    @classmethod
-    def setup_class(cls):
-        """ Creates test setup. """
+    def setup_method(self, _):
+        self._urlopen = mock.Mock(return_value=StringIO("No Revisions Parsed."))
+        mantis.urllib2.urlopen = self._urlopen
+        self._mantis_module = mock.Mock()
+        mantis.base.Mantis = mock.Mock(return_value=self._mantis_module)
+        self._protocol = mock.MagicMock()
         
-        cls.test_protocol = TestProtocol()
-        cls.test_protocol.add_entry(check="Foo")
-        cls.test_protocol.add_entry(check="Log")
-        cls.config = ConfigObj(_CONFIG_STRING.splitlines())
-        cls.repository = TestRepository()
-        cls.repodir, cls.transaction = cls.repository.create_default()
-        # Activates mocks
-        mantis.urllib2.urlopen = lambda _: StringIO("No Revisions Parsed.")
-        mantis.base.Mantis = MantisMock
+        self._config_default = ConfigObj(_CONFIG_DEFAULT.splitlines())
+        self._config_with_vcs_sync = ConfigObj(_CONFIG_WITH_VCS_SYNC.splitlines())
+        self._mantis = mantis.Mantis(mock.Mock(return_value="commit_msg"))
         
-    def test_check_include(self):
-        """ Tests the inclusion. """
-        
-        config = mantis.Mantis.__config__.from_config(self.config)
-        assert config.protocol.include == ["Log"]
+    def test_no_issues_extracted(self):
+        self._mantis_module.extract_issues.return_value = list()
+        self._mantis.summarize(self._config_default, self._protocol, debug=True)
+        assert not self._note_added
+        assert not self._field_set
+        assert not self._vcs_sync
+    
+    def test_no_issues_exist(self):
+        self._mantis_module.extract_issues.return_value = ["1234"]
+        self._mantis_module.issue_exists.return_value = False
+        self._mantis.summarize(self._config_default, self._protocol, debug=True)
+        assert not self._note_added
+        assert not self._field_set
+        assert not self._vcs_sync
+    
+    def test_issues_found(self):
+        self._mantis_module.extract_issues.return_value = ["1234"]
+        self._mantis_module.issue_exists.return_value = True
+        self._mantis.summarize(self._config_default, self._protocol, debug=True)
+        assert self._note_added
+        assert self._field_set
+        assert not self._vcs_sync
 
-    def test_run(self):
-        """ Tests the successful execution of the handler. """
-        
-        mantis_ = mantis.Mantis(self.transaction)
-        mantis_.summarize(
-            self.config, self.test_protocol, debug=True
-        )
+    def test_issues_found_with_vcs_sync(self):
+        self._mantis_module.extract_issues.return_value = ["1234"]
+        self._mantis_module.issue_exists.return_value = True
+        self._mantis.summarize(self._config_with_vcs_sync, self._protocol, debug=True)
+        assert not self._note_added
+        assert self._field_set
+        assert self._vcs_sync
+
+    @property
+    def _note_added(self):
+        return self._mantis_module.issue_add_note.called
+    
+    @property
+    def _field_set(self):
+        return self._mantis_module.issue_set_custom_field.called
+    
+    @property
+    def _vcs_sync(self):
+        return self._urlopen.called

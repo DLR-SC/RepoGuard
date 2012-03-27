@@ -15,16 +15,19 @@
 
 
 """    
-Test case for the buildbot script.
+Test cases for the BuildBot handler.
 """
 
 
 from configobj import ConfigObj
 
-from repoguard.handlers.buildbot import BuildBot
+try:
+    from repoguard.handlers.buildbot import BuildBot
+    _DISABLED = False
+except ImportError:
+    _DISABLED = True
 
-
-_CONFIG_STRING = """
+_CONFIG_DEFAULT = """
 url=localhost
 port=8007
 user=admin
@@ -33,11 +36,9 @@ password=foo
     
     
 class TestBuildBot(object):
-    """ Tests the buildbot handler. """
+    skipped = _DISABLED
     
     @classmethod
     def setup_class(cls):
-        """ Creates the test setup. """
-        
         cls.buildbot = BuildBot(None)
-        cls.config = ConfigObj(_CONFIG_STRING)
+        cls.config = ConfigObj(_CONFIG_DEFAULT)

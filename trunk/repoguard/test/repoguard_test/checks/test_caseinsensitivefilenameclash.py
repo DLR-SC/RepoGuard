@@ -15,49 +15,31 @@
 
 
 """
-Test methods for the CaseInsensitiveFilenameClash class.
+Tests the CaseInsensitiveFilenameClash check.
 """
 
 
-import sys
-
 from configobj import ConfigObj
+import mock
 
-from repoguard.checks.caseinsensitivefilenameclash import \
-                                                    CaseInsensitiveFilenameClash
-from repoguard_test.util import TestRepository
+from repoguard.checks import caseinsensitivefilenameclash
 
 
 class TestCaseInsensitiveFilenameClash(object):
-    """ Tests the case insensitive file name clash checker. """
-    
-    disabled = sys.platform == "win32"
 
     @classmethod
     def setup_class(cls):
-        """ Creates test setup. """
+        cls._transaction = mock.Mock()
         
-        cls.config = ConfigObj([])
+        cls.config = ConfigObj(list())
+        cls._check = caseinsensitivefilenameclash.CaseInsensitiveFilenameClash(cls._transaction)
+        
+    def test_detect_filename_clash(self):
+        self._transaction.get_files.return_value = {"test.java": "A"}
+        self._transaction.file_exists.return_value = True
+        assert not self._check.run(self.config).success
 
-    def test_for_success(self):
-        """ Tests successful execution. """
-        
-        if not self.disabled:
-            repository = TestRepository()
-            repository.create_diretory("src")
-            repository.add_file("TestInterface.java", 
-                                "public interface TestInterface {\n}\n")
-            transaction = repository.commit()
-            check = CaseInsensitiveFilenameClash(transaction)
-            assert check.run(self.config, debug=True).success == True
-
-    def test_for_failure(self):
-        """ Tests for failure. """
-        
-        if not self.disabled:
-            repository = TestRepository()
-            repository.create_diretory("main")
-            repository.create_diretory("Main")
-            transaction = repository.commit()
-            check = CaseInsensitiveFilenameClash(transaction)
-            assert check.run(self.config, debug=True).success == False
+    def test_detect_no_filename_clash(self):
+        self._transaction.get_files.return_value = {"test.java": "A"}
+        self._transaction.file_exists.return_value = False
+        assert self._check.run(self.config).success

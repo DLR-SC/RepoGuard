@@ -15,64 +15,46 @@
 
 
 """
-Test methods for the RejectTabs class.
+Tests the RejectTabs check.
 """
 
 
 from configobj import ConfigObj
+import mock
 
-from repoguard.checks.rejecttabs import RejectTabs
-from repoguard_test.util import TestRepository
-
-
-_CONFIG_STRING = """
-check_files=.*\.py$,
-ignore_files=,
-"""
+from repoguard.checks import rejecttabs
 
 
 class TestRejectTabs(object):
-    """ Tests the reject tabs check. """
 
-    @classmethod
-    def setup_class(cls):
-        """ Creates the test setup. """
+    def setup_method(self, _):
+        self._file_mock = mock.MagicMock()
+        self._transaction = mock.Mock()
+        self._transaction.get_files = mock.Mock(return_value={"filepath":"A"})
         
-        cls.config = ConfigObj(_CONFIG_STRING.splitlines())
+        self._config = ConfigObj()
+        self._rejecttabs = rejecttabs.RejectTabs(self._transaction)
 
-    def test_reject_leading_tabs(self):
-        """ Tests reject leading tabs. """
+    def test_leading_tab(self):
+        with mock.patch("repoguard.checks.rejecttabs.open", create=True) as open_mock:
+            self._init_file_mock(open_mock, 'if True:\n\tprint "Hello world"')
+            assert not self._rejecttabs.run(self._config).success
         
-        repository = TestRepository()
-        repository.add_file("first_tab.py", 'if True:\n\tprint "Hello world"')
-        repository.add_file("tab_after_space.py", 
-                            'if True:\n \tprint "Hello world"')
-        repository.add_file("tab_inside.py", 'if True:    print "Hello\tworld"')
-        transaction = repository.commit()
-        rejecttabs = RejectTabs(transaction)
-        entry = rejecttabs.run(self.config)
-        msg_list = entry.msg.split("\n")
-        assert entry.success == False
-        assert len(msg_list) == 2
-        assert "File first_tab.py contains leading tabs" in msg_list
-        assert "File tab_after_space.py contains leading tabs" in msg_list
-
+    def test_leading_mixed_tab_space(self):
+        with mock.patch("repoguard.checks.rejecttabs.open", create=True) as open_mock:
+            self._init_file_mock(open_mock, 'if True:\n \tprint "Hello world"')
+            assert not self._rejecttabs.run(self._config).success
+    
+    def test_inner_tab(self):
+        with mock.patch("repoguard.checks.rejecttabs.open", create=True) as open_mock:
+            self._init_file_mock(open_mock, 'if True:\n    print "\tHello world"')
+            assert self._rejecttabs.run(self._config).success
+        
+    def _init_file_mock(self, open_mock, file_content):
+        open_mock.return_value.__enter__.return_value = self._file_mock
+        self._file_mock.__iter__ = lambda _: iter(file_content.splitlines())
+    
     def test_skip_binary_files(self):
-        """ Tests skipping of binary files. """
-        
-        repository = TestRepository()
-        repository.add_file("binary_tab.py", '\t\t\t')
-        repository.set_property("binary_tab.py", "svn:mime-type", 
-                                "application/octet-stream")
-        transaction = repository.commit()
-        rejecttabs = RejectTabs(transaction)
-        assert rejecttabs.run(self.config).success == True
-
-    def test_ignore(self):
-        """ Tests the ignore feature. """
-        
-        repository = TestRepository()
-        repository.add_file("tabbed.txt", 'if True:\n\tprint "Hello world"')
-        transaction = repository.commit()
-        rejecttabs = RejectTabs(transaction)
-        assert rejecttabs.run(self.config).success == True
+        self._transaction.has_property = mock.Mock(return_value=True)
+        self._transaction.get_property = mock.Mock(return_value="application/octet-stream")
+        assert self._rejecttabs.run(self._config).success

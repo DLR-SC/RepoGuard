@@ -15,91 +15,73 @@
 
 
 """
-Test methods for the AccessRights class.
+Tests the AccessRights check.
 """
 
 
-from configobj import ConfigObj
+import configobj
+import mock
 
-from repoguard.checks.accessrights import AccessRights
-from repoguard_test.util import TestRepository
-
-
-ALLOW = True
-DENY = False
-
-CONFIGS = (
-    ("""
-    check_files = test\.java,
-    """, DENY),
-    ("""
-    check_files = test\.java,
-    allow_users = test,
-    """,  DENY),
-    ("""
-    check_files = test\.java,
-    allow_users = %(user)s,
-    """,  ALLOW),
-    ("""
-    check_files = test\.java,
-    deny_users = test,
-    """, ALLOW),
-    ("""
-    check_files = test\.java,
-    deny_users = %(user)s,
-    """, DENY),
-    ("""
-    check_files = test\.java,
-    allow_users = test_user,
-    deny_users = %(user)s,
-    """, DENY),
-    ("""
-    check_files = test\.java,
-    allow_users = %(user)s,
-    deny_users = test_user,
-    """, ALLOW),
-    ("""check_files = test\.java,
-    allow_users = %(user)s,
-    deny_users = %(user)s,
-    """, DENY),
-    ("""ignore_files = .*,
-    allow_users = %(user)s,
-    deny_users = %(user)s,
-    """, ALLOW),
-    ("""ignore_files = .*,
-    allow_users = %(user)s,
-    """, ALLOW),
-    ("""ignore_files = .*,
-    deny_users = %(user)s,
-    """, ALLOW),
-    
-    ("""ignore_files = .*,
-    """, ALLOW),
-)
+from repoguard.checks import accessrights
 
 
 class TestAccessRights(object):
-    """
-    AccessRights Testcase
-    """
     
-    @classmethod
-    def setup_class(cls):
-        """
-        Setup the test case.
-        """
+    def setup_method(self, _):
+        self._transaction = mock.Mock(user_id="me")
+        self._transaction.get_files = mock.Mock(return_value={"test.java":"A"})
         
-        cls.repository = TestRepository()
-        cls.transaction = cls.repository.create_default()[1]
+        self._accessrights = accessrights.AccessRights(self._transaction)
+        
+    def test_default_configuration(self):
+        config = self._get_config(list())
+        assert not self._accessrights.run(config).success
 
-    def test_run(self):
-        """
-        Test for the access rights run method.
-        """
+    def test_ignore(self):
+        self._transaction.get_files.return_value = dict()
+        config = self._get_config(["ignore_files = .*,"])
+        assert self._accessrights.run(config).success
+        config = self._get_config(
+            ["ignore_files = .*,", "allow_users = me,"])
+        assert self._accessrights.run(config).success
+        config = self._get_config(
+            ["ignore_files = .*,", "deny_users = me,"])
+        assert self._accessrights.run(config).success
+        config = self._get_config(
+            ["ignore_files = .*,", "allow_users = me,", "deny_users = me,"])
+        assert self._accessrights.run(config).success
+    
+    def test_check_without_user(self):
+        config = self._get_config(["check_files = test\.java,"])
+        assert not self._accessrights.run(config).success
+    
+    def test_check_with_allowed_users_only(self):
+        config = self._get_config(
+            ["check_files = test\.java,", "allow_users = anotheruser,"])
+        assert not self._accessrights.run(config).success
+        config = self._get_config(
+            ["check_files = test\.java,", "allow_users = me,"])
+        assert self._accessrights.run(config).success
         
-        for config_string, result in CONFIGS:
-            config_string = config_string % {"user" : self.transaction.user_id}
-            config = ConfigObj(config_string.splitlines())
-            accessrights = AccessRights(self.transaction)
-            print config_string, "Allow" if result else "Deny"
-            assert accessrights.run(config).success == result
+    def test_check_with_denied_users_only(self):
+        config = self._get_config(
+            ["check_files = test\.java,", "deny_users = anotheruser,"])
+        assert self._accessrights.run(config).success
+        config = self._get_config(
+            ["check_files = test\.java,", "deny_users = me,"])
+        assert not self._accessrights.run(config).success
+        
+    def test_check_with_allowed_and_denied_users(self):
+        config = self._get_config(
+            ["check_files = test\.java,", "allow_users = anotheruser,", "deny_users = me,"])
+        assert not self._accessrights.run(config).success
+        config = self._get_config(
+            ["check_files = test\.java,", "allow_users = me,", "deny_users = anotheruser,"])
+        assert self._accessrights.run(config).success
+        config = self._get_config(
+            ["check_files = test\.java,", "allow_users = me,", "deny_users = me,"])
+        assert not self._accessrights.run(config).success
+        
+    @staticmethod
+    def _get_config(parameters):
+        return configobj.ConfigObj(parameters)

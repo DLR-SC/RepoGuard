@@ -15,36 +15,33 @@
 
 
 """
-Test methods for the Keywords class.
+Test the Keywords check.
 """
 
 
 from configobj import ConfigObj
+import mock
 
-from repoguard.checks.keywords import Keywords
-from repoguard_test.util import TestRepository
+from repoguard.checks import keywords
 
 
-_CONFIG_STRING = """
+_CONFIG_DEFAULT = """
 keywords=Date,Revision
 """
 
 class TestKeywords(object):
-    """ Tests the keyowrd check. """
     
-    @classmethod
-    def setup_class(cls):
-        """ Creates the test setup. """
+    def setup_method(self, _):
+        self._transaction = mock.Mock()
+        self._transaction.get_files.return_value = {"filepath":"A"}
         
-        cls.config = ConfigObj(_CONFIG_STRING.splitlines())
-        cls.repository = TestRepository()
-        cls.repodir, cls.transaction = cls.repository.create_default()
+        self._config = ConfigObj(_CONFIG_DEFAULT.splitlines())
+        self._keywords = keywords.Keywords(self._transaction)
 
-    def test_run(self):
-        """ Tests the successful run. """
-        
-        keywords = Keywords(self.transaction)
-        entry = keywords.run(self.config)
-        assert entry.msg.count("Revision") == 2
-        assert entry.msg.count("Date") == 1
-        assert entry.success == False
+    def test_success(self):
+        self._transaction.get_property.return_value = ["Date", "Revision"]
+        assert self._keywords.run(self._config).success
+
+    def test_missing_keywords(self):
+        self._transaction.get_property.return_value = list()
+        assert not self._keywords.run(self._config).success

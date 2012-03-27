@@ -15,48 +15,50 @@
 
 
 """
-Test methods for the UnitTests class.
+Tests the UnitTests check.
 """
 
 
 from configobj import ConfigObj
+import mock
 
-from repoguard.checks.unittests import UnitTests
-from repoguard_test.util import TestRepository
+from repoguard.checks import unittests
 
 
 class TestUnitTests(object):
-    """ Tests the unit test check. """
     
     @classmethod
     def setup_class(cls):
-        """ Creates the test setup. """
+        cls._file_mock = mock.MagicMock(spec=file)
+        cls._transaction = mock.Mock()
         
-        cls.config = ConfigObj(list())
+        cls._config = ConfigObj()
+        cls._unittests = unittests.UnitTests(cls._transaction)
 
-    def test_for_success(self):
-        """ Tests the successful run. """
-        
-        repository = TestRepository()
-        repository.create_diretory("src")
-        repository.create_diretory("src/main")
-        repository.create_diretory("src/test")
-        repository.add_file("src/main/Klasse.java",
-                            "public class Klasse {\n}\n")
-        repository.add_file("src/test/KlasseTest.java",
-                            "public class TestKlasse {\n}\n")
-        repository.add_file("TestInterface.java",
-                            "public interface TestInterface {\n}\n")
-        transaction = repository.commit()
-        unittests = UnitTests(transaction)
-        assert unittests.run(self.config).success == True
+    def test_skip_interface(self):
+        self._transaction.get_files = mock.Mock(return_value={"ApplicationInterface.java":"A"})
+        with mock.patch("repoguard.checks.unittests.open", create=True) as open_mock:
+            self._init_file_mock(open_mock, "public interface TestInterface {\n}\n")
+            assert self._unittests.run(self._config).success
+            
+    def test_unittest_found(self):
+        self._transaction.get_files = mock.Mock(return_value={"ApplicationClass.java":"A"})
+        with mock.patch("repoguard.checks.unittests.open", create=True) as open_mock:
+            self._init_file_mock(open_mock, "public class TestKlasse {\n}\n")
+            self._transaction.file_exists = mock.Mock(return_value=True)
+            assert self._unittests.run(self._config).success
 
-    def test_for_failure(self):
-        """ Tests unsuccessful run. """
-        
-        repository = TestRepository()
-        repository.create_diretory("main")
-        repository.add_file("main/Klasse.java", "public class Klasse {\n}\n")
-        transaction = repository.commit()
-        unittests = UnitTests(transaction)
-        assert unittests.run(self.config).success == False
+    def test_unittest_not_found(self):
+        self._transaction.get_files = mock.Mock(return_value={"ApplicationClass.java":"A"})
+        with mock.patch("repoguard.checks.unittests.open", create=True) as open_mock:
+            self._init_file_mock(open_mock, "public class TestKlasse {\n}\n")
+            self._transaction.file_exists = mock.Mock(return_value=False)
+            assert not self._unittests.run(self._config).success
+
+    def _init_file_mock(self, open_mock, file_content):
+        open_mock.return_value.__enter__.return_value = self._file_mock
+        self._file_mock.__iter__ = lambda _: iter(file_content.splitlines())
+    
+    def test_skip_unittests(self):
+        self._transaction.get_files = mock.Mock(return_value={"/test/ApplicationTest.java":"A"})
+        assert self._unittests.run(self._config).success

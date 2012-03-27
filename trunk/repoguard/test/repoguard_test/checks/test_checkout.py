@@ -15,49 +15,42 @@
 
 
 """
-Test methods for the Checkout class.
+Tests the Checkout checker.
 """
 
 
-import os
-import tempfile
-
 from configobj import ConfigObj
+import mock
 
-from repoguard.checks.checkout import Checkout
-from repoguard_test.util import TestRepository
+from repoguard.checks import checkout
 
 
-_CONFIG_STRING = """
+_CONFIG_DEFAULT = """
 entries=entry1,
 entries.entry1.source=test.java
-entries.entry1.destination=%DESTINATION%
+entries.entry1.destination=/path/test.java
 """
 
 
 class TestCheckout(object):
-    """ Tests the checkout check. """
     
     @classmethod
     def setup_class(cls):
-        """ Creates the test setup. """
+        cls._transaction = mock.Mock()
+        checkout.shutil.move = mock.Mock()
         
-        file_descriptor, cls._dest_filepath = tempfile.mkstemp()
-        config = _CONFIG_STRING.replace("%DESTINATION%", cls._dest_filepath)\
-                 .splitlines()
-        os.close(file_descriptor)
-        cls.config = ConfigObj(config)
-        cls.repository = TestRepository()
-        cls.repodir, cls.transaction = cls.repository.create_default()
+        cls._config = ConfigObj(_CONFIG_DEFAULT.splitlines())
+        cls._checkout = checkout.Checkout(cls._transaction)
+        
+    def test_success(self):
+        self._transaction.get_file.return_value = "filepath"
+        assert self._checkout.run(self._config).success
 
-    @classmethod
-    def teardown_class(cls):
-        """ Removes the checked out file. """
-        
-        os.remove(cls._dest_filepath)
-    
-    def test_run(self):
-        """ Tests the successful run. """
-        
-        checkout = Checkout(self.transaction)
-        assert checkout.run(self.config).success == True
+    def test_missing_file(self):
+        self._transaction.file_exists.return_value = False
+        assert not self._checkout.run(self._config).success
+
+    def test_move_failure(self):
+        self._transaction.get_file.return_value = "filepath"
+        checkout.shutil.move.side_effect = IOError
+        assert not self._checkout.run(self._config).success

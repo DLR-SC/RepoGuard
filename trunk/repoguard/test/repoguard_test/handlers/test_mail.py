@@ -1,7 +1,3 @@
-# pylint: disable=C0103
-# C0103: __, ___ are not valid argument names but can be used
-#        to avoid "unused arguments" Pylint message. Currently,
-#        the arguments are not needed in the SMTP mock.
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -23,125 +19,103 @@ Tests the mail handler.
 """
 
 
-import datetime
-import smtplib
-
 from configobj import ConfigObj
+import mock
 
-from repoguard.handlers.mail import Mail
-from repoguard_test.util import TestRepository, TestProtocol, TestProtocolEntry
+from repoguard.handlers import mail
 
 
 _LOCAL_CONFIG = """
 addresses=dummy@localhost,
-""".splitlines()
+"""
 
-
-_REMOTE_CONFIG = """
+_REMOTE_CONFIG_WITH_LOGIN = """
 level=1
 addresses=x,
 sender=x
 smtp.server=x
 smtp.user=x
 smtp.password=x
-""".splitlines()
+"""
 
-
-_REMOTE_CONFIG_WITHOUT_USER = """
+_REMOTE_CONFIG_WITHOUT_LOGIN = """
 level=1
 addresses=x,
 sender=x
 smtp.server=x
-""".splitlines()
+"""
 
+_SUCCESS_MAIL = """From: me@localhost\r
+To: dummy@localhost\r
+Subject: SVN update by me at 16:46 - 22.03.2012\r
+\r
+Protocol
 
-class _SmtpMock(object):
-    """ Mocks class smtplib.SMTP. """
-    
-    def __init__(self, _, __=None):
-        """ Constructor does nothing. """
-        
-        pass
-    
-    def set_debuglevel(self, _):
-        """ Does nothing. """
-        
-        pass
-    
-    def login(self, _, __):
-        """ Does nothing. """
-        
-        pass
+--------------------------------------------------
 
-    def sendmail(self, _, __, ___):
-        """ Does nothing. """
-        
-        pass
-    
-    def quit(self):
-        """ Does nothing. """
-        
-        pass
-    
+Check: Result
+"""
+
+_ERROR_MAIL = """From: me@localhost\r
+To: dummy@localhost\r
+Subject: Checkin Result by 'me' in check 'Check'\r
+\r
+Protocol
+
+--------------------------------------------------
+
+Check: Result
+"""
+
 
 class TestMail(object):
-    """ Tests the mail handler. """
     
     @classmethod
     def setup_class(cls):
-        """ Creates the test setup. """
+        cls._mock_datetime_and_gethostname()
+        cls._default_config = ConfigObj(_LOCAL_CONFIG.splitlines())
+        cls._handler = mail.Mail(mock.Mock(user_id="me"))
         
-        cls.test_protocol = TestProtocol()
-        cls.local_config = ConfigObj(_LOCAL_CONFIG)
-        cls.remote_config = ConfigObj(_REMOTE_CONFIG)
-        cls.remote_without_user_config = ConfigObj(_REMOTE_CONFIG_WITHOUT_USER)
-        cls.repository = TestRepository()
-        cls.repodir, cls.transaction = cls.repository.create_default()
-        cls.handler = Mail(cls.transaction)
-        smtplib.SMTP = _SmtpMock
-
-    def test_success_subject(self):
-        """ Tests the mail subject on successful commit. """
+    @staticmethod
+    def _mock_datetime_and_gethostname():
+        mail.socket.gethostname = mock.Mock(return_value="localhost")
+        mail.datetime.datetime = mock.Mock()
+        strftime_mock = mock.Mock()
+        strftime_mock.strftime.return_value = "16:46 - 22.03.2012"
+        mail.datetime.datetime.now.return_value = strftime_mock
         
-        from_id = self.transaction.user_id
-        assert self.handler.success_subject() == "SVN update by %s at %s" \
-               % (from_id, datetime.datetime.now().strftime("%H:%M - %d.%m.%Y"))
-
-    def test_error_subject(self):
-        """ Tests the mail subject on unsuccessful commit. """
+    def setup_method(self, _):
+        self._smtp_client = mock.Mock()
+        mail.smtplib.SMTP = mock.Mock(return_value=self._smtp_client)
         
-        from_id = self.transaction.user_id
-        entry = TestProtocolEntry.error()
-        assert self.handler.error_subject(entry.check, entry.result) \
-               == "Checkin %s by '%s' in check '%s'" \
-               % (entry.result, from_id, entry.check.capitalize())
-
-    def test_create_mail(self):
-        """ Tests the mail content. """
+    def test_success_mail(self):
+        protocol = self._get_protocol(success=True) 
+        self._handler.summarize(self._default_config, protocol, True)
+        assert self._smtp_client.sendmail.call_args[0][2] == _SUCCESS_MAIL
         
-        sender = "test@test.de"
-        receiver = "test2@test.de"
-        subject = "asdf"
-        content = "ab\nasf"
-        assert self.handler.create_mail(sender, receiver, subject, content) \
-               == "From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s" \
-               % (sender, receiver, subject, content)
-
-    def test_local_summarize(self):
-        """ Tests simple local configuration. """
+    def test_error_mail(self):
+        protocol = self._get_protocol(success=False) 
+        self._handler.summarize(self._default_config, protocol, True)
+        assert self._smtp_client.sendmail.call_args[0][2] == _ERROR_MAIL
         
-        mail = Mail(self.transaction)
-        mail.summarize(self.local_config, self.test_protocol, True)
-            
-    def test_remote_summarize(self):
-        """ Tests remote configuration. """
+    def test_remote_smtp_with_login(self):
+        protocol = self._get_protocol(success=True)
+        config = ConfigObj(_REMOTE_CONFIG_WITH_LOGIN.splitlines())
+        self._handler.summarize(config, protocol, True)
+        assert self._smtp_client.quit.called
         
-        mail = Mail(self.transaction)
-        mail.summarize(self.remote_config, self.test_protocol, True)
+    def test_remote_smtp_without_login(self):
+        protocol = self._get_protocol(success=True)
+        config = ConfigObj(_REMOTE_CONFIG_WITH_LOGIN.splitlines())
+        self._handler.summarize(config, protocol, True)
+        self._smtp_client.login.assert_called_once_with("x", "x")
         
-    def test_remote_without_user_summarize(self):
-        """ Tests remote configuration without SMTP user. """
-        
-        mail = Mail(self.transaction)
-        mail.summarize(self.remote_without_user_config, 
-                       self.test_protocol, True)
+    @staticmethod
+    def _get_protocol(success=True):
+        protocol = mock.MagicMock()
+        protocol.__str__.return_value = "Protocol"
+        protocol.filter.return_value = protocol
+        entry = mock.MagicMock(success=success, check="Check", result="Result")
+        entry.__str__.return_value = "Check: Result"
+        protocol.__iter__ = lambda _: iter([entry])
+        return protocol
