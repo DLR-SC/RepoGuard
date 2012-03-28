@@ -1,6 +1,3 @@
-# pylint: disable=C0103,R0903
-# C0103: Necessary to ignore argument of mock method parameters.
-# R0903: Some mocks have to few method but they are only data object mocks
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -22,16 +19,13 @@ Tests the Mantis module.
 """
 
 
-from configobj import ConfigObj
+from __future__ import with_statement
 
-from repoguard.modules.mantis import Mantis, Config
+import mock
+import pytest
 
-
-_CONFIG_STRING = """
-url=http://localhost/mantis/mc/mantisconnect.php?wsdl
-user=administrator
-password=root
-"""
+from repoguard.modules import mantis
+        
 
 _COMMIT_MESSAGE = """
 mantis id 3662
@@ -41,179 +35,49 @@ Test2
 """
 
 
-class _ServiceMock(object):
-    """ Mocks the Mantis web service. """ 
-
-    _issue_data = None
-    
-    def __init__(self):
-        """ Initializes the issue data structure. """
-        
-        custom_field = _CustomFieldDataMock()
-        self._issue_data = _IssueDataMock(custom_fields=\
-                                           {custom_field: custom_field})
-
-    @staticmethod
-    def mc_issue_exists(_, __, ___):
-        """ Always returns C{True}. """
-        
-        return True
-    
-    def mc_issue_get(self, _, __, ___):
-        """ Returns the prepared issue data. """
-        
-        return self._issue_data
-    
-    def mc_issue_note_add(self, _, __, ___, ____):
-        """ Does nothing. """
-        
-        pass
-    
-    def mc_issue_update(self, _, __, ___, ____):
-        """ Does nothing. """
-        
-        pass
-
-
-class _ObjectRefDataMock(object):
-    """ Mocks the Mantis web service data structure C{ObjectRef}. """
-     
-    def __init__(self, id_=0, name=""):
-        """ Initializes properties. """
-        
-        self.id = id_
-        self.name = name
-        
-    def __getitem__(self, index):
-        """ Implements indexing. """
-        
-        if index == 0:
-            return self.id
-        elif index == 1:
-            return self.name
-        else:
-            raise IndexError("")
-
-
-class _CustomFieldDataMock(object):
-    """ Mocks the Mantis web service data structure 
-    C{CustomFieldValueForIssueDataArray}. """
-    
-    def __init__(self, field=_ObjectRefDataMock(name="SVNRevision"), value=""):
-        """ Initializes properties. """
-        
-        self.field = field
-        self.value = value
-
-class _AccountDataMock(object):
-    """ Mocks the Mantis web service data structure C{AccountData}. """
-    
-    def __init__(self, id_=1, name="", real_name="", email=""):
-        """ Initializes properties. """
-        
-        self.id = id_
-        self.name = name
-        self.real_name = real_name
-        self.email = email
-
-class _IssueDataMock(object):
-    """ Mocks the Mantis web service data structure C{IssueData}. """
-    
-    def __init__(self, id_=0, handler=_AccountDataMock(), 
-                 status=_ObjectRefDataMock(), 
-                 custom_fields=None):
-        """ Initializes properties. """
-        
-        self.id = id_
-        self.handler = handler
-        self.status = status
-        self.custom_fields = custom_fields
-    
-
-class _NoteData(object):
-    """ Mocks (simplified )the Mantis web service 
-    data structure C{IssueNoteData}. """
-            
-    def __init__(self, text):
-        """ Initializes properties. """
-    
-        self.text = text
-
-        
-class _ClientMock(object):
-    """" Mocks the Mantis web service client. """
-    
-    service = _ServiceMock()
-    
-    class _FactoryMock(object):
-        """ Mocks the factory instance. """
-        
-        @staticmethod
-        def create(data):
-            """ Mocks method for issue note data creation. """
-            
-            return _NoteData(data)
-        
-    factory = _FactoryMock()
-    
-    def __init__(self, _):
-        """ Does nothing. """
-        
-        pass
-    
-
-class _ImportMock(object):
-    """ Mocks the Import class used for name space binding. """
-    
-    @classmethod
-    def bind(cls, _):
-        """ Does nothing. """
-        
-        pass
-
-
 class TestMantis(object):
-    """ Tests the Mantis connector module. """
     
-    @classmethod
-    def setup_class(cls):
-        """ Creates the test setup. """
-        
-        config = ConfigObj(_CONFIG_STRING.splitlines())
-        config = Config.from_config(config)
-        from repoguard.modules import mantis
-        mantis.Import = _ImportMock
-        mantis.Client = _ClientMock
-        cls.mantis = Mantis(config)
+    def setup_method(self, _):
+        mantis.Client = mock.MagicMock()
+        self.mantis = mantis.Mantis(mock.Mock())
+        self.service = self.mantis.service
         
     def test_pattern(self):
-        """ Tests message extraction. """
-        
         assert self.mantis.extract_issues(_COMMIT_MESSAGE) == ["3662", "3883"]
+        assert self.mantis.extract_issues("NO VALID IDS 234, 23434") == list() 
 
     def test_issue_exists(self):
-        """ Checks issue existence. """
-        
         assert self.mantis.issue_exists(1)
-        assert self.mantis.issue_exists(2)
 
     def test_issue_get_status(self):
-        """ Checks issue status determination. """
-        
-        self.mantis.issue_get_status("1")
+        assert not self.mantis.issue_get_status("1") == None
 
-    def test_issue_get_handler(self):
-        """ Tests handler determination. """
+    def test_issue_get_handler_handler_defined(self):
+        handler_result = mock.Mock()
+        handler_result.handler.name = "me"
+        self.service.mc_issue_get.return_value = handler_result
         
-        self.mantis.issue_get_handler("1")
-        self.mantis.issue_get_handler("2")
+        assert self.mantis.issue_get_handler("2") == "me"
+        
+    def test_issue_get_handler_no_handler_defined(self):
+        with mock.patch("repoguard.modules.mantis.hasattr", create=True) as hasattr_mock:
+            hasattr_mock.return_value = False
+            assert self.mantis.issue_get_handler("1") == None
 
     def test_issue_add_note(self):
-        """" Tests adding a note. """
-        
         self.mantis.issue_add_note("1", "test")
         
-    def test_issue_set_custom_field(self):
-        """ Tests setting a custom field. """
+    def test_issue_set_custom_field_success(self):
+        custom_field = mock.Mock()
+        custom_field.field.name = "SVNRevision"
+        custom_fields = mock.MagicMock()
+        custom_fields.__iter__ = lambda _: iter(["SVNRevision"])
+        custom_fields.__getitem__ = lambda _, __: custom_field
+        self.service.mc_issue_get.return_value = mock.Mock(custom_fields=custom_fields)
         
         self.mantis.issue_set_custom_field("1", "SVNRevision", "123")
+        assert self.service.mc_issue_update.call_count == 1
+
+    def test_issue_set_custom_field_no_field(self):
+        with pytest.raises(ValueError): # pytest.raises exists pylint: disable=E1101
+            self.mantis.issue_set_custom_field("1", "SVNRevision", "123")
