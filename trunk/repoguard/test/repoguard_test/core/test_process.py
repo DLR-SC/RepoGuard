@@ -1,6 +1,3 @@
-# pylint: disable=R0201, R0903
-# R0201: Cannot make test methods static as nose would not find them anymore. 
-# R0903: Currently, the test class has no additional methods.
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -18,25 +15,26 @@
 
 
 """
-Test methods for the Process class.
+Tests the process execution.
 """
 
 
-from repoguard.core.process import execute, ProcessException
+import mock
+import pytest
+
+from repoguard.core import process
 
 
-class TestProcess(object):
-    """ Tests the process module. """
+def test_execute_success():
+    with mock.patch("repoguard.core.process.subprocess.Popen") as popen_class:
+        popen_class.return_value.returncode = 0
+        process.execute("svnlook help")
     
-    def test_execute(self):
-        """ Tests the execute method. """
-        
-        execute("svnlook help")
-
-        try:
-            execute("somecommand")
-            assert False
-        except ProcessException, error:
+def test_execute_error():
+    with mock.patch("repoguard.core.process.subprocess.Popen") as popen_class:
+        popen_class.return_value.returncode = -1
+        with pytest.raises(process.ProcessException) as error: # pytest.raises exists pylint: disable=E1101
+            process.execute("somecommand")
             assert error.exit_code != 0
             assert error.command == "somecommand"
             assert error.output != ""
