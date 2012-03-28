@@ -19,6 +19,8 @@ Tests the process execution.
 """
 
 
+from __future__ import with_statement
+
 import mock
 import pytest
 
