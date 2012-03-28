@@ -39,11 +39,16 @@ class TestMantisCheck(object):
     @classmethod
     def setup_class(cls):
         cls._mantis_module = mock.Mock()
+        cls.__mantis_class = mantis.base.Mantis
         mantis.base.Mantis = mock.Mock(return_value=cls._mantis_module)
         
         cls.config = ConfigObj(_CONFIG_DEFAULT.splitlines())
         cls._mantis = mantis.Mantis(mock.Mock(user_id="me"))
 
+    @classmethod
+    def teardown_class(cls):
+        mantis.base.Mantis = cls.__mantis_class
+        
     def test_no_issue_ids(self):
         self._mantis_module.extract_issues.return_value = list()
         assert not self._mantis.run(self.config).success

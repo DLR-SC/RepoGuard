@@ -43,7 +43,7 @@ class TestFile(object):
     def test_nonexisting_filepath(self):
         with mock.patch("repoguard.handlers.file.os.path.exists", create=True) as exists:
             exists.return_value = False
-            with pytest.raises(IOError):
+            with pytest.raises(IOError): # pytest.raises exists pylint: disable=E1101
                 self._file.singularize(self._config, mock.Mock(), debug=True)
         
     def test_singularize_success(self):
