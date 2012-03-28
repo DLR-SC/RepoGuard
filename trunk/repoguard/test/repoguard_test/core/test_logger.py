@@ -1,5 +1,4 @@
-# pylint: disable=E1101,E0611,F0401
-# E1101,E0611,F0401: Pylint cannot import py.test
+#
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,13 +15,14 @@
 
 
 """
-Test methods for the LoggerFactory class.
+Tests of the LoggerFactory class.
 """
 
 
+from __future__ import with_statement
+
 import logging
-import py.test
-import tempfile
+import pytest
 
 from repoguard.core.logger import LoggerFactory
 
@@ -37,21 +37,16 @@ repoguard.core.validator = INFO
 repoguard.foo.bar = 42
 
 repoguard.interpolation = ${default}
-""" % tempfile.tempdir
+"""
 
 
 class TestLoggerFactory(object):
-    """ Tests the logger factory. """
     
     @classmethod
     def setup_class(cls):
-        """ Creates test setup. """
-        
         cls.factory = LoggerFactory(config=_LOGGER_CONFIG.splitlines())
         
     def test_create(self):
-        """ Tests logger creation. """
-        
         logger = self.factory.create()
         assert logger.level == logging.ERROR
         
@@ -61,17 +56,14 @@ class TestLoggerFactory(object):
         logger = self.factory.create("repoguard.core.validator")
         assert logger.level == logging.INFO
         
-        logger = self.factory.create(
-            "repoguard.core.validator", override=logging.NOTSET
-        )
+        logger = self.factory.create("repoguard.core.validator", override=logging.NOTSET)
         assert logger.level == logging.NOTSET
         
         logger = self.factory.create("repoguard.foo.bar")
         assert logger.level == 42
         
-        py.test.raises(
-            ValueError, self.factory.create, "repoguard.core.checker"
-        )
+        with pytest.raises(ValueError): # pytest.raises exists pylint: disable=E1101
+            self.factory.create("repoguard.core.checker")
         
         logger = self.factory.create("repoguard.interpolation")
         assert logger.level == logging.ERROR
