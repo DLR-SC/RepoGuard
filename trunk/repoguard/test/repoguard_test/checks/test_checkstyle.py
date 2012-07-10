@@ -40,15 +40,26 @@ config_file=checkstylefile
 
 class TestCheckstyle(object):
     
-    @classmethod
-    def setup_class(cls):
-        transaction = mock.Mock()
-        transaction.get_files.return_value = {"filepath":"A"}
-        transaction.get_file.return_value = "filepath"
+    def setup_method(self, _):
+        self._transaction = mock.Mock()
+        self._transaction.get_files.return_value = {"filepath":"A"}
+        self._transaction.get_file.return_value = "filepath"
         
-        cls._config = ConfigObj(_CONFIG_DEFAULT.splitlines())
-        cls._checkstyle = checkstyle.Checkstyle(transaction)
+        self._config = ConfigObj(_CONFIG_DEFAULT.splitlines())
+        self._checkstyle = checkstyle.Checkstyle(self._transaction)
 
+    def test_empty_file_set(self):
+        self._transaction.get_files.return_value = dict()
+        with mock.patch("repoguard.checks.checkstyle.process.execute") as execute_mock:
+            assert self._checkstyle.run(self._config, debug=True).success
+            assert not execute_mock.called
+            
+    def test_empty_deleted(self):
+        self._transaction.get_files.return_value = {"filepath":"D"}
+        with mock.patch("repoguard.checks.checkstyle.process.execute") as execute_mock:
+            assert self._checkstyle.run(self._config, debug=True).success
+            assert not execute_mock.called
+            
     def test_success(self):
         with mock.patch("repoguard.checks.checkstyle.process.execute"):
             assert self._checkstyle.run(self._config, debug=True).success
