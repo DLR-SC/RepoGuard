@@ -59,7 +59,9 @@ class Config(ConfigSerializer):
     
     classpath = property(_get_classpath)
 
+
 class Checkstyle(Check):
+    """ Performs Java source code checks using the checkstyle. """ 
     
     __config__ = Config
     
@@ -77,13 +79,9 @@ class Checkstyle(Check):
         :rtype: Tuple that contains the success or error code and message.
         """
         
-        #List of files that has to be checked.
         files = self.transaction.get_files(
             config.check_files, config.ignore_files
         )
-        #Skip if the transaction contains no java files.
-        if not files:
-            return self.success()
         
         files = " ".join([
             self.transaction.get_file(filename) 
@@ -91,21 +89,21 @@ class Checkstyle(Check):
                  if attribute in ["A", "U", "UU"]
         ])
         
-        #Command creation.
-        command = self.pattern % (
-            config.java, config.classpath, config.config_file, files
-        )
-        self.logger.debug("Running command: %s", command)
+        if files:
+            command = self.pattern % (
+                config.java, config.classpath, config.config_file, files
+            )
+            
+            self.logger.debug("Running command: %s", command)
+            try:
+                process.execute(command)
+            except process.ProcessException, exc:
+                msg = "Coding style errors found:\n\n"
+                msg += exc.output + "\n"
+                msg += """
+                    See Checkstyle documentation for a detailed description: 
+                    http://checkstyle.sourceforge.net/
+                """
+                return self.error(msg)
         
-        try:
-            process.execute(command)
-        except process.ProcessException, exc:
-            msg = "Coding style errors found:\n\n"
-            msg += exc.output + "\n"
-            msg += """
-                See Checkstyle documentation for a detailed description: 
-                http://checkstyle.sourceforge.net/
-            """
-            return self.error(msg)
-    
         return self.success()
