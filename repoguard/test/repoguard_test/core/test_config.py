@@ -111,15 +111,14 @@ vcs = svn
 
 class TestRepoGuardConfig(object):
     
-    @classmethod
-    def setup_class(cls):
-        cls._default_template_path = "/cfg/templates"
-        cls._additional_template_path = "/path/to/other/templates"
+    def setup_method(self, _):
+        self._default_template_path = "/cfg/templates"
+        self._additional_template_path = "/path/to/other/templates"
         
-        root_config = _REPOGUARD_CONFIG % cls._additional_template_path
+        root_config = _REPOGUARD_CONFIG % self._additional_template_path
         config.Requirement = mock.Mock()
-        config.resource_filename = mock.Mock(return_value=cls._default_template_path)
-        cls.config = RepoGuardConfig(root_config.splitlines())
+        config.resource_filename = mock.Mock(return_value=self._default_template_path)
+        self.config = RepoGuardConfig(root_config.splitlines())
 
     def test_projects(self):
         assert self.config.projects["RepoGuard"].name == "RepoGuard"
