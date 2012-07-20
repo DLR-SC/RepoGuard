@@ -29,6 +29,9 @@ from repoguard.core import process
 from repoguard.core import transaction
 
 
+from __future__ import with_statement
+
+
 class TestTransaction(object):
     
     def setup_method(self, _):
