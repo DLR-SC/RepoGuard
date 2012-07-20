@@ -1,5 +1,5 @@
-# pylint: disable=E1101,E0611,F0401,W0212
-# E1101,E0611,F0401: Pylint cannot import py.test
+# pylint: disable=E1101,W0212
+# E1101: Pylint cannot import py.test
 # W0212: Access to protected methods is ok in tests cases.
 #
 # Copyright 2008 German Aerospace Center (DLR)
@@ -22,94 +22,91 @@ Test methods for the Transaction class.
 """
 
 
+import mock
 import py.test
 
-from repoguard.core.transaction import FileNotFoundException, \
-                                       PropertyNotFoundException
-from repoguard_test.util import TestRepository
+from repoguard.core import process
+from repoguard.core import transaction
 
 
 class TestTransaction(object):
-    """ Implements the transaction tests. """
     
-    @classmethod
-    def setup_class(cls):
-        """ Creates the reference to the transaction. """
+    def setup_method(self, _):
+        self._transaction = transaction.Transaction("repoPath", "10")
+        self._transaction._execute_svn = mock.Mock()
         
-        cls.repository = TestRepository()
-        cls.repodir, cls.transaction = cls.repository.create_default()
-        
-    def test_get_user_id(self):
-        """ Checks the user id. """
-        
-        assert self.transaction._get_user_id()
-
     def test_get_files(self):
-        """ Checks the determined file sets. """
+        self._transaction._execute_svn.return_value = ["A   test 1.txt", "A   test.java"]
+        assert self._transaction.get_files() == {"test.java": "A", "test 1.txt": "A"}
+        assert self._transaction.get_files(
+            [".*\.java"]) == {"test.java" : "A"}
+        assert self._transaction.get_files(
+            [".*"], [".*\.java"]) == {"test 1.txt": "A"}
+        assert self._transaction.get_files(
+            ["test.java", "test 1.txt"]) == {"test.java" : "A", "test 1.txt" : "A"}
+        assert self._transaction.get_files(
+            ["test.java", "test 1.txt"], ["test.java"])  == {"test 1.txt" : "A"}
         
-        assert self.transaction.get_files() == {'test.java': 'A', 
-                                                'test 1.txt': 'A'}
-        assert self.transaction.get_files([".*\.java"]) == { 'test.java' : 'A' }
-        assert self.transaction.get_files([".*"], [".*\.java"]) \
-                                          == {'test 1.txt': 'A'}
-        assert self.transaction.get_files(["test.java", "test 1.txt"]) \
-                                           == {'test.java' : 'A',
-                                               'test 1.txt' : 'A'}
-        assert self.transaction.get_files(["test.java", "test 1.txt"], 
-                                          ["test.java"]) \
-                                           == {'test 1.txt' : 'A'}
-        
-    def test_get_file(self):
-        """" Checks a determined file. """
-        
-        filename = self.transaction.get_file("test 1.txt")
-        assert open(filename).read() == "content"
-        # Test caching
-        filename = self.transaction.get_file("test 1.txt")
-        assert open(filename).read() == "content"
-        py.test.raises(FileNotFoundException, self.transaction.get_file, 
-                       "blablub")
+    def test_get_file_not_found(self):
+        self._transaction.file_exists = mock.Mock(return_value=False)
+        with py.test.raises(transaction.FileNotFoundException):
+            self._transaction.get_file("/path/notexisting.java")
+            
+    def test_get_file_in_cache(self):
+        self._transaction.file_exists = mock.Mock(return_value=True)
+        cached_filepath = "/path/existing.java"
+        with mock.patch("repoguard.core.transaction.os.path.exists", create=True):
+            assert cached_filepath in self._transaction.get_file(cached_filepath)
+
+    def test_get_file_not_cached(self):
+        self._transaction.file_exists = mock.Mock(return_value=True)
+        transaction.os.makedirs = mock.Mock()
+        filepath = "/path/existing.java"
+        with mock.patch("repoguard.core.transaction.os.path.exists", create=True):
+            with mock.patch("repoguard.core.transaction.open", create=True):
+                assert filepath in self._transaction.get_file(filepath)
 
     def test_file_exists(self):
-        """ Checks file existence. """
-        
-        assert self.transaction.file_exists("test 1.txt")
-        assert not self.transaction.file_exists("bla.txt")
+        assert self._transaction.file_exists("test 1.txt")
+    
+    def test_file_exists_not(self):
+        self._transaction._execute_svn.side_effect = process.ProcessException("", 0, "")
+        assert not self._transaction.file_exists("bla.txt")
 
-    def test_get_commit_msg(self):
-        """ Checks commit message. """
-        
-        assert self.transaction._get_commit_msg() \
-               == self.repository.commit_message
+    def test_file_exists_ignorecase(self):
+        self._transaction._execute_svn.return_value = ["test 1.txt", "test 1.txt"]
+        assert self._transaction.file_exists("test 1.txt", True)
     
-    def test_get_revision(self):
-        """ Checks revision. """
-        
-        assert self.transaction._get_revision() == "2"
-    
+    def test_file_exists_not_ignorecase(self):
+        self._transaction._execute_svn.return_value = list()
+        assert not self._transaction.file_exists("bla.txt", True)
+
     def test_has_property(self):
-        """ Checks property existence. """
+        self._transaction.file_exists = mock.Mock(return_value=True)
+        self._transaction._execute_svn.return_value = ["svn:keywords"]
+        assert self._transaction.has_property("svn:keywords", "test 1.txt")
         
-        assert self.transaction.has_property("svn:keywords", "test 1.txt")
-        py.test.raises(FileNotFoundException, self.transaction.get_property, 
-                       "keywordx", "bla")
-        assert not self.transaction.has_property("keywordx", "test 1.txt")
+    def test_has_property_not(self):
+        self._transaction.file_exists = mock.Mock(return_value=True)
+        self._transaction._execute_svn.return_value = ["svn:keywords"]
+        assert not self._transaction.has_property("keywordx", "test 1.txt")
     
-    def test_get_keyword(self):
-        """ Checks keywords. """
-        
-        assert self.transaction.get_property("svn:keywords", "test 1.txt") \
-               == "Date"
-        py.test.raises(FileNotFoundException, self.transaction.get_property, 
-                       "keywordx", "bla")
-        py.test.raises(PropertyNotFoundException, 
-                       self.transaction.get_property, "keywordx", "test 1.txt")
+    def test_get_property(self):
+        self._transaction.has_property = mock.Mock(return_value=True)
+        self._transaction._execute_svn.return_value = "Date"
+        assert self._transaction.get_property("svn:keywords", "test 1.txt") == "Date"
+       
+    def test_get_property_not(self):
+        self._transaction.has_property = mock.Mock(return_value=False)
+        with py.test.raises(transaction.PropertyNotFoundException): 
+            self._transaction.get_property("keywordx", "test 1.txt")
 
-    def test_list_keywords(self):
-        """ Checks keyword listing. """
-        
-        assert self.transaction.list_properties("test 1.txt") \
-               == ["svn:keywords"]
-        assert self.transaction.list_properties("test.java") == []
-        py.test.raises(FileNotFoundException, self.transaction.list_properties,
-                       "bla")
+    def test_list_properties(self):
+        self._transaction.file_exists = mock.Mock(return_value=True)
+        self._transaction._execute_svn.return_value = ["svn:keywords"]
+        assert self._transaction.list_properties("test 1.txt") == ["svn:keywords"]
+    
+    def test_list_properties_file_not_found(self):
+        self._transaction.file_exists = mock.Mock(return_value=False)
+        with py.test.raises(transaction.FileNotFoundException):
+            self._transaction.list_properties("nonexisting.java")

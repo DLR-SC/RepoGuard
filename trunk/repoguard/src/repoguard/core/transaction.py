@@ -53,7 +53,7 @@ class Transaction(object):
         self.tmpdir = tempfile.mkdtemp()
         self.cache = {}
 
-    def __execute_svn(self, command, arg = "", split=False):
+    def _execute_svn(self, command, arg = "", split=False):
         command = 'svnlook --%s %s %s "%s" %s' % (self.type, self.txn_name, command, self.repos_path, arg)
         
         if command in self.cache:
@@ -89,7 +89,7 @@ class Transaction(object):
 
     def _get_user_id(self):
         """ Returns a string with the username of the current transaction. """
-        user = self.__execute_svn("author")
+        user = self._execute_svn("author")
         return user.strip()
 
     def get_files(self, check_list=[".*"], ignore_list=[]):        
@@ -102,8 +102,9 @@ class Transaction(object):
     
         @param check_list List of regular expressions for files which should be included.
         @param ignore_list List of regular expressions for files which should be ignored.
-        """        
-        output = self.__execute_svn("changed", split=True)
+        """
+        
+        output = self._execute_svn("changed", split=True)
         files = {}
         for entry in output:
             attributes = entry[0:3].strip()
@@ -129,7 +130,7 @@ class Transaction(object):
         if os.path.exists(tmpfilename):
             return tmpfilename
 
-        content = self.__execute_svn("cat", "\"" + filename + "\"")
+        content = self._execute_svn("cat", "\"" + filename + "\"")
 
         dirname = os.path.dirname(filename)
         tmpdirname = os.path.join(self.tmpdir, dirname)
@@ -150,7 +151,7 @@ class Transaction(object):
 
         if ignore_case:
             filename = filename.lower()
-            files = self.__execute_svn("tree", "--full-paths", split=True)
+            files = self._execute_svn("tree", "--full-paths", split=True)
             count = 0
             for fname in files:
                 if fname.lower() == filename:
@@ -161,7 +162,7 @@ class Transaction(object):
 
         else:
             try:
-                self.__execute_svn("proplist", "\"" + filename + "\"", split=True)
+                self._execute_svn("proplist", "\"" + filename + "\"", split=True)
                 exists = True
             except process.ProcessException:
                 pass
@@ -173,7 +174,7 @@ class Transaction(object):
         Returns the commit message. 
         """
         
-        output = self.__execute_svn("info", split=True)
+        output = self._execute_svn("info", split=True)
         temp = output[3:]
         msg = "\n".join(temp)
         return msg.strip()
@@ -197,7 +198,7 @@ class Transaction(object):
         if not self.has_property(keyword, filename):
             raise PropertyNotFoundException(keyword, filename)
     
-        return self.__execute_svn("propget", " ".join([keyword, "\"" + filename + "\""]))
+        return self._execute_svn("propget", " ".join([keyword, "\"" + filename + "\""]))
 
     def has_property(self, keyword, filename):
         """
@@ -214,7 +215,7 @@ class Transaction(object):
         if not self.file_exists(filename):
             raise FileNotFoundException(filename)
 
-        return self.__execute_svn("proplist", "\"" + filename + "\"", split=True)
+        return self._execute_svn("proplist", "\"" + filename + "\"", split=True)
 
     profile = property(_get_profile, _set_profile)
     user_id = property(_get_user_id)

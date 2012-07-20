@@ -12,24 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """ 
 Reject files with given extensions that include leading tabs. 
 """
 
-from __future__ import with_statement
 
+from __future__ import with_statement
 import re
 
 from repoguard.core.module import Check, ConfigSerializer, String, Array
+
 
 class Config(ConfigSerializer):
     class types(ConfigSerializer.types):
         check_files = Array(String, optional=True, default=[".*"])
         ignore_files = Array(String, optional=True, default=[])
 
+
 class RejectTabs(Check):
     """
-    
+    Checks for leading tabs.
     """
     
     __config__ = Config
@@ -37,10 +40,6 @@ class RejectTabs(Check):
     pattern = re.compile("^\s*\t")
 
     def _run(self, config):
-        """
-        
-        """
-        
         files = self.transaction.get_files(config.check_files, 
                                            config.ignore_files)
         errors = []
@@ -55,9 +54,9 @@ class RejectTabs(Check):
                     # Skip binary files
                     continue
     
-            with open(self.transaction.get_file(filename), "r") as fp:
+            with open(self.transaction.get_file(filename), "r") as file_object:
                 msg = "File %s contains leading tabs"
-                for line in fp:
+                for line in file_object:
                     if self.pattern.match(line):
                         errors.append(msg % filename)
                         break
