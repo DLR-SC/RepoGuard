@@ -84,13 +84,10 @@ class Mantis(Handler):
     def sychronize_with_vcs(self, vcs_sync_url):
         """ Synchronizes the Mantis issues and the VCS history. """
         
-        try:
-            file_object = urllib2.urlopen(vcs_sync_url)
-            content = file_object.read()
-            self.logger.debug(content)
-            file_object.close()
-        except IOError, error:
-            self.logger.error("Cannot open URL. Reason: '%s'" % error.message)
+        file_object = urllib2.urlopen(vcs_sync_url)
+        content = file_object.read()
+        self.logger.debug(content)
+        file_object.close()
         
     def _summarize(self, config, protocol):
         """

@@ -104,6 +104,8 @@ class RepoGuard(object):
                 combined_profile_regexes += "(%s)|" % profile.regex
         if not combined_profile_regexes:
             combined_profile_regexes = None
+        else:
+            combined_profile_regexes = combined_profile_regexes[:-1]
         return combined_profile_regexes   
     
     def run(self):

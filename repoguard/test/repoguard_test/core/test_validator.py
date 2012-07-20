@@ -18,7 +18,6 @@
 
 
 import pkg_resources
-from validate import ValidateError
 
 from repoguard.core.config import ProjectConfig
 from repoguard.core.module import Handler
@@ -101,12 +100,9 @@ vcs=svn
 
 
 class TestConfigValidator(object):
-    """ Tests the configuration validator. """
     
     @classmethod
     def setup_class(cls):
-        """ Creates the test setup. """
-        
         cls.validator = ConfigValidator()
         
         # Setting pkg_resources mocks
@@ -121,17 +117,11 @@ class TestConfigValidator(object):
         pkg_resources.get_entry_map = lambda _, __: all_handler_checks
 
     def test_validate_for_success(self):
-        """ Demonstrates a correct configuration. """
         
         config = ProjectConfig(_SUCCESS_CONFIG, "hooks")
         assert self.validator.validate(config) == 0
         
     def test_validate_for_error(self):
-        """ 
-        Demonstrates an incorrect configuration.
-        Missing default configurations for pylint and checkout checks.
-        """
-        
         config = ProjectConfig(_ERROR_CONFIG, "hooks")
         result = self.validator.validate(config)
         assert result == 2

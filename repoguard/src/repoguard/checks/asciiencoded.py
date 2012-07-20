@@ -43,7 +43,8 @@ class ASCIIEncoded(Check):
     
     __config__ = Config
     
-    def ascii_check(self, path, include, exclude):
+    @staticmethod
+    def ascii_check(path, include, exclude):
         """
         Checks if the given file contains non ascii characters.
         
@@ -54,11 +55,11 @@ class ASCIIEncoded(Check):
         :rtype: list with (row, column, letter) tuples.
         """
         
-        result = []
+        result = list()
         row = 1
         include = string.printable + include
-        with open(path, 'r') as fp:
-            for line in fp.readlines():
+        with open(path, 'r') as file_object:
+            for line in file_object.readlines():
                 col = 1
                 for letter in line:
                     if not letter in include or letter in exclude:
@@ -67,7 +68,8 @@ class ASCIIEncoded(Check):
                 row += 1
         return result
     
-    def format_msg(self, filename, errors):
+    @staticmethod
+    def format_msg(filename, errors):
         """
         Format the given errors to a more readable format.
         """
@@ -106,4 +108,3 @@ class ASCIIEncoded(Check):
                     msg += self.format_msg(filename, result)
                 
         return self.success() if not msg else self.error(msg)
-        

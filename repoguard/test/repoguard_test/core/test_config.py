@@ -1,7 +1,5 @@
-# pylint: disable=E1101,W0212,R0903
+# pylint: disable=E1101
 # E1101: py.test.raises is callable
-# W0212: Access to protected is useful in tests
-# R0903: The class _RequirementMock is just a mock class
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -23,14 +21,17 @@ Test methods of the C{Config} class.
 """
 
 
-import os
-import shutil
-import tempfile
+from __future__ import with_statement
 
+
+import os
+
+import mock
 import py.test
 
 from repoguard.core import constants
 from repoguard.core.config import ProjectConfig, RepoGuardConfig, Process
+from repoguard.core import config
 
 
 _REPOGUARD_CONFIG = """
@@ -39,7 +40,7 @@ validate = False
 
 [projects]
     [[RepoGuard]]
-    path = %s
+    path = 
     editors = lege_ma,
 """
 
@@ -105,155 +106,63 @@ vcs = svn
     [[PyLint]]
         [[[default]]]
             ignore_files = .*test_[\w]+\.py,
-""".splitlines()
-
-
-class _RequirementMock(object):
-    """ Mocks the class L{Requirement<pkg_resources.Requirement>} """
-    
-    def __init__(self):
-        """ Simple constructor which dies effectively nothing at all. """
-    
-        self.path = None
-    
-    @classmethod
-    def parse(cls, name):
-        """ Mocks the parse method and just returns the given argument. """
-        
-        cls.path = name
-        return cls
-
-
-def _resource_filename_mock(requirement, path):
-    """ 
-    Mocks the function he class L{resource_filename<pkg_resources.resource_filename>}.
-    Joins the C{path} property of C{RequirementMock} with C{path} using the "/" character. 
-    """
-    
-    return requirement.path + "/"  + path
+"""
 
 
 class TestRepoGuardConfig(object):
-    """ Tests the repo guard specfic configuration. """
     
     @classmethod
     def setup_class(cls):
-        """ Creates the test setup. """
+        cls._default_template_path = "/cfg/templates"
+        cls._additional_template_path = "/path/to/other/templates"
         
-        # Activates the mocks for pkg_resources functions
-        from repoguard.core import config
-        config.Requirement = _RequirementMock
-        config.resource_filename = _resource_filename_mock
-        # Required to make _get_templates work
-        cls._listdir = os.listdir
-        os.listdir = lambda _: [u"default.tpl.conf", u"python.tpl.conf"] 
-
-        cls.templatedir = tempfile.mkdtemp()
-        cls.defaulttplfile = os.path.join(cls.templatedir, 
-                                          "default.tpl.conf")
-        cls.pythontplfile  = os.path.join(cls.templatedir, 
-                                          "python.tpl.conf")
-        file_pointer = open(cls.defaulttplfile, "w")
-        file_pointer.write(_DEFAULT_CONFIG)
-        file_pointer.close()
-        
-        file_pointer = open(cls.pythontplfile, "w")
-        file_pointer.write(_PYTHON_CONFIG)
-        file_pointer.close()
-        
-        cls.projectdir = tempfile.mkdtemp()
-        cls.hooksdir = os.path.join(cls.projectdir, "hooks")
-        os.mkdir(cls.hooksdir)
-        
-        cls.configfile = os.path.join(cls.hooksdir, constants.CONFIG_FILENAME)
-        config_ = (_REPOGUARD_CONFIG % (cls.templatedir, cls.projectdir))
-        
-        cls.config = RepoGuardConfig(config_.splitlines())
-
-    @classmethod
-    def teardown_class(cls):
-        """ Cleans up the temporary directories. """
-        
-        os.listdir = cls._listdir # Set listdir to the correct function again
-        shutil.rmtree(cls.templatedir, True)
-        shutil.rmtree(cls.projectdir, True)        
+        root_config = _REPOGUARD_CONFIG % cls._additional_template_path
+        config.Requirement = mock.Mock()
+        config.resource_filename = mock.Mock(return_value=cls._default_template_path)
+        cls.config = RepoGuardConfig(root_config.splitlines())
 
     def test_projects(self):
-        """ Tests C{projects} property. """
-        
         assert self.config.projects["RepoGuard"].name == "RepoGuard"
         
     def test_templates(self):
-        """ Tests C{templates} property. """
-        
-        assert [u"default", u"python"] == self.config.templates.keys()
+        with mock.patch("repoguard.core.config.os") as os_mock:
+            os_mock.listdir.return_value = ["default.tpl.conf", "python.tpl.conf"]
+            assert [u"default", u"python"] == self.config.templates.keys()
     
     def test_template_dirs(self):
-        """ Tests C{template_dirs} property. """
-        
-        assert self.config.template_dirs == [self.templatedir, 
-                                             "repoguard/cfg/templates"]
+        assert self.config.template_dirs == [
+            os.path.normpath(self._additional_template_path), self._default_template_path]
         
     def test_validate(self):
-        """ Tests validation method. """
-        
         assert not self.config.validate
 
 
 class TestProjectConfig(object):
-    """ Tests the project-specific configuration. """
     
     @classmethod
     def setup_class(cls):
-        """ Creates the test setup. """
-        
-        cls.templatedir = tempfile.mkdtemp()
-        cls.defaulttplfile = os.path.join(cls.templatedir, 
-                                          "default.tpl.conf")
-        cls.pythontplfile  = os.path.join(cls.templatedir, 
-                                          "python.tpl.conf")
-        file_pointer = open(cls.defaulttplfile, "w")
-        file_pointer.write(_DEFAULT_CONFIG)
-        file_pointer.close()
-        
-        file_pointer = open(cls.pythontplfile, "w")
-        file_pointer.write(_PYTHON_CONFIG)
-        file_pointer.close()
-        
-        cls.config = ProjectConfig(_PROJECT_CONFIG, "hooks", [cls.templatedir])
-        
-    @classmethod
-    def teardown_class(cls):
-        """ Cleans up the temporary directories. """
-        
-        shutil.rmtree(cls.templatedir, True)
-        
+        with mock.patch("repoguard.core.config.os") as os_mock:
+            os_mock.path.exists.return_value = True
+            # Dirty hack: "misusing" the template file path to avoid usage of temporary file objects 
+            os_mock.path.join.side_effect = [_PYTHON_CONFIG.splitlines(), _DEFAULT_CONFIG.splitlines()]
+            cls.config = ProjectConfig(_PROJECT_CONFIG.splitlines(), "hooks", ["template_path"])
+    
     def test_extended(self):
-        """ Tests C{extended} property. """
-        
         assert "python" in self.config.extended.keys()
         
     def test_vcs(self):
-        """ Tests C{vcs} property. """
-        
         assert self.config.vcs == "svn"
 
     def test_hook(self):
-        """ Tests C{hooks} property. """
-                
         assert self.config["DEFAULT"].get("hooks") == "hooks"
         
         path = self.config["handlers"]["File"]["default"]["file"]
         assert path == "hooks/default.log"
         
     def test_properties(self):
-        """ Tests C{properties} property. """
-        
         assert self.config.properties["pythonhome"] == "D:/python25"
         
     def test_profiles(self):
-        """ Tests C{profiles} property. """
-        
         default, test = self.config.profiles
         
         assert default.name == "default"
@@ -271,8 +180,6 @@ class TestProjectConfig(object):
         assert precommit["success"][0] == "Console"
         
     def test_process(self):
-        """ Tests configuration processing. """
-        
         default, test = self.config.profiles
         
         assert len(test.precommit.checks) == 2
@@ -284,55 +191,19 @@ class TestProjectConfig(object):
         assert interp == constants.ABORTONERROR
                 
         assert default.postcommit is None
-
-
-class TestProcess(object):
-    """ Checks process section of the configuration. """
-    
-    @classmethod
-    def setup_class(cls):
-        """ Creates the test setup. """
-        
-        cls.templatedir = tempfile.mkdtemp()
-        cls.defaulttplfile = os.path.join(cls.templatedir, 
-                                          "default.tpl.conf")
-        cls.pythontplfile  = os.path.join(cls.templatedir, 
-                                          "python.tpl.conf")
-        file_pointer = open(cls.defaulttplfile, "w")
-        file_pointer.write(_DEFAULT_CONFIG)
-        file_pointer.close()
-        
-        file_pointer = open(cls.pythontplfile, "w")
-        file_pointer.write(_PYTHON_CONFIG)
-        file_pointer.close()
-        
-        cls.projectdir = tempfile.mkdtemp()
-        cls.hooksdir = os.path.join(cls.projectdir, "hooks")
-        os.mkdir(cls.hooksdir)
-        
-        cls.configfile = os.path.join(cls.hooksdir, constants.CONFIG_FILENAME)
-        
-        cls.config = ProjectConfig(_PROJECT_CONFIG, "hooks", [cls.templatedir])
-        cls._profile = cls.config.profile("default")
-        
-    @classmethod
-    def teardown_class(cls):
-        """ Cleans up the temporary directories. """
-        
-        shutil.rmtree(cls.templatedir, True)
-        shutil.rmtree(cls.projectdir, True)
         
     def test_set_process(self):
-        """ Tests setting the process section. """
-        
-        process = Process(self._profile, self._profile.depth, self.config)
+        # pylint: disable=W0212
+        # Access to protected is required for test
+        profile = self.config.profile("default")
+        process = Process(profile, profile.depth, self.config)
         process.checks = [("PyLint", "default", constants.DELAYONERROR),
                           ("PyLint", "default", None),
                           ("PyLint", None, constants.WARNING),
                           ("PyLint", None, None)]
         process.success = [("File", "default"), ("File", None)]
         
-        self._profile.precommit = process
+        profile.precommit = process
         checks = self.config["profiles"]["default"]["precommit"]["checks"]
         assert checks == ["PyLint.default." + constants.DELAYONERROR, 
                           "PyLint.default", 
@@ -342,8 +213,13 @@ class TestProcess(object):
         success = self.config["profiles"]["default"]["precommit"]["success"]
         assert success == ["File.default", "File"]
         
-        process = Process(self._profile, self._profile.depth, self.config)
+        process = Process(profile, profile.depth, self.config)
         py.test.raises(KeyError, process._set_checks, 
                        [("PyLint", "notexists", None)])
         py.test.raises(KeyError, process._set_success_handlers,
                        [("File", "notexists")])
+
+
+def test_no_extension_template_found():
+    with py.test.raises(ValueError):
+        ProjectConfig(_PROJECT_CONFIG.splitlines(), "hooks", ["template_path"])

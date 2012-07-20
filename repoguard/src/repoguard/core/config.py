@@ -30,7 +30,7 @@ Module that contains all classes that are necessary for the configuration.
     TemplateConfig
 """
 
-import os.path
+import os
 import re
 
 from pkg_resources import resource_filename, Requirement
