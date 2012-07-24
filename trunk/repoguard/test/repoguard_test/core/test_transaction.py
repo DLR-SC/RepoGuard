@@ -63,10 +63,11 @@ class TestTransaction(object):
     def test_get_file_not_cached(self):
         self._transaction.file_exists = mock.Mock(return_value=True)
         transaction.os.makedirs = mock.Mock()
-        filepath = "/path/existing.java"
-        with mock.patch("repoguard.core.transaction.os.path.exists", create=True):
+        not_cached_filepath = "/path/existing.java"
+        with mock.patch("repoguard.core.transaction.os.path.exists", create=True) as exists_mock:
             with mock.patch("repoguard.core.transaction.open", create=True):
-                assert filepath in self._transaction.get_file(filepath)
+                exists_mock.return_value = False
+                assert not_cached_filepath in self._transaction.get_file(not_cached_filepath)
 
     def test_file_exists(self):
         assert self._transaction.file_exists("test 1.txt")
@@ -112,3 +113,31 @@ class TestTransaction(object):
         self._transaction.file_exists = mock.Mock(return_value=False)
         with py.test.raises(transaction.FileNotFoundException):
             self._transaction.list_properties("nonexisting.java")
+
+    def test_revision(self):
+        assert self._transaction.revision == "11"
+        
+        self._transaction.txn_name = "10-23"
+        assert self._transaction.revision == "11"
+        
+        self._transaction.txn_name = "11-23"
+        assert self._transaction.revision == "12"
+        
+    def test_revision_no_number(self):
+        self._transaction.txn_name = ""
+        assert self._transaction.revision == ""
+        
+        self._transaction.txn_name = "NO NUMBER"
+        assert self._transaction.revision == "NO NUMBER"
+        
+    def test_commit_message(self):
+        self._transaction._execute_svn.return_value = [
+            "sally", "2012-02-22 17:44:49 -0600 (Sat, 22 Feb 2003)", "18", "Comment", "New"]
+        assert self._transaction.commit_msg == "Comment\nNew"
+        
+    def test_user_id(self):
+        self._transaction._execute_svn.return_value = "sally"
+        assert self._transaction.user_id == "sally"
+
+        self._transaction._execute_svn.return_value = "   sally  "
+        assert self._transaction.user_id == "sally"
