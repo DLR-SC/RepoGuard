@@ -23,6 +23,11 @@ The following requirements can be automatically resolved by the setup script.
  * Experimental BuildBot handler dependencies:
    * twisted >= 8.1.0
 
+Installation options:
+You can set the following environment variables before you install RepoGuard:
+ * REPOGUARD_CONFIG_HOME: Set this variable to the path which should contain the default configuration files. The default is "~/.repoguard" on Windows and "/usr/local/share/repoguard" on Linux platforms.
+ * REPOGUARD_DEBUG: Set this variable to any value to install RepoGuard in debug mode. I.e., it is installed the "repoguard-debug" executable to allow a parallel installation of RepoGuard for test purposes. 
+
 You have the following installation options:
  * Install from source:
   * Download the source package from http://repoguard.tigris.org/servlets/ProjectDocumentList

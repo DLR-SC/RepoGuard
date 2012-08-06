@@ -45,10 +45,6 @@ LOGGER_FILENAME = "logger" + CONFIG_POSTFIX
 
 BUILDIN_TPL_PATH = 'cfg/templates'
 
-#changes here has no effect on the setup.py file.
-WIN32_CONFIG_HOME = os.path.join(os.path.expanduser("~") , '.repoguard')
-LINUX_CONFIG_HOME = '/usr/local/share/repoguard'
-
 WIN32_CONFIG_PATTERN = "%s %s %%1 %%2 || exit 1"
 LINUX_CONFIG_PATTERN = "%s %s $1 $2 || exit 1"
 
@@ -58,13 +54,13 @@ LINUX_PRECOMMIT_FILENAME = "pre-commit"
 WIN32_POSTCOMMIT_FILENAME = "post-commit.bat"
 LINUX_POSTCOMMIT_FILENAME = "post-commit"
 
-#OS dependend constants generation.
-CONFIG_HOME = LINUX_CONFIG_HOME
+CONFIG_HOME = "cfg"
+
+#OS dependent constant generation.
 CONFIG_PATTERN = LINUX_CONFIG_PATTERN
 PRECOMMIT_FILENAME = LINUX_PRECOMMIT_FILENAME
 POSTCOMMIT_FILENAME = LINUX_POSTCOMMIT_FILENAME
 if os.name == 'nt':
-    CONFIG_HOME = WIN32_CONFIG_HOME
     CONFIG_PATTERN = WIN32_CONFIG_PATTERN
     PRECOMMIT_FILENAME = WIN32_PRECOMMIT_FILENAME
     POSTCOMMIT_FILENAME = WIN32_POSTCOMMIT_FILENAME

@@ -135,8 +135,8 @@ def _set_pythonpath():
 
 def _get_config_home():
     win32_config_home = os.path.join(os.path.expanduser("~"), ".repoguard")
-    _linux_config_home = "/usr/local/share/repoguard"
-    config_home = win32_config_home if sys.platform == "win32" else _linux_config_home
+    linux_config_home = "/usr/local/share/repoguard"
+    config_home = win32_config_home if sys.platform == "win32" else linux_config_home
     config_home = os.getenv("REPOGUARD_CONFIG_HOME", config_home)
     return config_home
 
@@ -163,6 +163,7 @@ def _read_requirements_from_file(path):
         return file_object.read().splitlines()
 
 def _run_setup(config_home, console_scripts, install_requires, extras_require):
+    _write_config_home_constant(config_home)
     setuptools.setup(
         name="repoguard", 
         version="0.3.0",
@@ -247,6 +248,18 @@ def _run_setup(config_home, console_scripts, install_requires, extras_require):
             ]
         }
     )
+
+def _write_config_home_constant(config_home):
+    constants_file_path = "src/repoguard/core/constants.py"
+    with open(constants_file_path, "rb") as file_object:
+        content = list()
+        for line in file_object.readlines():
+            if line.startswith("CONFIG_HOME ="):
+                content.append("CONFIG_HOME = \"%s\"" % config_home)
+            else:
+                content.append(line)
+    with open(constants_file_path, "wb") as file_object:
+        file_object.write("".join(content))
 
 
 if __name__ == "__main__":
