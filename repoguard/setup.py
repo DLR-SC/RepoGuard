@@ -226,7 +226,7 @@ def _run_setup(config_home, console_scripts, install_requires, extras_require):
                 "Checkstyle = repoguard.checks.checkstyle:Checkstyle",
                 "Keywords = repoguard.checks.keywords:Keywords",
                 "Log = repoguard.checks.log:Log",
-                "Mantis = repoguard.checks.mantis [mantis]",
+                "Mantis = repoguard.checks.mantis:Mantis [mantis]",
                 "PyLint = repoguard.checks.pylint_:PyLint [pylint]",
                 "RejectTabs = repoguard.checks.rejecttabs:RejectTabs",
                 "UnitTests = repoguard.checks.unittests:UnitTests",
