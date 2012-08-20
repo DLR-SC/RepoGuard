@@ -86,6 +86,7 @@ class pylint(_BaseCommandRunner):
             file_object = open(self.output_file_path, "r+b")
             try:
                 content = file_object.read().replace("\\", "/")
+                file_object.seek(0)
                 file_object.write(content)
             finally:
                 file_object.close()
@@ -266,6 +267,7 @@ def _write_config_home_constant(config_home):
                 content.append("CONFIG_HOME = \"%s\"\n" % config_home)
             else:
                 content.append(line)
+        file_object.seek(0)
         file_object.write("".join(content))
     finally:
         file_object.close()
