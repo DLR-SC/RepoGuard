@@ -36,5 +36,8 @@ class CaseInsensitiveFilenameClash(Check):
             if attribute in ["A"] :
                 if self.transaction.file_exists(filename, ignore_case=True):
                     msg += self.pattern % filename
-    
-        return self.error(msg) if msg else self.success()
+        
+        if msg:
+            return self.error(msg)
+        else:
+            return self.success()

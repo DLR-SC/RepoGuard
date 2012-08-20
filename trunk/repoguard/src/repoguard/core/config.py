@@ -799,7 +799,10 @@ class Process(Section):
         for check in self.get('checks', []):
             result = self.check_regex.search(check)
             name, config, interp = result.group("name", "config", "interp")
-            config = self.main['checks'][name][config] if config else None
+            if config:
+                config = self.main['checks'][name][config]
+            else:
+                config = None
             interp = interp or self.get('default', constants.ABORTONERROR)
             checks.append((name, config, interp))
         return checks
@@ -865,7 +868,10 @@ class Process(Section):
         for handler in self.get(type_, []):
             result = self.handler_regex.search(handler)
             name, config = result.group("name", "config")
-            config =  self.main['handlers'][name][config] if config else None
+            if config:
+                config = self.main['handlers'][name][config]
+            else:
+                config = None
             handlers.append((name, config))
         return handlers
     

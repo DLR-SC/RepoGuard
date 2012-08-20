@@ -71,4 +71,7 @@ class Keywords(Check):
                 for keyword in config.keywords:
                     if keyword not in keywords_is:
                         msg += self.pattern % (filename, keyword) 
-        return self.error(msg) if msg else self.success()
+        if msg:
+            return self.error(msg)
+        else:
+            return self.success()

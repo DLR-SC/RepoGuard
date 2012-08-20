@@ -20,8 +20,6 @@ Tests the ASCII check.
 """
 
 
-from __future__ import with_statement
-
 from configobj import ConfigObj
 import mock
 
@@ -40,29 +38,45 @@ class TestASCIIEncoded(object):
         cls._asciiencoded = asciiencoded.ASCIIEncoded(transaction)
 
     def test_default_contains_ascii_only(self):
-        with mock.patch("repoguard.checks.asciiencoded.open", create=True) as open_mock:
+        patcher = mock.patch("repoguard.checks.asciiencoded.open", create=True)
+        open_mock = patcher.start()
+        try:
             self._init_file_mock(open_mock, '""" doc"""\nprint "hllo@#"')
             assert self._asciiencoded.ascii_check("test.py", "", "") == list()
+        finally:
+            patcher.stop()
             
     def test_default_contains_non_ascii(self):
-        with mock.patch("repoguard.checks.asciiencoded.open", create=True) as open_mock:
+        patcher = mock.patch("repoguard.checks.asciiencoded.open", create=True)
+        open_mock = patcher.start()
+        try:
             self._init_file_mock(open_mock, '""" doc"""\nprint "hällo@#"')
             errors = self._asciiencoded.ascii_check("test.py", "", "")
             assert errors[0][1] == 20
+        finally:
+            patcher.stop()
             
     def test_include_character(self):
-        with mock.patch("repoguard.checks.asciiencoded.open", create=True) as open_mock:
+        patcher = mock.patch("repoguard.checks.asciiencoded.open", create=True)
+        open_mock = patcher.start()
+        try:
             self._init_file_mock(open_mock, '""" doc"""\nprint "hällo@#"')
             assert self._asciiencoded.ascii_check("test.py", "ä", "") == list()
-    
+        finally:
+            patcher.stop()
+            
     def test_exclude_character(self):
-        with mock.patch("repoguard.checks.asciiencoded.open", create=True) as open_mock:
+        patcher = mock.patch("repoguard.checks.asciiencoded.open", create=True)
+        open_mock = patcher.start()
+        try:
             self._init_file_mock(open_mock, '""" doc. """\nprint "hell@#"')
             errors = self._asciiencoded.ascii_check("test.py", "", "e")
             assert errors[0][1] == 22
-            
+        finally:
+            patcher.stop()
+             
     def _init_file_mock(self, open_mock, file_content):
-        open_mock.return_value.__enter__.return_value = self._file_mock
+        open_mock.return_value = self._file_mock
         self._file_mock.readlines = mock.Mock(return_value=[file_content])
         
     def test_run_success(self):

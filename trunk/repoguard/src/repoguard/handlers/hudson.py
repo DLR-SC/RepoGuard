@@ -43,5 +43,8 @@ class Hudson(Handler):
         :type config: Config instance.
         """
         
-        params = urlencode({'token' : config.token}) if config.token else None
+        if config.token:
+            params = urlencode({'token' : config.token})
+        else:
+            params = None
         urlopen(config.url, params).close()

@@ -19,8 +19,6 @@ Test the for the Checkstyle check.
 """
 
 
-from __future__ import with_statement
-
 import os
 import sys
 
@@ -50,24 +48,40 @@ class TestCheckstyle(object):
 
     def test_empty_file_set(self):
         self._transaction.get_files.return_value = dict()
-        with mock.patch("repoguard.checks.checkstyle.process.execute") as execute_mock:
+        patcher = mock.patch("repoguard.checks.checkstyle.process.execute")
+        execute_mock = patcher.start()
+        try:
             assert self._checkstyle.run(self._config, debug=True).success
             assert not execute_mock.called
+        finally:
+            patcher.stop()
             
     def test_empty_deleted(self):
         self._transaction.get_files.return_value = {"filepath":"D"}
-        with mock.patch("repoguard.checks.checkstyle.process.execute") as execute_mock:
+        patcher = mock.patch("repoguard.checks.checkstyle.process.execute")
+        execute_mock = patcher.start()
+        try:
             assert self._checkstyle.run(self._config, debug=True).success
             assert not execute_mock.called
+        finally:
+            patcher.stop()
             
     def test_success(self):
-        with mock.patch("repoguard.checks.checkstyle.process.execute"):
+        patcher = mock.patch("repoguard.checks.checkstyle.process.execute")
+        patcher.start()
+        try:
             assert self._checkstyle.run(self._config, debug=True).success
-
+        finally:
+            patcher.stop()
+            
     def test_failure(self):
-        with mock.patch("repoguard.checks.checkstyle.process.execute") as process_mock:
-            process_mock.side_effect = process.ProcessException("", -1, "")
+        patcher = mock.patch("repoguard.checks.checkstyle.process.execute")
+        execute_mock = patcher.start()
+        try:
+            execute_mock.side_effect = process.ProcessException("", -1, "")
             assert not self._checkstyle.run(self._config, debug=True).success
+        finally:
+            patcher.stop()
 
         
 def test_classpath():

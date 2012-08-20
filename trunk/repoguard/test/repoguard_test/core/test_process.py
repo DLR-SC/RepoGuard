@@ -19,8 +19,6 @@ Tests the process execution.
 """
 
 
-from __future__ import with_statement
-
 import mock
 import pytest
 
@@ -28,15 +26,19 @@ from repoguard.core import process
 
 
 def test_execute_success():
-    with mock.patch("repoguard.core.process.subprocess.Popen") as popen_class:
+    patcher = mock.patch("repoguard.core.process.subprocess.Popen")
+    popen_class = patcher.start()
+    try:
         popen_class.return_value.returncode = 0
         process.execute("svnlook help")
-    
+    finally:
+        patcher.stop()
+        
 def test_execute_error():
-    with mock.patch("repoguard.core.process.subprocess.Popen") as popen_class:
+    patcher = mock.patch("repoguard.core.process.subprocess.Popen")
+    popen_class = patcher.start()
+    try:
         popen_class.return_value.returncode = -1
-        with pytest.raises(process.ProcessException) as error: # pytest.raises exists pylint: disable=E1101
-            process.execute("somecommand")
-            assert error.exit_code != 0
-            assert error.command == "somecommand"
-            assert error.output != ""
+        pytest.raises(process.ProcessException, process.execute, "somecommand")
+    finally:
+        patcher.stop()

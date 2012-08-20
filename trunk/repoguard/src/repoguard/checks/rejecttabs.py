@@ -18,7 +18,6 @@ Reject files with given extensions that include leading tabs.
 """
 
 
-from __future__ import with_statement
 import re
 
 from repoguard.core.module import Check, ConfigSerializer, String, Array
@@ -54,11 +53,17 @@ class RejectTabs(Check):
                     # Skip binary files
                     continue
     
-            with open(self.transaction.get_file(filename), "r") as file_object:
+            file_object = open(self.transaction.get_file(filename), "r")
+            try:
                 msg = "File %s contains leading tabs"
                 for line in file_object:
                     if self.pattern.match(line):
                         errors.append(msg % filename)
                         break
-                    
-        return self.success() if not errors else self.error("\n".join(errors))
+            finally:
+                file_object.close()
+        
+        if not errors:     
+            return self.success()
+        else:
+            return self.error("\n".join(errors))

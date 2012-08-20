@@ -38,5 +38,7 @@ class XMLValidator(Check):
                     minidom.parse(self.transaction.get_file(filename))
                 except expat.ExpatError, e:
                     msg += "XML validation error in file %r: %s" % (filename, e)
-    
-        return self.error(msg) if msg else self.success()
+        if msg:
+            return self.error(msg)
+        else:
+            return self.success()

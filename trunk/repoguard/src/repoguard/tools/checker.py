@@ -14,7 +14,7 @@
 
 
 """
-
+Main tool to handle pre and post commits.
 """
 
 
@@ -108,25 +108,28 @@ class Checker(Tool):
         logger.debug("RepoGuard initializing...")
         repoguard = RepoGuard(hook, repo_path)
         try:
-            logger.debug("Loading transaction...")
-            repoguard.load_transaction(txn_name)
-    
-            logger.debug("Loading configuration...")
-            main_config = RepoGuardConfig(constants.CONFIG_PATH)
-            repoguard.load_config(main_config.template_dirs, project_config)
-            if main_config.validate:
-                repoguard.validate()
-            else:
-                logger.warning("Validation skipped.")
-            logger.debug("RepoGuard running...")
-            result = repoguard.run()
-        except ValidateError, exc:
-            msg = "Configuration validation error cause: %s"
-            logger.exception(msg, exc.message)
-        except Exception, exc:
-            msg = "%s exception cause: '%s'"
-            logger.exception(msg, exc.__class__.__name__, exc.message)
+            try:
+                logger.debug("Loading transaction...")
+                repoguard.load_transaction(txn_name)
+        
+                logger.debug("Loading configuration...")
+                main_config = RepoGuardConfig(constants.CONFIG_PATH)
+                repoguard.load_config(main_config.template_dirs, project_config)
+                if main_config.validate:
+                    repoguard.validate()
+                else:
+                    logger.warning("Validation skipped.")
+                logger.debug("RepoGuard running...")
+                result = repoguard.run()
+            except ValidateError, exc:
+                msg = "Configuration validation error cause: %s"
+                logger.exception(msg, str(exc))
+            except Exception, exc:
+                msg = "%s exception cause: '%s'"
+                logger.exception(msg, exc.__class__.__name__, str(exc))
         finally:
             logger.debug("RepoGuard finished with %s.", result)
-            return 0 if result == constants.SUCCESS else 1
-        
+            if result == constants.SUCCESS:
+                return 0
+            else:
+                return 1

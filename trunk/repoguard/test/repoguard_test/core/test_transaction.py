@@ -1,5 +1,4 @@
-# pylint: disable=E1101,W0212
-# E1101: Pylint cannot import py.test
+# pylint: disable=W0212
 # W0212: Access to protected methods is ok in tests cases.
 #
 # Copyright 2008 German Aerospace Center (DLR)
@@ -22,10 +21,8 @@ Test methods for the Transaction class.
 """
 
 
-from __future__ import with_statement
-
 import mock
-import py.test
+import pytest
 
 from repoguard.core import process
 from repoguard.core import transaction
@@ -51,23 +48,35 @@ class TestTransaction(object):
         
     def test_get_file_not_found(self):
         self._transaction.file_exists = mock.Mock(return_value=False)
-        with py.test.raises(transaction.FileNotFoundException):
-            self._transaction.get_file("/path/notexisting.java")
+        pytest.raises(transaction.FileNotFoundException, 
+            self._transaction.get_file, "/path/notexisting.java")
             
     def test_get_file_in_cache(self):
         self._transaction.file_exists = mock.Mock(return_value=True)
         cached_filepath = "/path/existing.java"
-        with mock.patch("repoguard.core.transaction.os.path.exists", create=True):
+        patcher = mock.patch("repoguard.core.transaction.os.path.exists", create=True)
+        patcher.start()
+        try:
             assert cached_filepath in self._transaction.get_file(cached_filepath)
-
+        finally:
+            patcher.stop()
+            
     def test_get_file_not_cached(self):
         self._transaction.file_exists = mock.Mock(return_value=True)
         transaction.os.makedirs = mock.Mock()
         not_cached_filepath = "/path/existing.java"
-        with mock.patch("repoguard.core.transaction.os.path.exists", create=True) as exists_mock:
-            with mock.patch("repoguard.core.transaction.open", create=True):
+        patcher = mock.patch("repoguard.core.transaction.os.path.exists", create=True)
+        exists_mock = patcher.start()
+        try:
+            patcher_ = mock.patch("repoguard.core.transaction.open", create=True)
+            patcher_.start()
+            try:
                 exists_mock.return_value = False
                 assert not_cached_filepath in self._transaction.get_file(not_cached_filepath)
+            finally:
+                patcher_.stop()
+        finally:
+            patcher.stop()
 
     def test_file_exists(self):
         assert self._transaction.file_exists("test 1.txt")
@@ -101,8 +110,8 @@ class TestTransaction(object):
        
     def test_get_property_not(self):
         self._transaction.has_property = mock.Mock(return_value=False)
-        with py.test.raises(transaction.PropertyNotFoundException): 
-            self._transaction.get_property("keywordx", "test 1.txt")
+        pytest.raises(transaction.PropertyNotFoundException,  
+            self._transaction.get_property, "keywordx", "test 1.txt")
 
     def test_list_properties(self):
         self._transaction.file_exists = mock.Mock(return_value=True)
@@ -111,8 +120,8 @@ class TestTransaction(object):
     
     def test_list_properties_file_not_found(self):
         self._transaction.file_exists = mock.Mock(return_value=False)
-        with py.test.raises(transaction.FileNotFoundException):
-            self._transaction.list_properties("nonexisting.java")
+        pytest.raises(transaction.FileNotFoundException, 
+            self._transaction.list_properties, "nonexisting.java")
 
     def test_revision(self):
         assert self._transaction.revision == "11"

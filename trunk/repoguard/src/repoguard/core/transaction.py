@@ -15,7 +15,6 @@
 
 """ Class to work with transactions. """
 
-from __future__ import with_statement
 
 import os
 import re
@@ -137,9 +136,11 @@ class Transaction(object):
         if dirname and not os.path.exists(tmpdirname):
             os.makedirs(tmpdirname)
 
-        with open(tmpfilename, "w") as fd:
-            fd.write(content)
-
+        file_object = open(tmpfilename, "w")
+        try:
+            file_object.write(content)
+        finally:
+            file_object.close()
         return tmpfilename
 
     def file_exists(self, filename, ignore_case=False):

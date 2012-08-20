@@ -16,7 +16,6 @@
 
 """ Log the message into a file. """
 
-from __future__ import with_statement
 
 import os.path
 
@@ -36,10 +35,13 @@ class File(Handler):
         if not os.path.exists(os.path.dirname(config.file)):
             msg = "Could not write logfile because directory does not exist: %r"
             raise IOError(msg % os.path.dirname(config.file))
-    
-        with open(config.file, "a") as fp:
+        
+        fp = open(config.file, "a")
+        try:
             fp.write(str(msg))
             fp.write(SEPARATOR)
+        finally:
+            fp.close()
         
     def _singularize(self, config, entry):
         self._write(config, entry)

@@ -21,13 +21,10 @@ Test methods of the C{Config} class.
 """
 
 
-from __future__ import with_statement
-
-
 import os
 
 import mock
-import py.test
+import pytest
 
 from repoguard.core import constants
 from repoguard.core.config import ProjectConfig, RepoGuardConfig, Process
@@ -124,10 +121,14 @@ class TestRepoGuardConfig(object):
         assert self.config.projects["RepoGuard"].name == "RepoGuard"
         
     def test_templates(self):
-        with mock.patch("repoguard.core.config.os") as os_mock:
+        patcher = mock.patch("repoguard.core.config.os")
+        os_mock = patcher.start()
+        try:
             os_mock.listdir.return_value = ["default.tpl.conf", "python.tpl.conf"]
             assert [u"default", u"python"] == self.config.templates.keys()
-    
+        finally:
+            patcher.stop()
+            
     def test_template_dirs(self):
         assert self.config.template_dirs == [
             os.path.normpath(self._additional_template_path), self._default_template_path]
@@ -140,11 +141,15 @@ class TestProjectConfig(object):
     
     @classmethod
     def setup_class(cls):
-        with mock.patch("repoguard.core.config.os") as os_mock:
+        patcher = mock.patch("repoguard.core.config.os")
+        os_mock = patcher.start()
+        try:
             os_mock.path.exists.return_value = True
             # Dirty hack: "misusing" the template file path to avoid usage of temporary file objects 
             os_mock.path.join.side_effect = [_PYTHON_CONFIG.splitlines(), _DEFAULT_CONFIG.splitlines()]
             cls.config = ProjectConfig(_PROJECT_CONFIG.splitlines(), "hooks", ["template_path"])
+        finally:
+            patcher.stop()
     
     def test_extended(self):
         assert "python" in self.config.extended.keys()
@@ -213,12 +218,12 @@ class TestProjectConfig(object):
         assert success == ["File.default", "File"]
         
         process = Process(profile, profile.depth, self.config)
-        py.test.raises(KeyError, process._set_checks, 
-                       [("PyLint", "notexists", None)])
-        py.test.raises(KeyError, process._set_success_handlers,
-                       [("File", "notexists")])
+        pytest.raises(KeyError, 
+            process._set_checks, [("PyLint", "notexists", None)])
+        pytest.raises(KeyError, 
+            process._set_success_handlers, [("File", "notexists")])
 
 
 def test_no_extension_template_found():
-    with py.test.raises(ValueError):
-        ProjectConfig(_PROJECT_CONFIG.splitlines(), "hooks", ["template_path"])
+    pytest.raises(ValueError, 
+        ProjectConfig, _PROJECT_CONFIG.splitlines(), "hooks", ["template_path"])

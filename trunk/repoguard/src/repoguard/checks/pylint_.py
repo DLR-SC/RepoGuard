@@ -103,4 +103,7 @@ class PyLint(Check):
     
         output = output.getvalue()
         self.logger.debug("PyLint output:\n %s", output)
-        return self.error(output) if output else self.success()
+        if output:
+            return self.error(output)
+        else:
+            return self.success()

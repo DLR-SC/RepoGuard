@@ -19,8 +19,6 @@ Tests the UnitTests check.
 """
 
 
-from __future__ import with_statement
-
 from configobj import ConfigObj
 import mock
 
@@ -39,26 +37,38 @@ class TestUnitTests(object):
 
     def test_skip_interface(self):
         self._transaction.get_files = mock.Mock(return_value={"ApplicationInterface.java":"A"})
-        with mock.patch("repoguard.checks.unittests.open", create=True) as open_mock:
+        patcher = mock.patch("repoguard.checks.unittests.open", create=True)
+        open_mock = patcher.start()
+        try:
             self._init_file_mock(open_mock, "public interface TestInterface {\n}\n")
             assert self._unittests.run(self._config).success
+        finally:
+            patcher.stop()
             
     def test_unittest_found(self):
         self._transaction.get_files = mock.Mock(return_value={"ApplicationClass.java":"A"})
-        with mock.patch("repoguard.checks.unittests.open", create=True) as open_mock:
+        patcher = mock.patch("repoguard.checks.unittests.open", create=True)
+        open_mock = patcher.start()
+        try:
             self._init_file_mock(open_mock, "public class TestKlasse {\n}\n")
             self._transaction.file_exists = mock.Mock(return_value=True)
             assert self._unittests.run(self._config).success
-
+        finally:
+            patcher.stop()
+            
     def test_unittest_not_found(self):
         self._transaction.get_files = mock.Mock(return_value={"ApplicationClass.java":"A"})
-        with mock.patch("repoguard.checks.unittests.open", create=True) as open_mock:
+        patcher = mock.patch("repoguard.checks.unittests.open", create=True)
+        open_mock = patcher.start()
+        try:
             self._init_file_mock(open_mock, "public class TestKlasse {\n}\n")
             self._transaction.file_exists = mock.Mock(return_value=False)
             assert not self._unittests.run(self._config).success
-
+        finally:
+            patcher.stop()
+            
     def _init_file_mock(self, open_mock, file_content):
-        open_mock.return_value.__enter__.return_value = self._file_mock
+        open_mock.return_value = self._file_mock
         self._file_mock.__iter__ = lambda _: iter(file_content.splitlines())
     
     def test_skip_unittests(self):
