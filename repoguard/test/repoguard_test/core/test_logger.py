@@ -1,3 +1,5 @@
+# pylint: disable=E1101
+# E1101: Pylint cannot find pytest.raises
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #

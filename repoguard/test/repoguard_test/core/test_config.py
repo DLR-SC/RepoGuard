@@ -1,5 +1,5 @@
-# pylint: disable=E1101
-# E1101: py.test.raises is callable
+# pylint: disable=E1101,E1103
+# E1101: pytest.raises is callable
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #

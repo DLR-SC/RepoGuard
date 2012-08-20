@@ -1,4 +1,5 @@
-# pylint: disable=W0212
+# pylint: disable=E1101,W0212
+# E1101: Pylint cannot find pytest.raises
 # W0212: Access to protected methods is ok in tests cases.
 #
 # Copyright 2008 German Aerospace Center (DLR)

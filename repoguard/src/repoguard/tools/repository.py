@@ -45,7 +45,8 @@ class Repository(Tool):
         
         self.version = "0.1"
         
-    def _chhooks(self):
+    @staticmethod
+    def _chhooks():
         """
         Changes the cwd to the hooks directory and returns the hooks path.
         
@@ -94,20 +95,20 @@ class Repository(Tool):
             infile = constants.CONFIG_PATTERN % (repoguard, hook)
             msg = "%s already exists. You want to append the repoguard? (yes/no) "
             if not exists:
-                fp = open(path, 'wb')
+                file_object = open(path, 'wb')
                 try:
                     if not options.noact:
                         if os.name != 'nt':
-                            fp.write("#!/bin/sh\n")
-                        fp.write(infile)
+                            file_object.write("#!/bin/sh\n")
+                        file_object.write(infile)
                 finally:
-                    fp.close()
+                    file_object.close()
                 # Changing rights to executable.
                 os.chmod(path, 755)
             else:
-                fp = open(path, 'r+ab')
+                file_object = open(path, 'r+ab')
                 try:
-                    lines = fp.readlines()
+                    lines = file_object.readlines()
                     if lines.count(infile):
                         print "%s already installed." % hook.capitalize()
                         return
@@ -117,9 +118,9 @@ class Repository(Tool):
                         if options.verbose and raw_input(question).lower().startswith("n"):
                             return
                     if not options.noact:
-                        fp.write(infile + "\n")
+                        file_object.write(infile + "\n")
                 finally:
-                    fp.close()
+                    file_object.close()
             if options.verbose:
                 print "%s successfully added." % hook.capitalize()        
                         
@@ -249,17 +250,17 @@ class Repository(Tool):
                 return
             
             infile = constants.CONFIG_PATTERN % (repoguard, hook)
-            fp = open(path, 'rw+b')
+            file_object = open(path, 'rw+b')
             try:
-                lines = fp.readlines()
+                lines = file_object.readlines()
                 try:
                     index = lines.index(infile)
                     del lines[index]
-                    fp.writelines(lines)
+                    file_object.writelines(lines)
                 except ValueError:
                     return
             finally:
-                fp.close()
+                file_object.close()
                 
             if not lines:
                 os.remove(path)
@@ -325,12 +326,12 @@ class Repository(Tool):
             path = os.path.join(hooks, filename)
             infile = constants.CONFIG_PATTERN % (repoguard, hook)
             try:
-                fp = open(path, 'ra+b')
+                file_object = open(path, 'ra+b')
                 try:
-                    lines = fp.readlines()
+                    lines = file_object.readlines()
                     return lines.count(infile) > 0
                 finally:
-                    fp.close()
+                    file_object.close()
             except IOError:
                 return False
         
