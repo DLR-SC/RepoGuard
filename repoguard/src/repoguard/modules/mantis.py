@@ -86,7 +86,8 @@ class Mantis(object):
         
         result = self.service.mc_issue_get(self.user, self.password, bug_id)
         defined = hasattr(result, "handler") and hasattr(result.handler, "name")
-        return result.handler.name if defined else None
+        if defined:
+            return result.handler.name
     
     def issue_add_note(self, bug_id, text):
         """

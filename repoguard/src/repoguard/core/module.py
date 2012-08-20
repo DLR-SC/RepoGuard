@@ -42,7 +42,6 @@ check and handler handling.
 """
 
 
-import functools
 import inspect
 import re
 
@@ -65,7 +64,11 @@ def _objectname(obj):
     :rtype: string
     """
     
-    return obj.__name__ if hasattr(obj, '__name__') else obj.__class__.__name__
+    if hasattr(obj, '__name__'):
+        return obj.__name__
+    else:
+        return obj.__class__.__name__
+
 
 class Boolean(object):
     """
@@ -495,7 +498,7 @@ class Module(object):
         :rtype: func
         """
         
-        def assign(config_class, module_class):
+        def assign(module_class):
             """
             Inner method to set the __config__ parameter of the module_class.
             
@@ -512,7 +515,8 @@ class Module(object):
             
             module_class.__config__ = config_class
             return module_class
-        return functools.partial(assign, config_class)
+        return assign 
+
 
 class Check(Module):
     """
@@ -593,7 +597,7 @@ class Check(Module):
                 raise exc
             
             entry.result = constants.EXCEPTION
-            entry.msg = "Exception in check '%s': %s" % (name, exc.message)
+            entry.msg = "Exception in check '%s': %s" % (name, exc.args)
             self.logger.exception(entry.msg) 
         
         if entry.result == constants.ERROR and interp == constants.WARNING:
@@ -675,7 +679,7 @@ class Handler(Module):
                 raise exc
             
             msg = "Exception in %s handler in method _singularize: %s"
-            self.logger.exception(msg, self.__class__.__name__, exc.message)
+            self.logger.exception(msg, self.__class__.__name__, str(exc))
     
     def _singularize(self, config, entry):
         """
@@ -738,7 +742,7 @@ class Handler(Module):
                 raise exc
             
             msg = "Exception in %s handler in method _summarize: %s"
-            self.logger.exception(msg, self.__class__.__name__, exc.message)
+            self.logger.exception(msg, self.__class__.__name__, str(exc))
     
     def _summarize(self, config, protocol):
         """
@@ -842,7 +846,11 @@ class HandlerManager(CheckManager):
         :type msg_container: C{Protocol}, C{ProtocolEntry}
         """
         
-        handlers = process.success if msg_container.success else process.error
+        if msg_container.success:
+            handlers = process.success
+        else:
+            handlers = process.error
+        
         for name, config in handlers:
             handler = self.fetch(name, transaction)
             getattr(handler, func)(config, msg_container)

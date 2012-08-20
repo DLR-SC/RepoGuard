@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """
-Tool for repoguard configuration validation.
+Installs/uninstalls RepoGuard in/from a repository.
 """
 
-
-from __future__ import with_statement
 
 import os
 import sys
@@ -95,15 +94,19 @@ class Repository(Tool):
             infile = constants.CONFIG_PATTERN % (repoguard, hook)
             msg = "%s already exists. You want to append the repoguard? (yes/no) "
             if not exists:
-                with open(path, 'wb') as fp:
+                fp = open(path, 'wb')
+                try:
                     if not options.noact:
                         if os.name != 'nt':
                             fp.write("#!/bin/sh\n")
                         fp.write(infile)
+                finally:
+                    fp.close()
                 # Changing rights to executable.
                 os.chmod(path, 755)
             else:
-                with open(path, 'ra+b') as fp:
+                fp = open(path, 'r+ab')
+                try:
                     lines = fp.readlines()
                     if lines.count(infile):
                         print "%s already installed." % hook.capitalize()
@@ -115,6 +118,8 @@ class Repository(Tool):
                             return
                     if not options.noact:
                         fp.write(infile + "\n")
+                finally:
+                    fp.close()
             if options.verbose:
                 print "%s successfully added." % hook.capitalize()        
                         
@@ -200,24 +205,24 @@ class Repository(Tool):
         # convert the python script path to executable path.
         repoguard = sys.argv[0].rsplit('-', 1)[0]
         
-        if not any((options.precommit, options.postcommit, options.main)):
-            precommit = postcommit = config = True
+        if not (options.precommit or options.postcommit or options.main):
+            options.precommit = options.postcommit = options.main = True
         
         try:
             hooks = self._chhooks()
         except IOError, exc:
-            print exc.message
+            print exc
             return 1
         
-        if precommit:
+        if options.precommit:
             filename, hook = PRECOMMIT
             install_hook(filename, hook, hooks)
             
-        if postcommit:
+        if options.postcommit:
             filename, hook = POSTCOMMIT
             install_hook(filename, hook, hooks)
             
-        if config:
+        if options.main:
             install_config(hooks, options.template)
             
         if options.verbose:
@@ -244,7 +249,8 @@ class Repository(Tool):
                 return
             
             infile = constants.CONFIG_PATTERN % (repoguard, hook)
-            with open(path, 'rw+b') as fp:
+            fp = open(path, 'rw+b')
+            try:
                 lines = fp.readlines()
                 try:
                     index = lines.index(infile)
@@ -252,6 +258,8 @@ class Repository(Tool):
                     fp.writelines(lines)
                 except ValueError:
                     return
+            finally:
+                fp.close()
                 
             if not lines:
                 os.remove(path)
@@ -277,24 +285,24 @@ class Repository(Tool):
         options = parser.parse_args()[0]
         repoguard = sys.argv[0].rsplit('-', 1)[0]
         
-        if not any((options.precommit, options.postcommit, options.main)):
-            precommit = postcommit = config = True
+        if not (options.precommit or options.postcommit or options.main):
+            options.precommit = options.postcommit = options.main = True
         
         try:
             hooks = self._chhooks()
         except IOError, exc:
-            sys.stderr.write(exc.message)
+            sys.stderr.write(str(exc))
             return 1
             
-        if precommit:
+        if options.precommit:
             filename, hook = PRECOMMIT
             uninstall_hook(filename, hook, hooks)
             
-        if postcommit:
+        if options.postcommit:
             filename, hook = POSTCOMMIT
             uninstall_hook(filename, hook, hooks)
             
-        if config:
+        if options.main:
             path = os.path.join(hooks, constants.CONFIG_FILENAME)
             if os.path.exists(path):
                 os.remove(path)
@@ -310,30 +318,38 @@ class Repository(Tool):
     )
     def status(self, _):
         """
-        
+        Checks which RepoGuard components are installed for the repository.
         """
         
         def hook_exists(repoguard, hook, hooks, filename):
             path = os.path.join(hooks, filename)
             infile = constants.CONFIG_PATTERN % (repoguard, hook)
-            with open(path, 'ra+b') as fp:
-                lines = fp.readlines()
-                return lines.count(infile) > 0
+            try:
+                fp = open(path, 'ra+b')
+                try:
+                    lines = fp.readlines()
+                    return lines.count(infile) > 0
+                finally:
+                    fp.close()
+            except IOError:
+                return False
         
         repoguard = sys.argv[0].rsplit('-', 1)[0]
         try:
             hooks = self._chhooks()
         except IOError, exc:
-            print exc.message
+            print exc
             return 1
             
         for filename, hook in (PRECOMMIT, POSTCOMMIT):
             if hook_exists(repoguard, hook, hooks, filename):
                 print "%s hook installed" % hook.capitalize()
+            else:
+                print "%s hook NOT installed" % hook.capitalize()
     
         path = os.path.join(hooks, constants.CONFIG_FILENAME)
         if os.path.exists(path):
-            print "Configuration installed"  
+            print "Configuration installed"
+        else:
+            print "Configuration NOT installed"
         return 0
-            
-        

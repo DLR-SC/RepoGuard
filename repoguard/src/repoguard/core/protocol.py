@@ -78,7 +78,10 @@ class Protocol(list):
         :rtype: string
         """
         
-        return constants.SUCCESS if self.success else constants.ERROR
+        if self.success:
+            return constants.SUCCESS
+        else:
+            return constants.ERROR
         
     def __str__(self):
         """

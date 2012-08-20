@@ -6,7 +6,6 @@ Setup script for the RepoGuard distribution.
 """
 
 
-from __future__ import with_statement
 from distutils.command import clean as _clean
 from distutils import core
 import os
@@ -84,11 +83,13 @@ class pylint(_BaseCommandRunner):
 
     def _perform_post_actions(self):
         if self.out == "parseable" and sys.platform == "win32":
-            with open(self.output_file_path, "rb") as file_object:
+            file_object = open(self.output_file_path, "r+b")
+            try:
                 content = file_object.read().replace("\\", "/")
-            with open(self.output_file_path, "wb") as file_object:
                 file_object.write(content)
-                
+            finally:
+                file_object.close()
+
 
 class test(_BaseCommandRunner):
     """ Runs all unit tests. """
@@ -136,7 +137,10 @@ def _set_pythonpath():
 def _get_config_home():
     win32_config_home = os.path.join(os.path.expanduser("~"), ".repoguard")
     linux_config_home = "/usr/local/share/repoguard"
-    config_home = win32_config_home if sys.platform == "win32" else linux_config_home
+    if sys.platform == "win32":
+        config_home = win32_config_home
+    else: 
+        config_home = linux_config_home
     config_home = os.getenv("REPOGUARD_CONFIG_HOME", config_home)
     return config_home
 
@@ -159,9 +163,12 @@ def _get_requirements():
     return install_requires, extras_require
 
 def _read_requirements_from_file(path):
-    with open(path, "rb") as file_object:
+    file_object = open(path, "rb")
+    try:
         return file_object.read().splitlines()
-
+    finally:
+        file_object.close()
+        
 def _run_setup(config_home, console_scripts, install_requires, extras_require):
     _write_config_home_constant(config_home)
     setuptools.setup(
@@ -251,15 +258,17 @@ def _run_setup(config_home, console_scripts, install_requires, extras_require):
 
 def _write_config_home_constant(config_home):
     constants_file_path = "src/repoguard/core/constants.py"
-    with open(constants_file_path, "rb") as file_object:
+    file_object = open(constants_file_path, "r+b")
+    try:
         content = list()
         for line in file_object.readlines():
             if line.startswith("CONFIG_HOME ="):
                 content.append("CONFIG_HOME = \"%s\"\n" % config_home)
             else:
                 content.append(line)
-    with open(constants_file_path, "wb") as file_object:
         file_object.write("".join(content))
+    finally:
+        file_object.close()
 
 
 if __name__ == "__main__":

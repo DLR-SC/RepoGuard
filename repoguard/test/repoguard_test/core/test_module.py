@@ -24,13 +24,11 @@ Test module for the module package.
 """
 
 
-from __future__ import with_statement
-
 import pkg_resources
         
 from configobj import ConfigObj
 import mock
-import py.test
+import pytest
 
 from repoguard.checks.pylint_ import PyLint
 from repoguard.core import constants
@@ -134,8 +132,8 @@ class TestHandler(object):
         entry = mock.Mock(check="Log")
         entry.is_included.return_value = True
         self._handler._singularize.side_effect = ValueError
-        with py.test.raises(ValueError):
-            self._handler.singularize(self._config, entry, debug=True)
+        pytest.raises(ValueError,
+            self._handler.singularize, self._config, entry, debug=True)
         
     def test_summarize_success(self):
         protocol = mock.MagicMock()
@@ -146,8 +144,8 @@ class TestHandler(object):
     def test_summarize_error(self):
         protocol = mock.MagicMock()
         self._handler._summarize.side_effect = ValueError
-        with py.test.raises(ValueError):
-            self._handler.summarize(self._config, protocol, debug=True)
+        pytest.raises(ValueError, 
+            self._handler.summarize, self._config, protocol, debug=True)
         assert protocol.filter.called
 
 
@@ -180,8 +178,7 @@ class TestCheckManager(object):
         
     def test_fetch_error(self):
         pkg_resources.load_entry_point.side_effect = ImportError
-        with py.test.raises(ImportError):
-            self._cache.fetch("Foo", None)
+        pytest.raises(ImportError, self._cache.fetch, "Foo", None)
 
 
 class TestHandlerManager(object):

@@ -19,8 +19,6 @@ Tests the Mantis module.
 """
 
 
-from __future__ import with_statement
-
 import mock
 import pytest
 
@@ -60,10 +58,14 @@ class TestMantis(object):
         assert self.mantis.issue_get_handler("2") == "me"
         
     def test_issue_get_handler_no_handler_defined(self):
-        with mock.patch("repoguard.modules.mantis.hasattr", create=True) as hasattr_mock:
+        patcher = mock.patch("repoguard.modules.mantis.hasattr", create=True)
+        hasattr_mock = patcher.start()
+        try:
             hasattr_mock.return_value = False
             assert self.mantis.issue_get_handler("1") == None
-
+        finally:
+            hasattr_mock = patcher.stop()
+            
     def test_issue_add_note(self):
         self.mantis.issue_add_note("1", "test")
         
@@ -79,5 +81,5 @@ class TestMantis(object):
         assert self.service.mc_issue_update.call_count == 1
 
     def test_issue_set_custom_field_no_field(self):
-        with pytest.raises(ValueError): # pytest.raises exists pylint: disable=E1101
-            self.mantis.issue_set_custom_field("1", "SVNRevision", "123")
+        pytest.raises(ValueError, 
+            self.mantis.issue_set_custom_field, "1", "SVNRevision", "123")

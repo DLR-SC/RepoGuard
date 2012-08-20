@@ -17,7 +17,6 @@
 """ Executes an svndbadmin update for viewvc 1.1 """
 
 
-from __future__ import with_statement
 from repoguard.core import process
 from repoguard.core.module import Handler, HandlerConfig, String
 

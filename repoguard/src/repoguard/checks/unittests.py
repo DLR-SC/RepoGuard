@@ -19,7 +19,6 @@ the unit test  must follow the pattern /main/.../TestClass.java.
 Interfaces are omitted.
 """
 
-from __future__ import with_statement
 
 import re
 
@@ -46,13 +45,17 @@ class UnitTests(Check):
     
                 # skip java interfaces
                 skip = False
-                with open(self.transaction.get_file(filename), "r") as fp:
-                    for line in fp:
+                file_object = open(self.transaction.get_file(filename), "r")
+                try:
+                    for line in file_object:
                         if interface_pattern.search(line):
                             skip = True
                             break
                         elif class_pattern.search(line):
                             break
+                finally:
+                    file_object.close()
+                    
                 if skip:
                     continue
     
@@ -60,5 +63,7 @@ class UnitTests(Check):
                 unittest = unittest.replace(".java", "Test.java")
                 if not self.transaction.file_exists(unittest):
                     msg += "No unittest exists for file %r.\n" % filename
-    
-        return self.error(msg) if msg else self.success()
+        if msg:
+            return self.error(msg)
+        else:
+            return self.success()

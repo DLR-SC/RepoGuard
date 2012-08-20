@@ -19,8 +19,6 @@ Tests of the LoggerFactory class.
 """
 
 
-from __future__ import with_statement
-
 import logging
 import pytest
 
@@ -66,8 +64,8 @@ class TestLoggerFactory(object):
         assert logger.level == logging.NOTSET
         
     def test_create_unknown_error_level(self):
-        with pytest.raises(ValueError): # pytest.raises exists pylint: disable=E1101
-            self.factory.create("repoguard.core.checker")
+        pytest.raises(ValueError, 
+            self.factory.create, "repoguard.core.checker")
         
     def test_create_from_variable_def(self):
         logger = self.factory.create("repoguard.interpolation")

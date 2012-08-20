@@ -18,8 +18,6 @@ Checks if given files contains non ascii characters.
 """
 
 
-from __future__ import with_statement
-
 import string
 
 from repoguard.core.module import Check, ConfigSerializer, Array, String
@@ -58,7 +56,8 @@ class ASCIIEncoded(Check):
         result = list()
         row = 1
         include = string.printable + include
-        with open(path, 'r') as file_object:
+        file_object = open(path, 'r')
+        try:
             for line in file_object.readlines():
                 col = 1
                 for letter in line:
@@ -66,6 +65,8 @@ class ASCIIEncoded(Check):
                         result.append((row, col, line))
                     col += 1
                 row += 1
+        finally:
+            file_object.close()
         return result
     
     @staticmethod
@@ -106,5 +107,7 @@ class ASCIIEncoded(Check):
                 )
                 if result:
                     msg += self.format_msg(filename, result)
-                
-        return self.success() if not msg else self.error(msg)
+        if not msg:
+            return self.success()
+        else:
+            return self.error(msg)

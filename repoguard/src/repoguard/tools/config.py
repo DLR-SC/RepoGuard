@@ -14,9 +14,9 @@
 
 
 """
-Tool for repoguard configuration validation and representation.
+Tool for repoguard configuration display and validation.
 """
-
+ 
 
 import logging
 import os
@@ -72,7 +72,10 @@ class Configuration(Tool):
         
         logging.basicConfig(format="%(message)s")
         logger = LoggerFactory().create('%s.tools.config' % constants.NAME)
-        level = logger.level if options.verbose else logging.CRITICAL
+        if options.verbose:
+            level = logger.level
+        else:
+            level = logging.CRITICAL
         main_config = RepoGuardConfig(constants.CONFIG_PATH)
         config_validator = ConfigValidator(override=level)
         config_obj = ProjectConfig(path, template_dirs=main_config.template_dirs)
@@ -80,7 +83,10 @@ class Configuration(Tool):
             logger.info("Extending %s (%s)", extend, path)
         else:
             logger.info("Nothing to extend.")
-        return 0 if config_validator.validate(config_obj) else 1
+        if config_validator.validate(config_obj):
+            return 0
+        else:
+            return 1
     
     @Tool.command_method(
         command="show",

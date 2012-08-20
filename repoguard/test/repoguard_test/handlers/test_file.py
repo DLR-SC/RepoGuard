@@ -19,8 +19,6 @@ Tests the file handler.
 """
 
 
-from __future__ import with_statement
-
 from configobj import ConfigObj
 import mock
 import pytest
@@ -41,25 +39,44 @@ class TestFile(object):
         self._file = file_.File(None)
         
     def test_nonexisting_filepath(self):
-        with mock.patch("repoguard.handlers.file.os.path.exists", create=True) as exists:
+        patcher = mock.patch("repoguard.handlers.file.os.path.exists", create=True)
+        exists = patcher.start()
+        try:
             exists.return_value = False
-            with pytest.raises(IOError): # pytest.raises exists pylint: disable=E1101
-                self._file.singularize(self._config, mock.Mock(), debug=True)
-        
+            pytest.raises(IOError, self._file.singularize, self._config, mock.Mock(), debug=True)
+        finally:
+            patcher.stop()
+            
     def test_singularize_success(self):
-        with mock.patch("repoguard.handlers.file.os.path.exists", create=True) as exists:
+        patcher = mock.patch("repoguard.handlers.file.os.path.exists", create=True)
+        exists = patcher.start()
+        try:
             exists.return_value = True
-            with mock.patch("repoguard.handlers.file.open", create=True) as open_mock:
+            patcher_ = mock.patch("repoguard.handlers.file.open", create=True)
+            open_mock = patcher_.start()
+            try:
                 self._file.singularize(self._config, self._entry, True)
                 assert self._write_called(open_mock)
+            finally:
+                patcher_.stop()
+        finally:
+            patcher.stop()
             
     def test_summary_success(self):
-        with mock.patch("repoguard.handlers.file.os.path.exists", create=True) as exists:
+        patcher = mock.patch("repoguard.handlers.file.os.path.exists", create=True)
+        exists = patcher.start()
+        try:
             exists.return_value = True
-            with mock.patch("repoguard.handlers.file.open", create=True) as open_mock:
+            patcher_ = mock.patch("repoguard.handlers.file.open", create=True)
+            open_mock = patcher_.start()
+            try:
                 self._file.summarize(self._config, self._protocol, True)
                 assert self._write_called(open_mock)
-                
+            finally:
+                patcher_.stop()
+        finally:
+            patcher.stop()
+
     @staticmethod
     def _write_called(open_mock):
-        return open_mock.return_value.__enter__.return_value.write.called
+        return open_mock.return_value.write.called

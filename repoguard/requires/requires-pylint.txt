@@ -1,1 +1,3 @@
-pylint>=0.18.1
+pylint<=0.21.3
+logilab-astng<=0.20.3
+logilab-common<=0.52

@@ -19,8 +19,6 @@ Tests the RejectTabs check.
 """
 
 
-from __future__ import with_statement
-
 from configobj import ConfigObj
 import mock
 
@@ -38,22 +36,34 @@ class TestRejectTabs(object):
         self._rejecttabs = rejecttabs.RejectTabs(self._transaction)
 
     def test_leading_tab(self):
-        with mock.patch("repoguard.checks.rejecttabs.open", create=True) as open_mock:
+        patcher = mock.patch("repoguard.checks.rejecttabs.open", create=True)
+        open_mock = patcher.start()
+        try:
             self._init_file_mock(open_mock, 'if True:\n\tprint "Hello world"')
             assert not self._rejecttabs.run(self._config).success
-        
+        finally:
+            patcher.stop()
+            
     def test_leading_mixed_tab_space(self):
-        with mock.patch("repoguard.checks.rejecttabs.open", create=True) as open_mock:
+        patcher = mock.patch("repoguard.checks.rejecttabs.open", create=True)
+        open_mock = patcher.start()
+        try:
             self._init_file_mock(open_mock, 'if True:\n \tprint "Hello world"')
             assert not self._rejecttabs.run(self._config).success
-    
+        finally:
+            patcher.stop()
+            
     def test_inner_tab(self):
-        with mock.patch("repoguard.checks.rejecttabs.open", create=True) as open_mock:
+        patcher = mock.patch("repoguard.checks.rejecttabs.open", create=True)
+        open_mock = patcher.start()
+        try:
             self._init_file_mock(open_mock, 'if True:\n    print "\tHello world"')
             assert self._rejecttabs.run(self._config).success
-        
+        finally:
+            patcher.stop()
+            
     def _init_file_mock(self, open_mock, file_content):
-        open_mock.return_value.__enter__.return_value = self._file_mock
+        open_mock.return_value = self._file_mock
         self._file_mock.__iter__ = lambda _: iter(file_content.splitlines())
     
     def test_skip_binary_files(self):

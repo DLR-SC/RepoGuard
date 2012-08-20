@@ -80,7 +80,7 @@ class ConfigValidator(Validator):
         >>> try:
         >>>    validator.validate(main)
         >>> except ValidateError, exc:
-        >>>    print exc.message
+        >>>    print exc
         """
         
         self.default_profile = False
@@ -265,7 +265,7 @@ class ConfigValidator(Validator):
             self.exception(msg % check)
         except (ValueError, KeyError), exc:
             msg = "Validation error in check '%s': '%s'"
-            self.exception(msg % (check, exc.message))
+            self.exception(msg % (check, str(exc)))
             
     def _validate_emtpy_check_config(self, check):
         """
@@ -299,7 +299,7 @@ class ConfigValidator(Validator):
             self.exception(msg % handler)
         except (ValueError, KeyError), exc:
             msg = "Validation error in handler '%s': '%s'"
-            self.exception(msg % (handler, exc.message))
+            self.exception(msg % (handler, str(exc)))
             
     def _validate_empty_handler_config(self, handler):
         """
