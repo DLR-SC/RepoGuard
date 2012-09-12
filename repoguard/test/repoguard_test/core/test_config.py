@@ -109,7 +109,7 @@ vcs = svn
 class TestRepoGuardConfig(object):
     
     def setup_method(self, _):
-        self._default_template_path = "/cfg/templates"
+        self._default_template_path = constants.BUILDIN_TPL_PATH
         self._additional_template_path = "/path/to/other/templates"
         
         root_config = _REPOGUARD_CONFIG % self._additional_template_path
