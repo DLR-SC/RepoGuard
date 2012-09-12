@@ -19,6 +19,8 @@
 
 import pkg_resources
 
+import mock
+            
 from repoguard.core.config import ProjectConfig
 from repoguard.core.module import Handler
 from repoguard.core.validator import ConfigValidator
@@ -104,20 +106,23 @@ class TestConfigValidator(object):
     @classmethod
     def setup_class(cls):
         cls.validator = ConfigValidator()
+        cls._init_pkg_resources_mocks()
         
-        # Setting pkg_resources mocks
-        all_handler_checks = {"PyLint": 0, "AccessRights": 0, "ASCIIEncoded": 0,
-                              "CaseInsensitiveFilenameClash": 0, "Checkout": 0, 
-                              "Checkstyle": 0, "Keywords": 0, "Log": 0, 
-                              "RejectTabs": 0, "UnitTests": 0, 
-                              "XMLValidator": 0, "File": 0, "Console": 0, 
-                              "Mail": 0, "Mantis": 0, "BuildBot": 0, 
-                              "Hudson": 0}
-        pkg_resources.load_entry_point = lambda _, __, ___: Handler
-        pkg_resources.get_entry_map = lambda _, __: all_handler_checks
+    @staticmethod
+    def _init_pkg_resources_mocks():
+        all_handler_check_names = [
+            "PyLint", "AccessRights", "ASCIIEncoded", "CaseInsensitiveFilenameClash", 
+            "Checkout", "Checkstyle", "Keywords", "Log", "RejectTabs", "UnitTests", 
+            "XMLValidator", "File", "Console", "Mail", "Mantis", "BuildBot", "Hudson"]
+        all_handler_checks = list()
+        for check_name in all_handler_check_names:
+            check = mock.Mock()
+            check.name = check_name
+            check.load.return_value = Handler
+            all_handler_checks.append(check)
+        pkg_resources.iter_entry_points = mock.Mock(return_value=all_handler_checks)
 
     def test_validate_for_success(self):
-        
         config = ProjectConfig(_SUCCESS_CONFIG, "hooks")
         assert self.validator.validate(config) == 0
         

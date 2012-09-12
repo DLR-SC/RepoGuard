@@ -154,17 +154,24 @@ class TestCheckManager(object):
     @classmethod
     def setup_class(cls):
         cls._cache = CheckManager()
-        cls._buildin_modules = {
-            "PyLint": None, "Mantis": None, "AccessRights": None, "ASCIIEncoded": None,
-            "CaseInsensitiveFilenameClash": None, "Checkout": None, "Checkstyle": None,
-            "Keywords": None, "Log": None, "RejectTabs": None, "UnitTests": None, 
-            "XMLValidator": None}
-        pkg_resources.get_entry_map =  mock.Mock(return_value=cls._buildin_modules)
-        pkg_resources.load_entry_point = mock.Mock(return_value=PyLint)
+        cls._buildin_check_names = [
+            "PyLint", "Mantis", "AccessRights", "ASCIIEncoded", "CaseInsensitiveFilenameClash", 
+            "Checkout", "Checkstyle", "Keywords", "Log", "RejectTabs", "UnitTests", "XMLValidator"]
+        cls._init_pkg_resources_mocks(cls._buildin_check_names)
+        
+    @staticmethod
+    def _init_pkg_resources_mocks(check_names):
+        checks = list()
+        for check_name in check_names:
+            check = mock.Mock()
+            check.name = check_name
+            check.load.return_value = PyLint
+            checks.append(check)
+        pkg_resources.iter_entry_points =  mock.Mock(return_value=checks)
 
     def test_available_checks(self):
         for check in self._cache.available_modules:
-            assert check in self._buildin_modules.keys()
+            assert check in self._buildin_check_names
             
     def test_load(self):
         check = self._cache.load("PyLint")
@@ -177,7 +184,6 @@ class TestCheckManager(object):
         assert check_id == id(check)
         
     def test_fetch_error(self):
-        pkg_resources.load_entry_point.side_effect = ImportError
         pytest.raises(ImportError, self._cache.fetch, "Foo", None)
 
 
