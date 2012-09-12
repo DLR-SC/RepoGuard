@@ -597,7 +597,7 @@ class Check(Module):
                 raise exc
             
             entry.result = constants.EXCEPTION
-            entry.msg = "Exception in check '%s': %s" % (name, exc.args)
+            entry.msg = "Exception in check '%s': %s" % (name, str(exc))
             self.logger.exception(entry.msg) 
         
         if entry.result == constants.ERROR and interp == constants.WARNING:
