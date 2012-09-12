@@ -211,11 +211,11 @@ def _run_setup(config_home, console_scripts, install_requires, extras_require):
         packages=setuptools.find_packages("src"),
         package_dir={"" : "src"},
         data_files=[
-            (config_home, [
+            (os.path.join(config_home, "cfg"), [
                 "cfg/repoguard.conf",
                 "cfg/logger.conf"
             ]),
-            (config_home, [
+            (os.path.join(config_home, "cfg", "templates"), [
                 "cfg/templates/default.tpl.conf",
                 "cfg/templates/python.tpl.conf"
             ])

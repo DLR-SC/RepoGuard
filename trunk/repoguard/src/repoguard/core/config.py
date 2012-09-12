@@ -30,14 +30,14 @@ Module that contains all classes that are necessary for the configuration.
     TemplateConfig
 """
 
+
 import os
 import re
-
-from pkg_resources import resource_filename, Requirement
 
 from configobj import ConfigObj, Section
 
 from repoguard.core import constants
+
 
 class RepoGuardConfig(ConfigObj):
     """
@@ -70,14 +70,10 @@ class RepoGuardConfig(ConfigObj):
         :rtype: list
         """
         
-        path = constants.BUILDIN_TPL_PATH
-        requirement = Requirement.parse(constants.NAME)
-        buildin = resource_filename(requirement, path)
-        
         if not self._template_dirs:
             dirs = self.get('template_dirs', [])
             self._template_dirs = [os.path.normcase(path) for path in dirs]
-        return self._template_dirs + [buildin]
+        return self._template_dirs + [constants.BUILDIN_TPL_PATH]
     
     def _get_templates(self):
         """
