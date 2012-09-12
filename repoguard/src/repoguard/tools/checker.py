@@ -33,10 +33,12 @@ from repoguard.tools.base import Tool
 
 description = "Runs the %s as %s." % (constants.NAME, '%s')
 usage = """
-  repoguard %s [options] repo_path txn_name
+  repoguard %s [options] repo_path [txn_name]
 Arguments:
   repo_path\tThe path to this repository
-  txn_name\tThe name of the transaction about to be committed
+  txn_name\tThe name of the transaction about to be committed or
+  \t\tthe revision if you use repoguard as command line tool. If you
+  \t\tomit the option, the revision revision will be used. 
 """
 
 os.environ['PYTHON_EGG_CACHE'] = tempfile.gettempdir()
@@ -75,11 +77,15 @@ class Checker(Tool):
         """
         
         args = parser.parse_args()[1]
-        if len(args) != 3:
+        if not len(args) in [2, 3]:
             parser.print_help()
             return 1
+        if len(args) == 3:
+            hook, repo_path, txn_name = args
+        if len(args) == 2:
+            hook, repo_path = args
+            txn_name = None
         
-        hook, repo_path, txn_name = args
         return self.checker(hook, repo_path, txn_name)
     
     def checker(self, hook, repo_path, txn_name):

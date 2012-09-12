@@ -39,12 +39,15 @@ class Transaction(object):
         Initialize the transaction object. 
         """
         
-        txn_name = str(txn_name)
-        try:
-            int(txn_name)
+        if txn_name is None: # HEAD revision
             self.type = "revision"
-        except ValueError:
-            self.type = "transaction"
+        else:
+            txn_name = str(txn_name)
+            try:
+                int(txn_name)
+                self.type = "revision"
+            except ValueError:
+                self.type = "transaction"
  
         self.repos_path = repos_path
         self.txn_name = txn_name
@@ -52,8 +55,11 @@ class Transaction(object):
         self.tmpdir = tempfile.mkdtemp()
         self.cache = {}
 
-    def _execute_svn(self, command, arg = "", split=False):
-        command = 'svnlook --%s %s %s "%s" %s' % (self.type, self.txn_name, command, self.repos_path, arg)
+    def _execute_svn(self, command, arg="", split=False):
+        if self.txn_name is None:
+            command = 'svnlook %s "%s" %s' % (command, self.repos_path, arg)
+        else:
+            command = 'svnlook --%s %s %s "%s" %s' % (self.type, self.txn_name, command, self.repos_path, arg)
         
         if command in self.cache:
             return self.cache[command]
@@ -185,10 +191,12 @@ class Transaction(object):
         Returns the id of the revision or transaction. 
         """
         
-        try:
-            revision = int(self.txn_name.split("-")[0]) + 1
-        except ValueError:
-            revision = self.txn_name
+        revision = "HEAD"
+        if not self.txn_name is None:
+            try:
+                revision = int(self.txn_name.split("-")[0]) + 1
+            except ValueError:
+                revision = self.txn_name
         return str(revision)
 
     def get_property(self, keyword, filename):
