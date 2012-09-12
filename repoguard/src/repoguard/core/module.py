@@ -781,7 +781,10 @@ class CheckManager(object):
         :rtype: C{list<string>}
         """
         
-        return pkg_resources.get_entry_map('repoguard', self._group).keys()
+        result = list()
+        for entrypoint in pkg_resources.iter_entry_points(self._group):
+            result.append(entrypoint.name)
+        return result
     
     def load(self, name):
         """
@@ -794,7 +797,10 @@ class CheckManager(object):
         :rtype: C{Check}, C{Handler}
         """
         
-        return pkg_resources.load_entry_point('repoguard', self._group, name)
+        for entrypoint in pkg_resources.iter_entry_points(self._group):
+            if entrypoint.name == name:
+                return entrypoint.load()
+        raise ImportError("Entry point %s not found" % name)
     
     def fetch(self, module, transaction=None):
         """
