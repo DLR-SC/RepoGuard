@@ -30,6 +30,8 @@ from repoguard.core.logger import LoggerFactory
 _LOGGER_CONFIG = """
 output = /path/to/log/dir
 default = ERROR
+max_bytes = 10
+backup_count = 2
 
 repoguard.core.checker = FAILURE
 repoguard.core.validator = INFO
@@ -42,28 +44,31 @@ repoguard.interpolation = ${repoguard.foo.bar}
 
 class TestLoggerFactory(object):
     
-    @classmethod
-    def setup_class(cls):
-        cls.factory = LoggerFactory(config=_LOGGER_CONFIG.splitlines())
-        
+    def setup_method(self, _):
+        self.factory = LoggerFactory(config=_LOGGER_CONFIG.splitlines())
+        assert id(self.factory) == id(LoggerFactory())
+
     def test_create_default(self):
         logger = self.factory.create()
-        assert logger.level == logging.ERROR
-    
+        assert logger.root.handlers[0].level == logging.ERROR
+        assert len(logger.handlers) == 0
+        assert len(logger.root.handlers) == 2
+        
     def test_create_undefined(self):
         logger = self.factory.create("DEFAULT")
-        assert logger.level == logging.ERROR
+        assert logger.root.handlers[0].level == logging.ERROR
+        assert logger.root.handlers[1].level == logging.NOTSET
         
     def test_create_defined(self):
         logger = self.factory.create("repoguard.core.validator")
-        assert logger.level == logging.INFO
+        assert logger.root.handlers[0].level == logging.INFO
         
         logger = self.factory.create("repoguard.foo.bar")
-        assert logger.level == 42
+        assert logger.root.handlers[0].level == 42
         
     def test_create_override(self):
-        logger = self.factory.create("repoguard.core.validator", override=logging.NOTSET)
-        assert logger.level == logging.NOTSET
+        logger = self.factory.create("repoguard.core.validator", override=logging.INFO)
+        assert logger.root.handlers[0].level == logging.INFO
         
     def test_create_unknown_error_level(self):
         pytest.raises(ValueError, 
@@ -71,4 +76,4 @@ class TestLoggerFactory(object):
         
     def test_create_from_variable_def(self):
         logger = self.factory.create("repoguard.interpolation")
-        assert logger.level == 42
+        assert logger.root.handlers[0].level == 42
