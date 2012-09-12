@@ -36,6 +36,7 @@ class ProcessException(Exception):
         :type output: string
         """
         
+        Exception.__init__(self)
         self.command = command
         self.output = output
         self.exit_code = exit_code
