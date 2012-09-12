@@ -45,7 +45,13 @@ repoguard.interpolation = ${repoguard.foo.bar}
 class TestLoggerFactory(object):
     
     def setup_method(self, _):
+        # Make sure that it has not been yet instantiated
+        LoggerFactory._instance = None
+        logging.root = logging.RootLogger(logging.WARNING)
+        logging.Logger.root = logging.root
+        
         self.factory = LoggerFactory(config=_LOGGER_CONFIG.splitlines())
+        assert self.factory.create().root.handlers
         assert id(self.factory) == id(LoggerFactory())
 
     def test_create_default(self):
