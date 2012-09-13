@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # pylint: disable=E1101
 # E1101: Pylint cannot find pytest.raises
 #
@@ -21,10 +22,11 @@ Tests the file handler.
 """
 
 
-from configobj import ConfigObj
+import configobj
 import mock
 import pytest
 
+from repoguard.core import protocol as protocol_
 from repoguard.handlers import file as file_
 
 
@@ -37,48 +39,49 @@ class TestFile(object):
         self._entry = mock.Mock()
         self._protocol = mock.MagicMock()
         
-        self._config = ConfigObj(_CONFIG_DEFAULT.splitlines())
+        self._config = configobj.ConfigObj(_CONFIG_DEFAULT.splitlines())
         self._file = file_.File(None)
         
     def test_nonexisting_filepath(self):
-        patcher = mock.patch("repoguard.handlers.file.os.path.exists", create=True)
-        exists = patcher.start()
+        patcher, open_mock = self._get_file_open_mock()
+        open_mock.side_effect = IOError("")
         try:
-            exists.return_value = False
             pytest.raises(IOError, self._file.singularize, self._config, mock.Mock(), debug=True)
         finally:
             patcher.stop()
             
+    @staticmethod
+    def _get_file_open_mock():
+        patcher = mock.patch("repoguard.handlers.file.open", create=True)
+        open_mock = patcher.start()
+        return patcher, open_mock
+            
     def test_singularize_success(self):
-        patcher = mock.patch("repoguard.handlers.file.os.path.exists", create=True)
-        exists = patcher.start()
+        patcher, open_mock = self._get_file_open_mock()
         try:
-            exists.return_value = True
-            patcher_ = mock.patch("repoguard.handlers.file.open", create=True)
-            open_mock = patcher_.start()
-            try:
-                self._file.singularize(self._config, self._entry, True)
-                assert self._write_called(open_mock)
-            finally:
-                patcher_.stop()
+            self._file.singularize(self._config, self._entry, True)
+            assert self._write_called(open_mock)
         finally:
             patcher.stop()
             
     def test_summary_success(self):
-        patcher = mock.patch("repoguard.handlers.file.os.path.exists", create=True)
-        exists = patcher.start()
+        patcher, open_mock = self._get_file_open_mock()
         try:
-            exists.return_value = True
-            patcher_ = mock.patch("repoguard.handlers.file.open", create=True)
-            open_mock = patcher_.start()
-            try:
-                self._file.summarize(self._config, self._protocol, True)
-                assert self._write_called(open_mock)
-            finally:
-                patcher_.stop()
+            self._file.summarize(self._config, self._protocol, True)
+            assert self._write_called(open_mock)
         finally:
             patcher.stop()
 
     @staticmethod
     def _write_called(open_mock):
         return open_mock.return_value.write.called
+
+    def test_unicode_handling(self, tmpdir):
+        protocol = protocol_.Protocol("Default")
+        message = unicode("Something wänt wröng!", "utf-8")
+        entry = protocol_.ProtocolEntry("PyLint", None, msg=message)
+        protocol.append(entry)
+        config = configobj.ConfigObj(["file=" + str(tmpdir.join("out"))])
+        
+        self._file.singularize(config, entry, debug=True)
+        self._file.summarize(config, protocol, debug=True)

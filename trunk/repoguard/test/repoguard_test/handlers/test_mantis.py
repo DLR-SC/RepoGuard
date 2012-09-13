@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -21,9 +22,10 @@ Tests the Mantis handler
 
 from StringIO import StringIO
 
-from configobj import ConfigObj
+import configobj
 import mock
 
+from repoguard.core import protocol as protocol_
 from repoguard.handlers import mantis
 
 
@@ -51,12 +53,20 @@ class TestMantis(object):
         self._mantis = mock.Mock()
         self.__mantis_class = mantis.base.Mantis 
         mantis.base.Mantis = mock.Mock(return_value=self._mantis)
-        self._protocol = mock.MagicMock()
+        self._protocol = self._init_protocol()
         
-        self._config_default = ConfigObj(_CONFIG_DEFAULT.splitlines())
-        self._config_with_vcs_sync = ConfigObj(_CONFIG_WITH_VCS_SYNC.splitlines())
+        self._config_default = configobj.ConfigObj(_CONFIG_DEFAULT.splitlines())
+        self._config_with_vcs_sync = configobj.ConfigObj(_CONFIG_WITH_VCS_SYNC.splitlines())
         self._mantis_handler = mantis.Mantis(mock.Mock(return_value="commit_msg"))
-        
+      
+    @staticmethod  
+    def _init_protocol():
+        protocol = protocol_.Protocol("Default")
+        message = unicode("Something wänt wröng!", "utf-8")
+        entry = protocol_.ProtocolEntry("PyLint", None, msg=message)
+        protocol.append(entry)
+        return protocol
+    
     def teardown_method(self, _):
         mantis.base.Mantis = self.__mantis_class
         

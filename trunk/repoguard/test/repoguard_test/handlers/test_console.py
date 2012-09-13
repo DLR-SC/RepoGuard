@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Copyright 2008 German Aerospace Center (DLR)
 #
@@ -25,7 +26,8 @@ import mock
 import StringIO
 
 from repoguard.core import constants
-from repoguard.handlers.console import Console
+from repoguard.core import protocol as protocol_
+from repoguard.handlers import console as console_
 
 
 class TestConsole(object):
@@ -38,7 +40,7 @@ class TestConsole(object):
         self._error_file = StringIO.StringIO()
         
         self._config = ConfigObj()
-        self._console = Console(None)
+        self._console = console_.Console(None)
         self._console.out = {
             constants.SUCCESS: self._success_file,
             constants.WARNING: self._error_file,
@@ -83,3 +85,14 @@ class TestConsole(object):
         self._protocol.result = constants.EXCEPTION
         self._console.summarize(self._config, self._protocol)
         assert self._error_file.len > 0
+
+
+def test_unicode_handling():
+    protocol = protocol_.Protocol("Default")
+    message = unicode("Something wänt wröng!", "utf-8")
+    entry = protocol_.ProtocolEntry("PyLint", None, msg=message)
+    protocol.append(entry)
+    
+    console = console_.Console(None)
+    console.singularize(ConfigObj(), entry)
+    console.summarize(ConfigObj(), protocol)

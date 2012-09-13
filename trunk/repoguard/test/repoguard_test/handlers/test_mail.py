@@ -1,4 +1,4 @@
-#
+# -*- coding: utf-8 -*-
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,8 @@ Tests the mail handler.
 from configobj import ConfigObj
 import mock
 
+from repoguard.core import constants
+from repoguard.core import protocol as protocol_
 from repoguard.handlers import mail
 
 
@@ -49,22 +51,24 @@ _SUCCESS_MAIL = """From: me@localhost\r
 To: dummy@localhost\r
 Subject: SVN update by me at 16:46 - 22.03.2012\r
 \r
-Protocol
+Profile 'Default' ran 1 checks with 0 errors. Please continue reading for details.
 
 --------------------------------------------------
 
-Check: Result
+Pylint check ran 0ms with the success message:
+Something might wänt wröng!
 """
 
 _ERROR_MAIL = """From: me@localhost\r
 To: dummy@localhost\r
-Subject: Checkin Result by 'me' in check 'Check'\r
+Subject: Checkin error by 'me' in check 'Pylint'\r
 \r
-Protocol
+Profile 'Default' ran 1 checks with 1 errors. Please continue reading for details.
 
 --------------------------------------------------
 
-Check: Result
+Pylint check ran 0ms with the error message:
+Something might wänt wröng!
 """
 
 
@@ -112,10 +116,12 @@ class TestMail(object):
         
     @staticmethod
     def _get_protocol(success=True):
-        protocol = mock.MagicMock()
-        protocol.__str__.return_value = "Protocol"
-        protocol.filter.return_value = protocol
-        entry = mock.MagicMock(success=success, check="Check", result="Result")
-        entry.__str__.return_value = "Check: Result"
-        protocol.__iter__ = lambda _: iter([entry])
+        if success:
+            result = constants.SUCCESS
+        else:
+            result = constants.ERROR
+        protocol = protocol_.Protocol("Default")
+        message = unicode("Something might wänt wröng!", "utf-8")
+        entry = protocol_.ProtocolEntry("Pylint", None, result, message)
+        protocol.append(entry)
         return protocol

@@ -1,5 +1,4 @@
-# pylint: disable-msg=W0613, W0602
-
+#
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """ Simply print the message to the console. Either to stdout or to stderr. """
 
 import sys
 
 from repoguard.core import constants
 from repoguard.core.module import Handler
+
 
 class Console(Handler):
     """
@@ -36,7 +37,9 @@ class Console(Handler):
     pattern = "\n%s\n" + "-" * 80 + "\n"
     
     def _singularize(self, config, entry):
-        self.out[entry.result].write(self.pattern % entry)
+        self.out[entry.result].write(
+            self.pattern % unicode(entry).encode(sys.stdout.encoding))
         
     def _summarize(self, config, protocol):
-        self.out[protocol.result].write(self.pattern % protocol)
+        self.out[protocol.result].write(
+            self.pattern % unicode(protocol).encode(sys.stdout.encoding))

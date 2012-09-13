@@ -55,60 +55,45 @@ class Mail(Handler):
     
     __config__ = Config
 
-    def success_subject(self):
-        """ Creates the mail subject when everything is fine. """
-        
+    _ENCODING = "UTF-8"
+    
+    def _summarize(self, config, protocol):
+        subject = self._get_success_subject()
+        msg = unicode(protocol) + "\n"
+        for entry in protocol:
+            if not entry.success:
+                subject = self._get_error_subject(entry.check, entry.result)
+            if entry.msg:
+                msg += "\n" + ("-" * 50) + "\n\n" + unicode(entry) + "\n"
+        self._send_mail(subject, config.addresses, msg, config)
+
+    def _get_success_subject(self):
         from_id = self.transaction.user_id
         date = datetime.datetime.now().strftime("%H:%M - %d.%m.%Y")
         return "SVN update by %s at %s" % (from_id, date)
     
-    def error_subject(self, check, result):
-        """ Creates the mail subject when there is an error. """
-        
+    def _get_error_subject(self, check, result):
         user_id = self.transaction.user_id
         msg = "Checkin %s by '%s' in check '%s'"
         return msg % (result, user_id, check.capitalize())
     
-    @staticmethod
-    def create_mail(from_address, to_address, subject, content):
-        """ 
-        Creates the content of the mail. 
-        """
-        
-        msg = "From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s"
-        return msg % (from_address, to_address, subject, content)
-
-    def send_mail(self, subject, receivers, msg, config):
-        """ 
-        Actually send the message. 
-        """
-
-        sender = config.sender or self.transaction.user_id + "@" \
-                                  + socket.gethostname()
+    def _send_mail(self, subject, receivers, msg, config):
+        sender = config.sender or self.transaction.user_id + "@" + socket.gethostname()
         
         if config.smtp:
             server = smtplib.SMTP(config.smtp.server, config.smtp.port)
             server.set_debuglevel(config.level)
-            if not config.smtp.user is None \
-               and not config.smtp.password is None:
+            if not config.smtp.user is None and not config.smtp.password is None:
                 server.login(config.smtp.user, config.smtp.password)
         else:
             server = smtplib.SMTP("localhost")
             server.set_debuglevel(config.level)
         
         for receiver in receivers:
-            mail = self.create_mail(sender, receiver, subject, msg)
+            mail = self._create_mail(sender, receiver, subject, msg)
             server.sendmail(sender, receiver, mail)
         server.quit()
         
-    def _summarize(self, config, protocol):
-        """ Implements the handler flow. """
-        
-        subject = self.success_subject()
-        msg = str(protocol) + "\n"
-        for entry in protocol:
-            if not entry.success:
-                subject = self.error_subject(entry.check, entry.result)
-            if entry.msg:
-                msg += "\n" + ("-" * 50) + "\n\n" + str(entry) + "\n"
-        self.send_mail(subject, config.addresses, msg, config)
+    def _create_mail(self, from_address, to_address, subject, content):
+        msg = "From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s"
+        return msg % (from_address, to_address, subject, content.encode(self._ENCODING))
