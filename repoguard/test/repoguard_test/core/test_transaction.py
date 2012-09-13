@@ -133,6 +133,10 @@ class TestTransaction(object):
         self._transaction.txn_name = "11-23"
         assert self._transaction.revision == "12"
         
+    def test_head_revision(self):
+        self._transaction.txn_name = None
+        assert self._transaction.revision == "HEAD"
+        
     def test_revision_no_number(self):
         self._transaction.txn_name = ""
         assert self._transaction.revision == ""
