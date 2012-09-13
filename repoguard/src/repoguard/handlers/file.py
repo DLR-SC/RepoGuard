@@ -1,5 +1,4 @@
-# pylint: disable-msg=W0602, W0613
-
+# 
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,37 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """ Log the message into a file. """
 
 
-import os.path
-
 from repoguard.core.module import Handler, HandlerConfig, String
 
-SEPARATOR = "\n====================\n"
 
 class Config(HandlerConfig):
+    """ Configuration parameters. """
+    # Normal errors for RepoGuard configuration: pylint: disable=C0103,R0903,W0232
+
     class types(HandlerConfig.types):
+        """ file: file path of the log file. """
         file = String
 
+
 class File(Handler):
+    """ Writes messages to a configuration file. """
     
     __config__ = Config
-        
-    def _write(self, config, msg):
-        if not os.path.exists(os.path.dirname(config.file)):
-            msg = "Could not write logfile because directory does not exist: %r"
-            raise IOError(msg % os.path.dirname(config.file))
-        
-        fp = open(config.file, "a")
-        try:
-            fp.write(str(msg))
-            fp.write(SEPARATOR)
-        finally:
-            fp.close()
-        
+    _SEPARATOR = "\n====================\n"
+    _ENCODING = "UTF-8"
+       
     def _singularize(self, config, entry):
         self._write(config, entry)
         
     def _summarize(self, config, protocol):
         self._write(config, protocol)
+        
+    def _write(self, config, msg):
+        file_object = open(config.file, "a")
+        try:
+            file_object.write(unicode(msg).encode(self._ENCODING))
+            file_object.write(self._SEPARATOR)
+        finally:
+            file_object.close()
