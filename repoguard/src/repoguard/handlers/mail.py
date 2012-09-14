@@ -96,4 +96,6 @@ class Mail(Handler):
         
     def _create_mail(self, from_address, to_address, subject, content):
         msg = "From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s"
-        return msg % (from_address, to_address, subject, content.encode(self._ENCODING))
+        content = content.replace("\n", "\r\n")
+        msg = msg % (from_address, to_address, subject, content)
+        return msg.encode(self._ENCODING)
