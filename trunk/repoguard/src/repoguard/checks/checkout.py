@@ -28,21 +28,17 @@ class Config(ConfigSerializer):
         entries = Array(Entry)
 
 class Checkout(Check):
-    
+
     __config__ = Config
 
     def _run(self, config):
-        
         for entry in config.entries:
             if self.transaction.file_exists(entry.source):
                 filepath = self.transaction.get_file(entry.source)
             else:
-                return self.error("File %r to checkout does not exist in the " 
-                                  + "repository." % entry.source)
-    
+                return self.error("File %r to checkout does not exist in the repository." % entry.source)
             try:
                 shutil.move(filepath, entry.destination)
-            except IOError, e:
-                return self.error("Failed to checkout file %r to %r: %s" 
-                                  % (entry.source, entry.destination, e))
+            except IOError, error:
+                return self.error("Failed to checkout file %r to %r: %s" % (entry.source, entry.destination, error))
         return self.success()
