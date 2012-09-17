@@ -53,6 +53,6 @@ class TestPyLint(object):
 
     def test_failure(self):
         # Let pylint return an error
-        pylint_.lint.Run = mock.Mock(side_effect=lambda _, __, ___: mock.Mock())
+        pylint_.lint.Run = mock.Mock(side_effect=Exception)
         assert not self._pylint.run(self._without_pylintrc).success
         assert not self._pylint.run(self._with_pylintrc).success
