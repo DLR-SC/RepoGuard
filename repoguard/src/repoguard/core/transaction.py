@@ -64,7 +64,15 @@ class Transaction(object):
         if command in self.cache:
             return self.cache[command]
         
-        output = process.execute(command)
+        try:
+            output = process.execute(command)
+        except process.ProcessException, error:
+            if (error.exit_code == "E160006"  # Nothing bad happened we just have an empty repository
+                and "Transaction '(null)'" in error.output):
+                output = ""
+            else:
+                raise
+        
         if split:
             output = [x.strip() for x in output.split("\n") if x.strip()]
         
