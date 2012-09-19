@@ -12,7 +12,14 @@ class SmtpClientHelper(object):
     It supports anonymous and simple user name/password authentication. """
     
     _ENCODING = "UTF-8"
-        
+    _MAIL_TEMPLATE = (
+        "From: %s\n"
+        "To: %s\n"
+        "Subject: %s\n"
+        "MIME-Version: 1.0\n"
+        "Content-Type: text/plain; charset=%s\n"
+        "Content-Transfer-Encoding: 8bit\n%s")
+           
     def __init__(self, server_name="localhost", port=0, credentials=None, debug_level=0):
         self._server_name = server_name
         self._port = port
@@ -44,6 +51,5 @@ class SmtpClientHelper(object):
         return smtp_client
     
     def _create_mail(self, from_address, to_address, subject, content):
-        message = u"From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s"
-        message = message % (from_address, to_address, subject, content)
+        message = self._MAIL_TEMPLATE % (from_address, to_address, subject, self._ENCODING, content)
         return message.encode(self._ENCODING)
