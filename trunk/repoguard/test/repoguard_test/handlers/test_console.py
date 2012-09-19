@@ -32,7 +32,7 @@ from repoguard.handlers import console as console_
 
 class TestConsole(object):
     
-    def setup_method(self, _):
+    def setup_method(self, _): # pylint: disable=W0212
         self._entry = mock.MagicMock(result=constants.SUCCESS)
         self._protocol = mock.MagicMock(result=constants.SUCCESS)
         self._protocol.filter.return_value = self._protocol
@@ -41,7 +41,7 @@ class TestConsole(object):
         
         self._config = ConfigObj()
         self._console = console_.Console(None)
-        self._console.out = {
+        self._console._OUT = {
             constants.SUCCESS: self._success_file,
             constants.WARNING: self._error_file,
             constants.ERROR: self._error_file,

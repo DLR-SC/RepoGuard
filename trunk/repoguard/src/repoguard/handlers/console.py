@@ -16,6 +16,7 @@
 
 """ Simply print the message to the console. Either to stdout or to stderr. """
 
+
 import sys
 
 from repoguard.core import constants
@@ -26,20 +27,20 @@ class Console(Handler):
     """
     Prints the incoming messages on stdout or stderr.
     """
-    
-    #Output target definition.
-    out = {
+
+    _OUT = {
         constants.SUCCESS : sys.stdout,
         constants.WARNING : sys.stderr,
         constants.ERROR : sys.stderr,
         constants.EXCEPTION : sys.stderr
     }
-    pattern = "\n%s\n" + "-" * 80 + "\n"
-    
+    _PATTERN = "\n%s\n" + "-" * 80 + "\n"
+    _ENCODING = sys.stdout.encoding or sys.getdefaultencoding() or "ascii"
+
     def _singularize(self, config, entry):
-        self.out[entry.result].write(
-            self.pattern % unicode(entry).encode(sys.stdout.encoding))
-        
+        self._OUT[entry.result].write(
+            self._PATTERN % unicode(entry).encode(self._ENCODING))
+
     def _summarize(self, config, protocol):
-        self.out[protocol.result].write(
-            self.pattern % unicode(protocol).encode(sys.stdout.encoding))
+        self._OUT[protocol.result].write(
+            self._PATTERN % unicode(protocol).encode(self._ENCODING))
