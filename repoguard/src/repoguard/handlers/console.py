@@ -39,8 +39,8 @@ class Console(Handler):
 
     def _singularize(self, config, entry):
         self._OUT[entry.result].write(
-            self._PATTERN % unicode(entry).encode(self._ENCODING))
+            self._PATTERN % unicode(entry).encode(self._ENCODING, "replace"))
 
     def _summarize(self, config, protocol):
         self._OUT[protocol.result].write(
-            self._PATTERN % unicode(protocol).encode(self._ENCODING))
+            self._PATTERN % unicode(protocol).encode(self._ENCODING, "replace"))
