@@ -259,15 +259,19 @@ def _run_setup(config_home, console_scripts, install_requires, extras_require):
 
 def _write_config_home_constant(config_home):
     constants_file_path = "src/repoguard/core/constants.py"
-    file_object = open(constants_file_path, "r+b")
+    file_object = open(constants_file_path, "rb")
     try:
         content = list()
         for line in file_object.readlines():
             if line.startswith("CONFIG_HOME ="):
-                content.append("CONFIG_HOME = \"%s\"\n" % config_home)
+                content.append("CONFIG_HOME = '%s'\n" % config_home)
             else:
                 content.append(line)
-        file_object.seek(0)
+    finally:
+        file_object.close()
+    
+    file_object = open(constants_file_path, "wb")
+    try:
         file_object.write("".join(content))
     finally:
         file_object.close()
