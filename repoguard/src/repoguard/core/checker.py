@@ -135,8 +135,8 @@ class RepoGuard(object):
                 if not combined_profile_regexes is None:
                     ignores = [combined_profile_regexes]
                 
-            # if there are no files in this profile continue
-            if not self.transaction.get_files(ignore_list=ignores):
+            # if there are no files in this profile continue. However, we should give the default profile a chance!
+            if not self.transaction.get_files(ignore_list=ignores) and profile.name != "default":
                 self.logger.debug("Profile '%s' skipped.", profile.name)
                 continue
             
