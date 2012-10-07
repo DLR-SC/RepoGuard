@@ -88,7 +88,8 @@ class LoggerFactory(object):
         log_file_path = os.path.join(output_dir_path, name)
         max_bytes = long(cls._configuration.get("max_bytes", "5242880"))
         backup_count = int(cls._configuration.get("backup_count", "3"))
-        handler = handlers.RotatingFileHandler(log_file_path, maxBytes=max_bytes, backupCount=backup_count)
+        handler = handlers.RotatingFileHandler(
+            log_file_path, encoding="UTF-8", maxBytes=max_bytes, backupCount=backup_count)
         handler.setFormatter(logging.Formatter(cls._MESSAGE_FORMAT))
         handler.setLevel(logging.NOTSET)
         return handler
