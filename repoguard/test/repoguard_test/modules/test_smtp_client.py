@@ -21,7 +21,7 @@ _MAIL = (
     "Subject: subject\n"
     "MIME-Version: 1.0\n"
     "Content-Type: text/plain; charset=UTF-8\n"
-    "Content-Transfer-Encoding: 8bit\n"
+    "Content-Transfer-Encoding: 8bit\n\n"
     "unicöde messäge")
     
 
