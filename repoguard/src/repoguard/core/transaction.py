@@ -67,7 +67,7 @@ class Transaction(object):
         try:
             output = process.execute(command)
         except process.ProcessException, error:
-            if "E160006: Transaction '(null)'" in error.output: # Nothing bad happened we just have an empty repository
+            if "Transaction '(null)'" in error.output: # Nothing bad happened we just have an empty repository
                 output = ""
             else:
                 raise
