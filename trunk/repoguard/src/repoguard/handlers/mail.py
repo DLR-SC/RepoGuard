@@ -24,6 +24,7 @@ class SMTP(ConfigSerializer):
         port = Integer(optional=True, default=25)
         user = String(optional=True, default=None)
         password = String(optional=True, default=None)
+        local_hostname = String(optional=True, default=None)
 
 class Config(HandlerConfig):
     """ General configuration. """
@@ -59,7 +60,8 @@ class Mail(Handler):
     def _initialize_mail_client(config):
         if config.smtp:
             mail_client = smtp_client.SmtpClientHelper(
-                config.smtp.server, config.smtp.port, (config.smtp.user, config.smtp.password), config.level)
+                config.smtp.server, config.smtp.port, 
+                (config.smtp.user, config.smtp.password), config.level, config.smtp.local_hostname)
         else:
             mail_client = smtp_client.SmtpClientHelper()
         return mail_client

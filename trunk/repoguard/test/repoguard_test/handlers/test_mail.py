@@ -86,4 +86,4 @@ class TestMail(object):
         protocol = self._get_protocol(success=False) 
         self._handler.summarize(remote_config, protocol, True)
         
-        assert self._mail_class.call_args[0] == ("there", 25, ("me", "secret"), 1)
+        assert self._mail_class.call_args[0] == ("there", 25, ("me", "secret"), 1, None)
