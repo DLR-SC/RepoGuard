@@ -18,13 +18,14 @@ class SmtpClientHelper(object):
         "Subject: %s\n"
         "MIME-Version: 1.0\n"
         "Content-Type: text/plain; charset=%s\n"
-        "Content-Transfer-Encoding: 8bit\n%s")
+        "Content-Transfer-Encoding: 8bit\n\n%s")
            
-    def __init__(self, server_name="localhost", port=0, credentials=None, debug_level=0):
+    def __init__(self, server_name="localhost", port=0, credentials=None, debug_level=0, local_hostname=None):
         self._server_name = server_name
         self._port = port
         self._credentials = credentials
         self._debug_level = debug_level
+        self._local_hostname = local_hostname
     
     def send_mail(self, sender, receivers, subject, message):
         """
@@ -42,7 +43,7 @@ class SmtpClientHelper(object):
             smtp_client.quit()
         
     def _initialize_mail_client(self):
-        smtp_client = smtplib.SMTP(self._server_name, self._port)
+        smtp_client = smtplib.SMTP(self._server_name, self._port, self._local_hostname)
         smtp_client.set_debuglevel(self._debug_level)
         if self._credentials:
             user, password = self._credentials
