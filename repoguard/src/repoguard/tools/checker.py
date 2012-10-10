@@ -31,8 +31,8 @@ from repoguard.core.logger import LoggerFactory
 from repoguard.tools.base import Tool
 
 
-description = "Runs the %s as %s." % (constants.NAME, '%s')
-usage = """
+_DESCRIPTION = "Runs the %s as %s." % (constants.NAME, '%s')
+_USAGE = """
   repoguard %s [options] repo_path [txn_name]
 Arguments:
   repo_path\tThe path to this repository
@@ -49,21 +49,17 @@ class Checker(Tool):
     """
     
     def __init__(self):
-        """
-        Constructor.
-        """
-        
         Tool.__init__(self, "Checker tools v0.1")
         
     @Tool.command_method(
         command = constants.PRECOMMIT, 
-        description = description % constants.PRECOMMIT, 
-        usage = usage % constants.PRECOMMIT
+        description = _DESCRIPTION % constants.PRECOMMIT, 
+        usage = _USAGE % constants.PRECOMMIT
     )
     @Tool.command_method(
         command = constants.POSTCOMMIT, 
-        description = description % constants.POSTCOMMIT,
-        usage = usage % constants.POSTCOMMIT
+        description = _DESCRIPTION % constants.POSTCOMMIT,
+        usage = _USAGE % constants.POSTCOMMIT
     )
     def commit(self, parser):
         """
@@ -76,7 +72,12 @@ class Checker(Tool):
         :rtype: 0 for success else error.
         """
         
-        args = parser.parse_args()[1]
+        parser.add_option(
+            "-p", "--profile", dest="profile_name", default=None,
+            help="Concrete profile which should be executed."
+        )
+        
+        options, args = parser.parse_args()
         if not len(args) in [2, 3]:
             parser.print_help()
             return 1
@@ -85,10 +86,10 @@ class Checker(Tool):
         if len(args) == 2:
             hook, repo_path = args
             txn_name = None
-        
-        return self.checker(hook, repo_path, txn_name)
+        return self.checker(hook, repo_path, txn_name, options.profile_name)
     
-    def checker(self, hook, repo_path, txn_name):
+    @staticmethod
+    def checker(hook, repo_path, txn_name, profile_name):
         """
         Function to singularize the repoguard in precommit or postcommit mode.
         
@@ -114,28 +115,32 @@ class Checker(Tool):
         logger.debug("RepoGuard initializing...")
         repoguard = RepoGuard(hook, repo_path)
         try:
-            try:
-                logger.debug("Loading transaction...")
-                repoguard.load_transaction(txn_name)
-        
-                logger.debug("Loading configuration...")
-                main_config = RepoGuardConfig(constants.CONFIG_PATH)
-                repoguard.load_config(main_config.template_dirs, project_config)
-                if main_config.validate:
-                    repoguard.validate()
-                else:
-                    logger.warning("Validation skipped.")
-                logger.debug("RepoGuard running...")
-                result = repoguard.run()
-            except ValidateError, exc:
-                msg = "Configuration validation error cause: %s"
-                logger.exception(msg, str(exc))
-            except Exception, exc:
-                msg = "%s exception cause: '%s'"
-                logger.exception(msg, exc.__class__.__name__, str(exc))
-        finally:
-            logger.debug("RepoGuard finished with %s.", result)
-            if result == constants.SUCCESS:
-                return 0
+            logger.debug("Loading transaction...")
+            repoguard.load_transaction(txn_name)
+    
+            logger.debug("Loading configuration...")
+            main_config = RepoGuardConfig(constants.CONFIG_PATH)
+            repoguard.load_config(main_config.template_dirs, project_config)
+            
+            if main_config.validate:
+                repoguard.validate()
             else:
-                return 1
+                logger.warning("Validation skipped.")
+            
+            logger.debug("RepoGuard running...")
+            if profile_name:
+                result = repoguard.run_profile(profile_name)
+            else:   
+                result = repoguard.run()
+        except ValidateError, exc:
+            msg = "Configuration validation error cause: %s"
+            logger.exception(msg, str(exc))
+        except Exception, exc:
+            msg = "%s exception cause: '%s'"
+            logger.exception(msg, exc.__class__.__name__, str(exc))
+
+        logger.debug("RepoGuard finished with %s.", result)
+        if result == constants.SUCCESS:
+            return 0
+        else:
+            return 1

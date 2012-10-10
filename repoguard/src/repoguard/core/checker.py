@@ -118,73 +118,97 @@ class RepoGuard(object):
         :rtype: constants.SUCCESS, constants.ERROR
         """
         
-        self.logger.debug("Running run...")
-        combined_profile_regexes = self._combined_profile_regexes()
-        self.logger.debug("Default ignore regex: %s", combined_profile_regexes)
+        try:
+            self.logger.debug("Running run...")
+            combined_profile_regexes = self._combined_profile_regexes()
+            self.logger.debug("Default ignore regex: %s", combined_profile_regexes)
+            
+            # Process executing
+            for profile in self.main.profiles:
+                ignores = list()
+                if not profile.regex is None:
+                    self.transaction.profile = profile.regex
+                else: 
+                    # default profile: covers all files
+                    # which are not handled by a special profile
+                    self.transaction.profile = ".*"
+                    if not combined_profile_regexes is None:
+                        ignores = [combined_profile_regexes]
+                    
+                # if there are no files in this profile continue.
+                if not self.transaction.get_files(ignore_list=ignores):
+                    self.logger.debug("Profile '%s' skipped.", profile.name)
+                    continue
+                self._run_profile(profile)
+                
+            self.logger.debug("Run finished with %s.", self.result)
+            return self.result
+        finally:
+            self.logger.debug("Cleaning up transaction.")
+            self.transaction.cleanup()
+
+    def run_profile(self, name):
+        """ Runs a specific profile. """
         
-        # Process executing
-        for profile in self.main.profiles:
-            self.logger.debug("Running profile '%s'...", profile.name)
-            ignores = list()
-            if not profile.regex is None:
-                self.transaction.profile = profile.regex
-            else: 
-                # default profile: covers all files
-                # which are not handled by a special profile
-                self.transaction.profile = ".*"
-                if not combined_profile_regexes is None:
-                    ignores = [combined_profile_regexes]
-                
-            # if there are no files in this profile continue. However, we should give the default profile a chance!
-            if not self.transaction.get_files(ignore_list=ignores) and profile.name != "default":
-                self.logger.debug("Profile '%s' skipped.", profile.name)
-                continue
-            
-            process = profile.get_process(self.hook)
-            if not process:
-                self.logger.debug(
-                    "%s process skipped." % self.hook.capitalize()
-                )
-                continue
-            
-            protocol = Protocol(profile.name)
-            # run the configured checks
-            for name, config, interp in process.checks:
-                self.logger.debug("Loading check %s...", name)
-                check = self.checks.fetch(name, self.transaction)
-                self.logger.debug("Starting check %s...", name)
-                entry = check.run(config, interp)
-                self.logger.debug(
-                    "Check %s finished with %s.", name, entry.result
-                )
-                protocol.append(entry)
-                
-                # run the configured handlers when a message was returned 
-                if entry.msg:
-                    self.logger.debug(
-                        "Running handler after check %s...", entry.check
-                    )
-                    self.handlers.singularize(self.transaction, process, entry)
-                    self.logger.debug(
-                        "Handler after check %s finished.", entry.check
-                    )
-                
-                # cancel the _process chain when an abortonerror was detected.
-                if interp == constants.ABORTONERROR and not protocol.success:
-                    msg = "Profile %s aborted after check %s."
-                    self.logger.debug(msg, profile.name, entry.check)
-                    break
-            
-            # cumulativ execution of all handlers.
-            self.logger.debug("Running handler summarize...")
-            self.handlers.summarize(self.transaction, process, protocol)
-            self.logger.debug("Handler summarize finished.")
-            
-            if not protocol.success:
+        try:
+            profile_found = False
+            for profile in self.main.profiles:
+                if name == profile.name:
+                    self._run_profile(profile)
+                    profile_found = True
+                    
+            if not profile_found:
                 self.result = constants.ERROR
-            self.logger.debug("Profile %s finished.", profile.name)
+                self.logger.error("No profile with name '%s' exists." % name)
+            else:
+                self.logger.debug("Run finished with %s.", self.result)
+            return self.result
+        finally:
+            self.logger.debug("Cleaning up transaction.")
+            self.transaction.cleanup()
         
-        self.logger.debug("Cleaning up transaction.")
-        self.transaction.cleanup()
-        self.logger.debug("Run finished with %s.", self.result)
-        return self.result
+    def _run_profile(self, profile):
+        process = profile.get_process(self.hook)
+        if not process:
+            self.logger.debug(
+                "%s process skipped." % self.hook.capitalize()
+            )
+            return
+        
+        self.logger.debug("Running profile '%s'...", profile.name)
+        protocol = Protocol(profile.name)
+        # run the configured checks
+        for name, config, interp in process.checks:
+            self.logger.debug("Loading check %s...", name)
+            check = self.checks.fetch(name, self.transaction)
+            self.logger.debug("Starting check %s...", name)
+            entry = check.run(config, interp)
+            self.logger.debug(
+                "Check %s finished with %s.", name, entry.result
+            )
+            protocol.append(entry)
+            
+            # run the configured handlers when a message was returned 
+            if entry.msg:
+                self.logger.debug(
+                    "Running handler after check %s...", entry.check
+                )
+                self.handlers.singularize(self.transaction, process, entry)
+                self.logger.debug(
+                    "Handler after check %s finished.", entry.check
+                )
+            
+            # cancel the _process chain when an abortonerror was detected.
+            if interp == constants.ABORTONERROR and not protocol.success:
+                msg = "Profile %s aborted after check %s."
+                self.logger.debug(msg, profile.name, entry.check)
+                break
+        
+        # cumulativ execution of all handlers.
+        self.logger.debug("Running handler summarize...")
+        self.handlers.summarize(self.transaction, process, protocol)
+        self.logger.debug("Handler summarize finished.")
+        
+        if not protocol.success:
+            self.result = constants.ERROR
+        self.logger.debug("Profile %s finished.", profile.name)

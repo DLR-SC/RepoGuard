@@ -130,3 +130,14 @@ class TestRepoGuard(object):
             large_changset.append("A   Project/vendors/deli%f" % random.random())
         self._set_transaction_changeset(large_changset)
         self._checker.run()
+
+    def test_run_profile_success(self):
+        self._checker.run_profile("ProjectA")
+        
+        assert self._checker.checks.fetch.call_count == 1
+        assert self._checker.checks.fetch.call_args[0][0] == "PyLint"
+        
+    def test_run_missing_profile(self):
+        self._checker.run_profile("UNDEFINED_PROFILE")
+        
+        assert self._checker.checks.fetch.call_count == 0
