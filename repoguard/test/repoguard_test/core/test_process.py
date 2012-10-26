@@ -32,7 +32,9 @@ def test_execute_success():
     popen_class = patcher.start()
     try:
         popen_class.return_value.returncode = 0
-        process.execute("svnlook help")
+        popen_class.return_value.communicate.return_value = ("output")
+        output = process.execute("svnlook help")
+        assert isinstance(output, unicode) 
     finally:
         patcher.stop()
         

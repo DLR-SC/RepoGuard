@@ -1,4 +1,4 @@
-# pylint: disable-msg=W0231
+#
 # Copyright 2008 German Aerospace Center (DLR)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,19 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """ Execute a Process and return the output. """
 
+
 import subprocess
+import sys
+
 
 class ProcessException(Exception):
     """
     Exception that can be raised when an external process execution failed.
     """
-    
+
     def __init__(self, command, exit_code, output):
         """
-        Constructor.
-        
         :param command: The command that was executed.
         :type command: string
         
@@ -40,12 +42,12 @@ class ProcessException(Exception):
         self.command = command
         self.output = output
         self.exit_code = exit_code
-
+        
     def __str__(self):
         """
         Returns the process as string representation.
         
-        :return: The stirng representation of this exception.
+        :return: The string representation of this exception.
         :rtype: string
         """
         
@@ -69,12 +71,22 @@ def execute(command):
     :raises ProcessException: Is raised when the process execution failed.
     """
     
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, 
-                               stderr=subprocess.STDOUT)
-    output = process.communicate()[0]
+    process = subprocess.Popen(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output = _decode_to_unicode(process.communicate()[0])
     exit_code = process.returncode
 
     if exit_code == 0:
         return output
     else:
-        raise ProcessException(command, exit_code, output)
+        raise ProcessException(_decode_to_unicode(command), exit_code, output)
+
+def _decode_to_unicode(binary_string):
+    if binary_string is None:
+        return u""
+    elif isinstance(binary_string, unicode):
+        return binary_string
+    else:
+        return binary_string.decode(_CONSOLE_ENCODING)
+    
+_CONSOLE_ENCODING = sys.stdout.encoding or sys.getdefaultencoding() or "ascii"
