@@ -21,12 +21,19 @@ Tests the Pylint check.
 
 from configobj import ConfigObj
 import mock
+import pytest
 
-from repoguard.checks import pylint_
+try:
+    from repoguard.checks import pylint_
+    _SKIP = False
+except ImportError:
+    _SKIP = True
 
 
 class TestPyLint(object):
-
+    
+    pytestmark = pytest.mark.skipif("_SKIP")
+        
     def setup_method(self, _):
         self._transaction = mock.Mock()
         self._transaction.get_files.return_value = {"filepath":"A"}
