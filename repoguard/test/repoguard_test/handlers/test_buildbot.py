@@ -20,12 +20,13 @@ Test cases for the BuildBot handler.
 
 
 from configobj import ConfigObj
+import pytest
 
 try:
     from repoguard.handlers.buildbot import BuildBot
-    _DISABLED = False
+    _SKIP = False
 except ImportError:
-    _DISABLED = True
+    _SKIP = True
 
 _CONFIG_DEFAULT = """
 url=localhost
@@ -36,7 +37,8 @@ password=foo
     
     
 class TestBuildBot(object):
-    skipped = _DISABLED
+    
+    pytestmark = pytest.mark.skipif("_SKIP")
     
     @classmethod
     def setup_class(cls):

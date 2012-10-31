@@ -24,8 +24,12 @@ Tests the Mantis module.
 import mock
 import pytest
 
-from repoguard.modules import mantis
-        
+try:
+    from repoguard.modules import mantis
+    _SKIP = False
+except ImportError:
+    _SKIP = True
+       
 
 _COMMIT_MESSAGE = """
 mantis id 3662
@@ -36,6 +40,8 @@ Test2
 
 
 class TestMantis(object):
+    
+    pytestmark = pytest.mark.skipif("_SKIP")
     
     def setup_method(self, _):
         mantis.Client = mock.MagicMock()

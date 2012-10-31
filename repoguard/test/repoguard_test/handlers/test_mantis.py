@@ -24,9 +24,14 @@ from StringIO import StringIO
 
 import configobj
 import mock
+import pytest
 
 from repoguard.core import protocol as protocol_
-from repoguard.handlers import mantis
+try:
+    from repoguard.handlers import mantis
+    _SKIP = False
+except ImportError:
+    _SKIP = True
 
 
 _CONFIG_DEFAULT = """
@@ -46,6 +51,8 @@ vcs_sync_url=http://localhost/mantis/plugin.php?page=Source/import&id=all
 
 
 class TestMantis(object):
+    
+    pytestmark = pytest.mark.skipif("_SKIP")
     
     def setup_method(self, _):
         self._urlopen = mock.Mock(return_value=StringIO("No Revisions Parsed."))

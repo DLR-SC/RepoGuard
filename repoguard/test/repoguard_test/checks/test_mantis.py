@@ -15,15 +15,19 @@
 
 
 """
-Testa the Mantis check.
+Tests of the Mantis check.
 """
 
 
 from configobj import ConfigObj
 import mock
+import pytest
 
-from repoguard.checks import mantis
-
+try:
+    from repoguard.checks import mantis
+    _SKIP = False
+except ImportError:
+    _SKIP = True
 
 _CONFIG_DEFAULT = """
 url=http://localhost/mantis/mc/mantisconnect.php?wsdl
@@ -35,6 +39,8 @@ check_handler=True
 
 
 class TestMantisCheck(object):
+    
+    pytestmark = pytest.mark.skipif("_SKIP")
     
     @classmethod
     def setup_class(cls):

@@ -30,7 +30,7 @@ from configobj import ConfigObj
 import mock
 import pytest
 
-from repoguard.checks.pylint_ import PyLint
+from repoguard.checks import log
 from repoguard.core import constants
 from repoguard.core.config import ProjectConfig
 from repoguard.core.module import Module, CheckManager, HandlerManager
@@ -108,7 +108,7 @@ class TestHandler(object):
 
     _HANDLER_CONFIG = """
         protocol.include = Log,
-        protocol.exclude = PyLint,"""
+        protocol.exclude = AccessRights,"""
         
     def setup_method(self, _):
         self._handler = Handler(None)
@@ -123,7 +123,7 @@ class TestHandler(object):
         assert self._handler._singularize.called
         
     def test_singularize_check_skipped(self):
-        entry = mock.Mock(check="PyLint")
+        entry = mock.Mock(check="AccessRights")
         entry.is_included.return_value = False
         self._handler.singularize(self._config, entry, debug=True)
         assert not self._handler._singularize.called
@@ -165,7 +165,7 @@ class TestCheckManager(object):
         for check_name in check_names:
             check = mock.Mock()
             check.name = check_name
-            check.load.return_value = PyLint
+            check.load.return_value = log.Log
             checks.append(check)
         pkg_resources.iter_entry_points =  mock.Mock(return_value=checks)
 
@@ -174,13 +174,13 @@ class TestCheckManager(object):
             assert check in self._buildin_check_names
             
     def test_load(self):
-        check = self._cache.load("PyLint")
-        assert issubclass(check, PyLint)
+        check = self._cache.load("Log")
+        assert issubclass(check, log.Log)
         
     def test_fetch_success(self):
-        check = self._cache.fetch("PyLint", None)
+        check = self._cache.fetch("Log", None)
         check_id = id(check)
-        check = self._cache.fetch("PyLint", None)
+        check = self._cache.fetch("Log", None)
         assert check_id == id(check)
         
     def test_fetch_error(self):
@@ -196,7 +196,7 @@ class TestHandlerManager(object):
             [[default]]
                 [[[precommit]]]
                 default=delayonerror
-                checks=PyLint,
+                checks=Log,
                 success=Console,
                 error=File.default,
                 
