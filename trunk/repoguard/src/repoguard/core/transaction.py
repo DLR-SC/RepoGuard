@@ -55,7 +55,7 @@ class Transaction(object):
         self.tmpdir = tempfile.mkdtemp()
         self.cache = {}
 
-    def _execute_svn(self, command, arg="", split=False):
+    def _execute_svn(self, command, arg="", split=False, raw_out=False):
         if self.txn_name is None:
             command = 'svnlook %s "%s" %s' % (command, self.repos_path, arg)
         else:
@@ -65,7 +65,7 @@ class Transaction(object):
             return self.cache[command]
         
         try:
-            output = process.execute(command)
+            output = process.execute(command, raw_out)
         except process.ProcessException, error:
             if "Transaction '(null)'" in error.output: # Nothing bad happened we just have an empty repository
                 output = ""
@@ -142,7 +142,7 @@ class Transaction(object):
         if os.path.exists(tmpfilename):
             return tmpfilename
 
-        content = self._execute_svn("cat", "\"" + filename + "\"")
+        content = self._execute_svn("cat", "\"" + filename + "\"", raw_out=True)
 
         dirname = os.path.dirname(filename)
         tmpdirname = os.path.join(self.tmpdir, dirname)
