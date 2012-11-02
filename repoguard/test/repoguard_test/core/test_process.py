@@ -38,6 +38,17 @@ def test_execute_success():
     finally:
         patcher.stop()
         
+def test_execute_raw_out():
+    patcher = mock.patch("repoguard.core.process.subprocess.Popen")
+    popen_class = patcher.start()
+    try:
+        popen_class.return_value.returncode = 0
+        popen_class.return_value.communicate.return_value = ("output")
+        output = process.execute("svnlook help", raw_out=True)
+        assert isinstance(output, str) 
+    finally:
+        patcher.stop()
+        
 def test_execute_error():
     patcher = mock.patch("repoguard.core.process.subprocess.Popen")
     popen_class = patcher.start()

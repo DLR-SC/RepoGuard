@@ -58,12 +58,14 @@ class ProcessException(Exception):
         return self.__str__()
 
 
-def execute(command):
+def execute(command, raw_out=False):
     """
     Executes a given command as external process.
     
     :param command: The command that has to be executed.
     :type command: string
+    :param raw_out: Option which indicates wether the output should be decided to unicode.
+    :type raw_out: boolean
     
     :return: Returns the process output.
     :rtype: string
@@ -73,7 +75,7 @@ def execute(command):
     
     process = subprocess.Popen(
         command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    output = _decode_to_unicode(process.communicate()[0])
+    output = _decode_to_unicode(process.communicate()[0], raw_out)
     exit_code = process.returncode
 
     if exit_code == 0:
@@ -81,7 +83,9 @@ def execute(command):
     else:
         raise ProcessException(_decode_to_unicode(command), exit_code, output)
 
-def _decode_to_unicode(binary_string):
+def _decode_to_unicode(binary_string, raw_out=False):
+    if raw_out:
+        return binary_string
     if binary_string is None:
         return u""
     elif isinstance(binary_string, unicode):
