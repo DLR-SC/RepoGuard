@@ -1,2 +1,2 @@
 configobj>=4.6.0
-setuptools>=0.6
+distribute>=0.6.24s

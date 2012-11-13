@@ -128,8 +128,8 @@ def _perform_setup():
     _set_pythonpath()
     config_home = _get_config_home()
     console_scripts = _get_console_scripts()
-    install_requires, extras_require = _get_requirements()
-    _run_setup(config_home, console_scripts, install_requires, extras_require)
+    extras_require = _get_requirements()
+    _run_setup(config_home, console_scripts, extras_require)
     
 def _set_pythonpath():
     python_path = [os.path.realpath(path) for path in ["src", "test"]]
@@ -154,14 +154,11 @@ def _get_console_scripts():
 
 def _get_requirements():
     extras_require = dict()
-    install_requires = list()
     for name in os.listdir("requires"):
-        if name == "requires.txt":
-            install_requires = (_read_requirements_from_file("requires/" + name))
-        elif name.startswith("requires"):
+        if name.startswith("requires") and name != "requires.txt":
             extras_name = name[9:-4]
             extras_require[extras_name] = _read_requirements_from_file("requires/" + name)
-    return install_requires, extras_require
+    return extras_require
 
 def _read_requirements_from_file(path):
     file_object = open(path, "rb")
@@ -170,7 +167,7 @@ def _read_requirements_from_file(path):
     finally:
         file_object.close()
         
-def _run_setup(config_home, console_scripts, install_requires, extras_require):
+def _run_setup(config_home, console_scripts, extras_require):
     _write_config_home_constant(config_home)
     setuptools.setup(
         name="repoguard", 
@@ -220,7 +217,6 @@ def _run_setup(config_home, console_scripts, install_requires, extras_require):
                 "cfg/templates/python.tpl.conf"
             ])
         ],
-        install_requires=install_requires,
         extras_require=extras_require,
         entry_points={
             "console_scripts": [
