@@ -1,2 +1,2 @@
 configobj>=4.6.0
-distribute>=0.6.24s
+distribute>=0.6.24
