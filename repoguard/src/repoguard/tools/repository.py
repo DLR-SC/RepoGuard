@@ -104,7 +104,7 @@ class Repository(Tool):
                 finally:
                     file_object.close()
                 # Changing rights to executable.
-                os.chmod(path, 744)
+                os.chmod(path, 0744)
             else:
                 file_object = open(path, 'r+ab')
                 try:
