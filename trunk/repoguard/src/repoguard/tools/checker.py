@@ -77,7 +77,7 @@ class Checker(Tool):
             help="Concrete profile which should be executed."
         )
         parser.add_option(
-            "--halt-on-exception", action="store_false", dest="halt_on_exception",
+            "--halt-on-exception", action="store_true", default=False, dest="halt_on_exception",
             help=(
                 "Causes the hook to return an error when an unexpected exception occurs.\n"
                 "Default behavior: Exception are logged but the hook succeeds.")
