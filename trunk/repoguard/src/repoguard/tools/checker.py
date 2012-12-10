@@ -21,7 +21,7 @@ Main tool to handle pre and post commits.
 import os
 import tempfile
 
-from validate import ValidateError
+import validate
 
 from repoguard.core import constants
 from repoguard.core.checker import RepoGuard
@@ -35,10 +35,10 @@ _DESCRIPTION = "Runs the %s as %s." % (constants.NAME, '%s')
 _USAGE = """
   repoguard %s [options] repo_path [txn_name]
 Arguments:
-  repo_path\tThe path to this repository
+  repo_path\tThe path to this repository.
   txn_name\tThe name of the transaction about to be committed or
-  \t\tthe revision if you use repoguard as command line tool. If you
-  \t\tomit the option, the revision revision will be used. 
+  \t\tthe revision number. If you omit the option, the HEAD
+  \t\trevision will be used. 
 """
 
 os.environ['PYTHON_EGG_CACHE'] = tempfile.gettempdir()
@@ -49,7 +49,7 @@ class Checker(Tool):
     """
     
     def __init__(self):
-        Tool.__init__(self, "Checker tools v0.1")
+        Tool.__init__(self, "Checker tools v0.2")
         
     @Tool.command_method(
         command = constants.PRECOMMIT, 
@@ -76,20 +76,27 @@ class Checker(Tool):
             "-p", "--profile", dest="profile_name", default=None,
             help="Concrete profile which should be executed."
         )
+        parser.add_option(
+            "--halt-on-exception", action="store_false", dest="halt_on_exception",
+            help=(
+                "Causes the hook to return an error when an unexpected exception occurs.\n"
+                "Default behavior: Exception are logged but the hook succeeds.")
+        )
         
         options, args = parser.parse_args()
-        if not len(args) in [2, 3]:
-            parser.print_help()
-            return 1
         if len(args) == 3:
             hook, repo_path, txn_name = args
-        if len(args) == 2:
+        elif len(args) == 2:
             hook, repo_path = args
             txn_name = None
-        return self.checker(hook, repo_path, txn_name, options.profile_name)
+        else:
+            parser.print_help()
+            return 1
+        
+        return self.checker(hook, repo_path, txn_name, options.profile_name, options.halt_on_exception)
     
     @staticmethod
-    def checker(hook, repo_path, txn_name, profile_name):
+    def checker(hook, repo_path, txn_name, profile_name, halt_on_exception):
         """
         Function to singularize the repoguard in precommit or postcommit mode.
         
@@ -101,20 +108,20 @@ class Checker(Tool):
         
         :param txn_name: The name of the current transaction.
         :type txn_name: string
+        
+        :param halt_on_exception: Flag which indicates whether we halt on unexpected exceptions or not.
+        :type halt_on_exception: boolean
         """
         
         logger = LoggerFactory().create('%s.tools.checker' % constants.NAME)
-        
-        hooks_path = os.path.abspath(os.path.join(repo_path, "hooks"))
-        project_config = os.path.join(hooks_path, constants.CONFIG_FILENAME)
-            
-        # Working directory change to the hooks location.
-        os.chdir(hooks_path)
-        
-        result = constants.ERROR
-        logger.debug("RepoGuard initializing...")
-        repoguard = RepoGuard(hook, repo_path)
         try:
+            hooks_path = os.path.abspath(os.path.join(repo_path, "hooks"))
+            project_config = os.path.join(hooks_path, constants.CONFIG_FILENAME)
+            os.chdir(hooks_path)
+            
+            logger.debug("RepoGuard initializing...")
+            repoguard = RepoGuard(hook, repo_path)
+        
             logger.debug("Loading transaction...")
             repoguard.load_transaction(txn_name)
     
@@ -122,6 +129,7 @@ class Checker(Tool):
             main_config = RepoGuardConfig(constants.CONFIG_PATH)
             repoguard.load_config(main_config.template_dirs, project_config)
             
+            logger.debug("Validating configuration...")
             if main_config.validate:
                 repoguard.validate()
             else:
@@ -132,15 +140,19 @@ class Checker(Tool):
                 result = repoguard.run_profile(profile_name)
             else:   
                 result = repoguard.run()
-        except ValidateError, exc:
-            msg = "Configuration validation error cause: %s"
-            logger.exception(msg, str(exc))
-        except Exception, exc:
-            msg = "%s exception cause: '%s'"
-            logger.exception(msg, exc.__class__.__name__, str(exc))
 
-        logger.debug("RepoGuard finished with %s.", result)
-        if result == constants.SUCCESS:
-            return 0
-        else:
+            logger.debug("RepoGuard finished with %s.", result)
+            if result == constants.SUCCESS:
+                return 0
+            else:
+                return 1
+        except validate.ValidateError:
+            logger.exception("The configuration is invalid!")
             return 1
+        except: # pylint: disable=W0702
+            logger.exception(
+                "An unexpected error occurred during the RepoGuard run! Halt on exception is '%s'." % halt_on_exception)
+            if not halt_on_exception:
+                return 0
+            else:
+                return 1
